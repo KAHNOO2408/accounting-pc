@@ -5,6 +5,9 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-2022
@@ -58,6 +61,24 @@ jobs:
           name: screenshots
           path: screenshots/
           if-no-files-found: ignore
+
+      - name: Publish screenshots to the 'screenshots' branch
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          if (Test-Path screenshots) {
+            $tmp = Join-Path $env:RUNNER_TEMP 'shots'
+            New-Item -ItemType Directory -Force -Path $tmp | Out-Null
+            Copy-Item screenshots/* $tmp -Force
+            Set-Location $tmp
+            git init -q
+            git config user.name "ci"
+            git config user.email "ci@example.com"
+            git checkout -q -b screenshots
+            git add -A
+            git commit -q -m "screenshots ${{ github.sha }}"
+            git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" screenshots
+          }
 
       - name: Build
         shell: pwsh
