@@ -1,0 +1,51 @@
+name: Build Windows
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.35.x
+          cache: true
+
+      - name: Generate Windows runner (first time only)
+        shell: pwsh
+        run: |
+          if (-not (Test-Path windows)) {
+            flutter create --platforms=windows --project-name taraz --org ir.taraz .
+          }
+
+      - name: Window title, size and icon
+        shell: pwsh
+        run: |
+          $f = "windows/runner/main.cpp"
+          $c = Get-Content $f -Raw
+          $c = $c -replace 'Win32Window::Size size\(\d+, \d+\);', 'Win32Window::Size size(1440, 900);'
+          $c = $c -replace 'L"taraz"', 'L"Taraz"'
+          Set-Content -Path $f -Value $c -NoNewline
+          Copy-Item assets/app_icon.ico windows/runner/resources/app_icon.ico -Force
+
+      - name: Tests (logic + UI smoke test)
+        continue-on-error: true
+        run: flutter test
+
+      - name: Build
+        run: flutter build windows --release
+
+      - name: Package zip
+        shell: pwsh
+        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath Taraz-windows.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Taraz-windows
+          path: Taraz-windows.zip

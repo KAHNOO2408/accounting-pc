@@ -1,0 +1,29 @@
+name: taraz
+description: "Taraz - personal accounting for Windows"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  fonts:
+    - family: Vazirmatn
+      fonts:
+        - asset: assets/fonts/Vazirmatn-FD-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Vazirmatn-FD-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Vazirmatn-FD-Bold.ttf
+          weight: 700
