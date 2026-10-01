@@ -658,6 +658,38 @@ void main() {
     expect(s.vouchers.where((v) => v.kind == 'depreciation'), isEmpty);
   });
 
+  test('users, audit trail and document centers', () {
+    final s = _tempStore();
+    s.completeSetup(ownerName: 'Ali', password: '1234');
+    expect(s.login('admin', 'bad'), isNull);
+    expect(s.login('admin', '1234')?.id, 'owner');
+    final u = AppUser(id: newId(), code: s.nextUserCode(), name: 'Tayeb', login: 'tayeb', denied: {'فاکتور خرید'});
+    expect(s.saveUser(u, password: 'x1'), isNull);
+    expect(s.saveUser(AppUser(id: newId(), code: 9, name: 'Dup', login: 'TAYEB')), isNotNull);
+    expect(s.multiUser, isTrue);
+    expect(s.login('tayeb', 'nope'), isNull);
+    expect(s.login('tayeb', 'x1')?.name, 'Tayeb');
+    expect(s.canUse('فاکتور خرید'), isFalse);
+    expect(s.canUse('فاکتور فروش'), isTrue);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 5, date: DateTime(2026, 10, 1), lines: [InvoiceLine(title: 'x', unitPrice: 10)]));
+    final last = s.audit.last;
+    expect(last.userId, u.id);
+    expect(last.docNo, 5);
+    expect(s.audit.where((e) => e.action == 'ورود').length, 2);
+    final again = AppStore.open(s.storage);
+    expect(again.users.single.login, 'tayeb');
+    expect(again.audit.length, s.audit.length);
+
+    expect(s.saveCenter('شعبه ۲'), isNull);
+    expect(s.saveCenter('شعبه ۲'), isNotNull);
+    s.saveVoucher(Voucher(id: newId(), number: 1, fixedNumber: 1, date: DateTime(2026, 10, 1), center: 'شعبه ۲'));
+    expect(s.removeCenter('شعبه ۲'), isNotNull);
+    expect(s.saveCenter('شعبه دو', old: 'شعبه ۲'), isNull);
+    expect(s.vouchers.single.center, 'شعبه دو');
+    expect(s.removeCenter('اصلی'), isNull);
+    expect(s.removeCenter('شعبه دو'), isNotNull);
+  });
+
   testWidgets('all pages render', (tester) async {
     tester.view.physicalSize = const Size(1600, 1000);
     tester.view.devicePixelRatio = 1.0;
@@ -827,6 +859,48 @@ void main() {
     expect(find.text('تراز اختتامیه - حسابهای ترازنامه ای'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.tap(find.text('انصراف (F10)').last);
+    await tester.pumpAndSettle();
+
+    // document centers, profit split, users and audit
+    await tester.tap(find.text('مرکز اسناد').first);
+    await tester.pumpAndSettle();
+    expect(find.text('مراکز اسناد'), findsOneWidget);
+    await tester.tap(find.text('انصراف (F10)').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('تقسیم سود و زیان صاحبان سهام').first);
+    await tester.pumpAndSettle();
+    expect(find.text('عنوان معین صاحبان سهام'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('انصراف (F10)').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('تقسیم سود و زیان سال مالی').first);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('انصراف (F10)').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('متفرقه').first);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('کاربران').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('کاربران').first);
+    await tester.pumpAndSettle();
+    expect(find.text('لیست کاربران'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('بازگشت (F10)').last);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('ردپای کاربران').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('ردپای کاربران').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('مشاهده پویا'));
+    await tester.pumpAndSettle();
+    expect(find.text('گزارش پویا — ردپای کاربران'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('بستن').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('انصراف (F10)').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('اسناد').first);
     await tester.pumpAndSettle();
 
     // manual voucher dialog opens

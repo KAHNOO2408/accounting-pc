@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 
+import '../core/format.dart' show groupDigits;
 import '../core/hash.dart';
 import '../core/jalali.dart';
 import 'chart.dart';
@@ -58,6 +59,14 @@ class AppStore extends ChangeNotifier {
   static Warehouse _mainWarehouse() => Warehouse(id: 'main', code: 1, name: 'انبار ۱', keeper: 'انباردار');
   List<WarehouseTransfer> transfers = [];
   List<Asset> assets = [];
+
+  /// مراکز اسناد
+  List<String> docCenters = ['اصلی'];
+  List<AppUser> users = [];
+  List<AuditEntry> audit = [];
+
+  /// The signed-in user (not saved).
+  String currentUserId = 'owner';
 
   /// Default template id per print type.
   Map<String, String> defaultTemplates = {};
@@ -133,6 +142,10 @@ class AppStore extends ChangeNotifier {
     if (warehouses.isEmpty) warehouses.add(_mainWarehouse());
     transfers = list('transfers').map(WarehouseTransfer.fromJson).toList();
     assets = list('assets').map(Asset.fromJson).toList();
+    users = list('users').map(AppUser.fromJson).toList();
+    audit = list('audit').map(AuditEntry.fromJson).toList();
+    final dc = j['docCenters'];
+    docCenters = dc is List && dc.isNotEmpty ? [for (final x in dc) '$x'] : ['اصلی'];
     final dt = j['defaultTemplates'];
     defaultTemplates = dt is Map ? {for (final e in dt.entries) '${e.key}': '${e.value}'} : {};
     final st = j['settings'];
@@ -159,6 +172,9 @@ class AppStore extends ChangeNotifier {
         'warehouses': warehouses.map((e) => e.toJson()).toList(),
         'transfers': transfers.map((e) => e.toJson()).toList(),
         'assets': assets.map((e) => e.toJson()).toList(),
+        'docCenters': docCenters,
+        'users': users.map((e) => e.toJson()).toList(),
+        'audit': audit.map((e) => e.toJson()).toList(),
         'defaultTemplates': defaultTemplates,
         'settings': settings.toJson(),
       };
@@ -490,6 +506,7 @@ class AppStore extends ChangeNotifier {
   }
 
   void upsertTxn(Txn t) {
+    _log(txn(t.id) == null ? 'ثبت' : 'ویرایش', '${t.type.label} ${groupDigits(t.amount)}', docDate: t.date);
     if (t.type != TxnType.transfer) t.toAccountId = null;
     if (!t.type.hasCategory) t.categoryId = null;
     if (!(t.type == TxnType.lend || t.type == TxnType.borrow)) t.dueDate = null;
@@ -505,6 +522,7 @@ class AppStore extends ChangeNotifier {
   void removeTxn(String id) {
     final t = txn(id);
     if (t == null) return;
+    _log('حذف', '${t.type.label} ${groupDigits(t.amount)}', docDate: t.date);
     if (t.chequeId != null) {
       final c = cheque(t.chequeId);
       if (c != null && c.txnId == id) {
@@ -520,6 +538,7 @@ class AppStore extends ChangeNotifier {
 
   void upsertCheque(Cheque c) {
     final i = cheques.indexWhere((e) => e.id == c.id);
+    _log(i >= 0 ? 'ویرایش' : 'ثبت', 'چک ${c.serial} ${groupDigits(c.amount)}', docDate: c.issueDate);
     if (i >= 0) {
       cheques[i] = c;
     } else {
@@ -537,6 +556,7 @@ class AppStore extends ChangeNotifier {
   void removeCheque(String id) {
     final c = cheque(id);
     if (c == null) return;
+    _log('حذف', 'چک ${c.serial} ${groupDigits(c.amount)}', docDate: c.issueDate);
     txns.removeWhere((t) => t.chequeId == c.id);
     cheques.removeWhere((e) => e.id == id);
     _commit();
@@ -767,6 +787,7 @@ class AppStore extends ChangeNotifier {
 
   void saveTransfer(WarehouseTransfer t) {
     final i = transfers.indexWhere((x) => x.id == t.id);
+    _log(i >= 0 ? 'ویرایش' : 'ثبت', 'انتقال بین انبارها ${t.number}', docDate: t.date, docNo: t.number);
     if (i >= 0) {
       transfers[i] = t;
     } else {
@@ -776,8 +797,129 @@ class AppStore extends ChangeNotifier {
   }
 
   void removeTransfer(String id) {
+    final t = transfers.where((x) => x.id == id).firstOrNull;
+    if (t != null) _log('حذف', 'انتقال بین انبارها ${t.number}', docDate: t.date, docNo: t.number);
     transfers.removeWhere((t) => t.id == id);
     _commit();
+  }
+
+  // ---------------------------------------------------------------- users & audit
+
+  AppUser get owner => AppUser(
+        id: 'owner',
+        code: 1,
+        name: settings.ownerName.trim().isEmpty ? 'مدیر' : settings.ownerName.trim(),
+        login: 'admin',
+        admin: true,
+      );
+
+  List<AppUser> get allUsers => [owner, ...users];
+  AppUser get currentUser => allUsers.where((u) => u.id == currentUserId).firstOrNull ?? owner;
+  String userName(String id) => allUsers.where((u) => u.id == id).firstOrNull?.name ?? id;
+  bool get multiUser => users.isNotEmpty;
+
+  /// Whether the signed-in user may use a ribbon button.
+  bool canUse(String label) {
+    final u = currentUser;
+    return u.admin || !u.denied.contains(label);
+  }
+
+  int nextUserCode() => allUsers.fold<int>(1, (n, u) => u.code >= n ? u.code + 1 : n);
+
+  String? saveUser(AppUser u, {String? password}) {
+    u
+      ..name = u.name.trim()
+      ..login = u.login.trim();
+    if (u.name.isEmpty) return 'نام کاربر را وارد کنید';
+    if (u.login.isEmpty) return 'نام ورود کاربر را وارد کنید';
+    if (u.login.toLowerCase() == 'admin' || users.any((x) => x.id != u.id && x.login.toLowerCase() == u.login.toLowerCase())) {
+      return 'این نام ورود قبلا استفاده شده است';
+    }
+    if (password != null) {
+      final salt = newSalt();
+      u
+        ..passwordSalt = salt
+        ..passwordHash = password.isEmpty ? '' : hashPassword(password, salt);
+    }
+    final i = users.indexWhere((x) => x.id == u.id);
+    if (i >= 0) {
+      users[i] = u;
+    } else {
+      users.add(u);
+    }
+    _log(i >= 0 ? 'ویرایش' : 'ثبت', 'کاربر ${u.name}');
+    _commit();
+    return null;
+  }
+
+  void removeUser(String id) {
+    final u = users.where((x) => x.id == id).firstOrNull;
+    if (u == null) return;
+    users.remove(u);
+    _log('حذف', 'کاربر ${u.name}');
+    _commit();
+  }
+
+  /// Returns the user for a login name + password, or null.
+  AppUser? login(String loginName, String password) {
+    final l = loginName.trim().toLowerCase();
+    AppUser? u;
+    if (l == 'admin' || l == owner.name.toLowerCase()) {
+      if (checkPassword(password)) u = owner;
+    } else {
+      final x = users.where((x) => x.login.toLowerCase() == l || x.name.toLowerCase() == l).firstOrNull;
+      if (x != null && (x.passwordHash.isEmpty ? password.isEmpty : hashPassword(password, x.passwordSalt) == x.passwordHash)) u = x;
+    }
+    if (u != null) {
+      currentUserId = u.id;
+      _log('ورود', 'ورود به برنامه');
+      _commit();
+    }
+    return u;
+  }
+
+  static String get _computer {
+    try {
+      return Platform.localHostname;
+    } catch (_) {
+      return '';
+    }
+  }
+
+  void _log(String action, String desc, {DateTime? docDate, int? docNo}) {
+    audit.add(AuditEntry(userId: currentUserId, at: DateTime.now(), docDate: docDate, action: action, desc: desc, computer: _computer, docNo: docNo));
+    if (audit.length > 20000) audit.removeRange(0, audit.length - 20000);
+  }
+
+  // ---------------------------------------------------------------- document centers
+
+  bool centerUsed(String name) => vouchers.any((v) => v.center == name);
+
+  /// Adds or renames a document center (vouchers follow the new name).
+  String? saveCenter(String name, {String? old}) {
+    name = name.trim();
+    if (name.isEmpty) return 'نام مرکز اسناد را وارد کنید';
+    if (docCenters.contains(name) && name != old) return 'این نام قبلا ثبت شده است';
+    if (old == null) {
+      docCenters.add(name);
+    } else {
+      final i = docCenters.indexOf(old);
+      if (i < 0) return 'مرکز اسناد پیدا نشد';
+      docCenters[i] = name;
+      for (final v in vouchers.where((v) => v.center == old)) {
+        v.center = name;
+      }
+    }
+    _commit();
+    return null;
+  }
+
+  String? removeCenter(String name) {
+    if (docCenters.length <= 1) return 'حداقل یک مرکز اسناد لازم است';
+    if (centerUsed(name)) return 'این مرکز اسناد در اسناد استفاده شده است';
+    docCenters.remove(name);
+    _commit();
+    return null;
   }
 
   // ---------------------------------------------------------------- assets
@@ -858,6 +1000,7 @@ class AppStore extends ChangeNotifier {
       meta: {'assets': [for (final a in items) a.id], 'person': personId},
     );
     vouchers.add(v);
+    _log('ثبت', '${v.kindLabel} ${v.desc}'.trim(), docDate: v.date, docNo: v.number);
     for (final a in items) {
       a
         ..buyVoucherId = v.id
@@ -902,6 +1045,7 @@ class AppStore extends ChangeNotifier {
       meta: {'assets': [for (final x in sales) x.$1.id], 'person': personId},
     );
     vouchers.add(v);
+    _log('ثبت', '${v.kindLabel} ${v.desc}'.trim(), docDate: v.date, docNo: v.number);
     for (final (a, price) in sales) {
       a
         ..sellVoucherId = v.id
@@ -985,6 +1129,8 @@ class AppStore extends ChangeNotifier {
 
   /// Saves an invoice and regenerates its ledger entries.
   void saveInvoice(Invoice inv) {
+    _log(invoices.any((e) => e.id == inv.id) ? 'ویرایش' : 'ثبت', '${inv.proforma ? 'پیش‌فاکتور' : inv.kind.label} ${inv.number}',
+        docDate: inv.date, docNo: inv.number);
     final i = invoices.indexWhere((e) => e.id == inv.id);
     if (i >= 0) {
       invoices[i] = inv;
@@ -1035,6 +1181,8 @@ class AppStore extends ChangeNotifier {
   List<Voucher> settlementsOf(String invoiceId) => vouchers.where((v) => v.kind == 'settle' && v.meta['invoice'] == invoiceId).toList();
 
   void removeInvoice(String id) {
+    final inv = invoices.where((i) => i.id == id).firstOrNull;
+    if (inv != null) _log('حذف', '${inv.kind.label} ${inv.number}', docDate: inv.date, docNo: inv.number);
     vouchers.removeWhere((v) => v.kind == 'settle' && v.meta['invoice'] == id);
     invoices.removeWhere((i) => i.id == id);
     txns.removeWhere((t) => t.invoiceId == id);
@@ -1050,6 +1198,7 @@ class AppStore extends ChangeNotifier {
 
   void saveVoucher(Voucher v) {
     final i = vouchers.indexWhere((e) => e.id == v.id);
+    _log(i >= 0 ? 'ویرایش' : 'ثبت', '${v.kindLabel} ${v.desc}'.trim(), docDate: v.date, docNo: v.number);
     if (i >= 0) {
       vouchers[i] = v;
     } else {
@@ -1138,12 +1287,14 @@ class AppStore extends ChangeNotifier {
     );
     closing.meta['reopen'] = v.id;
     vouchers.add(v);
+    _log('ثبت', '${v.kindLabel} ${v.desc}'.trim(), docDate: v.date, docNo: v.number);
     _commit();
     return v;
   }
 
   void removeVoucher(String id) {
     final v = vouchers.where((x) => x.id == id).firstOrNull;
+    if (v != null) _log('حذف', '${v.kindLabel} ${v.desc}'.trim(), docDate: v.date, docNo: v.number);
     if (v != null && v.kind == 'assetBuy') {
       final ids = {for (final a in assets.where((a) => a.buyVoucherId == id)) a.id};
       assets.removeWhere((a) => ids.contains(a.id));
@@ -1213,6 +1364,7 @@ class AppStore extends ChangeNotifier {
       meta: {'from': fromId, 'to': toId, 'cheques': chequeIds},
     );
     vouchers.add(v);
+    _log('ثبت', '${v.kindLabel} ${v.desc}'.trim(), docDate: v.date, docNo: v.number);
     _commit();
     return v;
   }
@@ -1325,6 +1477,7 @@ class AppStore extends ChangeNotifier {
   // ---------------------------------------------------------------- stock adjustments
 
   void addAdjusts(List<StockAdjust> list) {
+    if (list.isNotEmpty) _log('ثبت', '${list.first.reason.label} (${list.length} ردیف)', docDate: list.first.date);
     adjusts.addAll(list);
     _commit();
   }

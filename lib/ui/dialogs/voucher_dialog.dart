@@ -360,7 +360,9 @@ class _VoucherDialogState extends State<VoucherDialog> {
                       child: FieldDropdown<String>(
                         label: 'مرکز اسناد',
                         value: _center,
-                        items: const [DropdownMenuItem(value: 'اصلی', child: Text('اصلی'))],
+                        items: [
+                          for (final c in {...store.docCenters, _center}) DropdownMenuItem(value: c, child: Text(c)),
+                        ],
                         onChanged: (v) => setState(() => _center = v ?? _center),
                       ),
                     ),

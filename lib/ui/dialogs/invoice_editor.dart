@@ -213,7 +213,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     if (v != null && mounted) setState(() => l.price.text = groupDigits(v));
   }
 
-  Future<Invoice?> _save({bool again = false, bool close = true, bool settle = true}) async {
+  Future<Invoice?> _save({bool again = false, bool close = true, bool settle = true, bool draft = false}) async {
     final store = StoreScope.read(context);
     final lines = _lines.where((l) => !l.isEmpty).toList();
     String? err;
@@ -225,6 +225,8 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       err = 'شرح یا نام کالای هر ردیف را وارد کنید';
     } else if (_total < 0) {
       err = 'مبلغ نهایی منفی است؛ تخفیف را بررسی کنید';
+    } else if (!_proforma && !_legacy && !settle && !draft && _person == null) {
+      err = 'فاکتور متفرقه بدون تسویه ثبت نمی‌شود؛ طرف حساب را انتخاب کنید یا «تایید و تسویه (F9)» را بزنید';
     } else if (_proforma || !_legacy) {
       // pro-forma: no payment; others are settled in the settlement window
     } else if (_paidV > _total) {
@@ -250,6 +252,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
         docAmount: signed,
         receiveSide: _kind.moneyIn,
         title: '${_kind.moneyIn ? 'نحوه دریافت' : 'نحوه پرداخت'} — $_title',
+        skipLabel: _person == null ? null : 'ثبت فاکتور بدون ${_kind.moneyIn ? 'دریافت' : 'پرداخت'}',
       );
       if (r == null || !mounted) return null;
       final after = signed + sumPayments(r) - sumReceipts(r);
@@ -308,7 +311,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   }
 
   Future<void> _print() async {
-    final inv = await _save(close: false, settle: false);
+    final inv = await _save(close: false, settle: false, draft: true);
     if (inv == null) return;
     try {
       if (mounted) {
@@ -360,13 +363,13 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
 
     return CallbackShortcuts(
       bindings: {
-        const SingleActivator(LogicalKeyboardKey.keyS, control: true): () => _save(),
+        const SingleActivator(LogicalKeyboardKey.keyS, control: true): () => _save(settle: false),
         const SingleActivator(LogicalKeyboardKey.f9): () => _save(),
         const SingleActivator(LogicalKeyboardKey.enter, control: true): () => _save(again: !_isEdit),
         const SingleActivator(LogicalKeyboardKey.insert): _addLine,
         const SingleActivator(LogicalKeyboardKey.keyP, control: true): _print,
         const SingleActivator(LogicalKeyboardKey.f12): () async {
-          final inv = await _save(close: false, settle: false);
+          final inv = await _save(close: false, settle: false, draft: true);
           if (inv != null && mounted) await showReportBuilder(context, inv, PrintDocType.invoice);
         },
         const SingleActivator(LogicalKeyboardKey.escape): _close,
@@ -563,7 +566,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                     const SizedBox(width: 8),
                     Builder(
                       builder: (bctx) => OutlinedButton.icon(
-                        onPressed: () => showPrintTypeMenu(bctx, () => _save(close: false, settle: false)),
+                        onPressed: () => showPrintTypeMenu(bctx, () => _save(close: false, settle: false, draft: true)),
                         icon: const Icon(Icons.tune_rounded, size: 18),
                         label: const Text('تعیین نوع چاپ (F12)'),
                       ),
@@ -585,6 +588,13 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                     ],
                     if (!_isEdit) ...[
                       OutlinedButton(onPressed: () => _save(again: true), child: const Text('ثبت و فاکتور بعدی (Ctrl+Enter)')),
+                      const SizedBox(width: 8),
+                    ],
+                    if (!_proforma && !_legacy) ...[
+                      OutlinedButton(
+                        onPressed: () => _save(settle: false),
+                        child: const Text('ثبت فاکتور بدون تسویه (Ctrl+S)'),
+                      ),
                       const SizedBox(width: 8),
                     ],
                     FilledButton.icon(

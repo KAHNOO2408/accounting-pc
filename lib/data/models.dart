@@ -220,6 +220,8 @@ class Voucher {
         'assetBuy' => 'خرید اموال و تجهیزات',
         'assetSell' => 'فروش اموال و تجهیزات',
         'depreciation' => 'استهلاک اموال',
+        'profitSplit' => 'تقسیم سود و زیان سال مالی',
+        'shareSplit' => 'تقسیم سود و زیان صاحبان سهام',
         'closing' => 'سند اختتامیه',
         'reopen' => 'افتتاحیه (انتقال تراز)',
         'settle' => 'تسویه فاکتور',
@@ -1299,5 +1301,87 @@ class Asset {
         buyVoucherId: _sn(j['buyVoucherId']),
         sellVoucherId: _sn(j['sellVoucherId']),
         salePrice: _i(j['salePrice']),
+      );
+}
+
+// ---------------------------------------------------------------------------
+
+/// A user of the program (the owner is built in and not stored here).
+class AppUser {
+  String id;
+  int code; // شناسه
+  String name; // نام کاربر
+  String login; // نام ورود کاربر
+  String passwordHash;
+  String passwordSalt;
+  bool admin;
+
+  /// Ribbon buttons this user may not use (دسترسی دکمه ها).
+  Set<String> denied;
+
+  AppUser({
+    required this.id,
+    required this.code,
+    required this.name,
+    required this.login,
+    this.passwordHash = '',
+    this.passwordSalt = '',
+    this.admin = false,
+    Set<String>? denied,
+  }) : denied = denied ?? {};
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'code': code,
+        'name': name,
+        'login': login,
+        'passwordHash': passwordHash,
+        'passwordSalt': passwordSalt,
+        'admin': admin,
+        'denied': denied.toList(),
+      };
+
+  factory AppUser.fromJson(Map<String, dynamic> j) => AppUser(
+        id: _s(j['id']),
+        code: _i(j['code']),
+        name: _s(j['name']),
+        login: _s(j['login']),
+        passwordHash: _s(j['passwordHash']),
+        passwordSalt: _s(j['passwordSalt']),
+        admin: j['admin'] == true,
+        denied: {for (final x in (j['denied'] is List ? j['denied'] as List : const [])) '$x'},
+      );
+}
+
+/// One line of «ردپای کاربران».
+class AuditEntry {
+  String userId;
+  DateTime at; // تاریخ انجام
+  DateTime? docDate; // تاریخ سند
+  String action; // ثبت / ویرایش / حذف / ورود
+  String desc; // شرح
+  String computer;
+  int? docNo;
+
+  AuditEntry({required this.userId, required this.at, this.docDate, required this.action, required this.desc, this.computer = '', this.docNo});
+
+  Map<String, dynamic> toJson() => {
+        'u': userId,
+        'at': at.toIso8601String(),
+        if (docDate != null) 'd': _d(docDate!),
+        'a': action,
+        't': desc,
+        'c': computer,
+        if (docNo != null) 'n': docNo,
+      };
+
+  factory AuditEntry.fromJson(Map<String, dynamic> j) => AuditEntry(
+        userId: _s(j['u']),
+        at: DateTime.tryParse(_s(j['at'])) ?? DateTime(2000),
+        docDate: j['d'] == null ? null : _p(j['d']),
+        action: _s(j['a']),
+        desc: _s(j['t']),
+        computer: _s(j['c']),
+        docNo: j['n'] == null ? null : _i(j['n']),
       );
 }

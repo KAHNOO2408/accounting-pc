@@ -11,6 +11,8 @@ import 'dialogs/chequebook_dialogs.dart';
 import 'dialogs/closing_dialogs.dart';
 import 'dialogs/asset_dialogs.dart';
 import 'dialogs/warehouse_dialogs.dart';
+import 'dialogs/split_dialogs.dart';
+import 'dialogs/users_dialogs.dart';
 import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
@@ -125,6 +127,20 @@ String? _firstOf(AppStore s, AccountType t) {
 final _accTable = _Item('جدول و مشاهده حساب‌ها', Icons.table_view_outlined, _slate,
     shortcut: 'Ctrl+A', activator: _k(LogicalKeyboardKey.keyA, ctrl: true), run: _page(AppPage.accountsTable));
 
+/// Tabs and button labels of the ribbon (used by «دسترسی دکمه ها»).
+List<(String, List<String>)> ribbonCatalog() => [
+      for (final t in _tabs)
+        (
+          t.title,
+          [
+            ...{
+              for (final g in t.groups)
+                for (final i in g.items) i.label,
+            },
+          ],
+        ),
+    ];
+
 final List<_Tab> _tabs = [
   _Tab('اسناد', [
     _Group('اسناد', [
@@ -133,12 +149,13 @@ final List<_Tab> _tabs = [
       _Item('سند حسابداری دستی', Icons.edit_note_rounded, _blue,
           shortcut: 'Alt+F2', activator: _k(LogicalKeyboardKey.f2, alt: true), run: (c, _) => showVoucherDialog(c)),
       _Item('سند افتتاحیه', Icons.flag_outlined, _amber, run: (c, _) => openOpeningVoucher(c)),
-      const _Item('مرکز اسناد', Icons.home_work_outlined, _amber),
+      _Item('مرکز اسناد', Icons.home_work_outlined, _amber, run: (c, _) => showDocCentersDialog(c)),
     ]),
     _Group('اختتامیه', [
       _Item('خلاصه حساب سود و زیان', Icons.query_stats_rounded, _green, run: _page(AppPage.profit)),
-      const _Item('تقسیم سود و زیان سال مالی', Icons.pie_chart_outline_rounded, _amber),
-      const _Item('تقسیم سود و زیان صاحبان سهام', Icons.groups_2_outlined, _amber),
+      _Item('تقسیم سود و زیان سال مالی', Icons.pie_chart_outline_rounded, _amber, run: (c, _) => showProfitSplitDialog(c)),
+      _Item('تقسیم سود و زیان صاحبان سهام', Icons.groups_2_outlined, _amber,
+          run: (c, _) => showProfitSplitDialog(c, shareholders: true)),
       _Item('سند اختتامیه', Icons.sports_score_rounded, _red, run: (c, _) => showClosingDialog(c)),
       _Item('انتقال تراز اختتامیه به تراز افتتاحیه', Icons.move_down_rounded, _green, run: (c, _) => showTransferClosingDialog(c)),
       const _Item('انتقال حساب‌ها به دفتر', Icons.drive_file_move_outline, _slate),
@@ -365,7 +382,7 @@ final List<_Tab> _tabs = [
     _Group('متفرقه', [
       const _Item('کدبندی دفاتر کل و معین', Icons.account_tree_outlined, _slate),
       const _Item('معرفی دفاتر مالی', Icons.library_add_outlined, _slate),
-      const _Item('مرکز اسناد', Icons.home_work_outlined, _slate),
+      _Item('مرکز اسناد', Icons.home_work_outlined, _amber, run: (c, _) => showDocCentersDialog(c)),
       const _Item('مرکز دفاتر', Icons.domain_outlined, _slate),
       const _Item('بازاریابان', Icons.campaign_outlined, _slate),
       const _Item('گروه‌های یارانه', Icons.group_work_outlined, _slate),
@@ -377,8 +394,8 @@ final List<_Tab> _tabs = [
       const _Item('ارسال پیام', Icons.sms_outlined, _slate, shortcut: 'Ctrl+F11'),
     ]),
     _Group('کاربران', [
-      const _Item('کاربران', Icons.manage_accounts_outlined, _slate),
-      const _Item('ردپای کاربران', Icons.history_toggle_off_rounded, _slate),
+      _Item('کاربران', Icons.manage_accounts_outlined, _blue, run: (c, _) => showUsersWindow(c)),
+      _Item('ردپای کاربران', Icons.history_toggle_off_rounded, _violet, run: (c, _) => showAuditReport(c)),
       const _Item('تنظیم دکمه‌ها', Icons.smart_button_outlined, _slate),
     ]),
   ]),
@@ -466,6 +483,10 @@ class _ShellState extends State<Shell> {
   }
 
   void _runItem(BuildContext context, _Item i) {
+    if (!StoreScope.read(context).canUse(i.label)) {
+      toast(context, 'شما به «${i.label}» دسترسی ندارید', error: true);
+      return;
+    }
     if (i.run == null) {
       showComingSoon(context, i.label);
     } else {
@@ -820,7 +841,10 @@ class _RibbonGroup extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [for (final i in group.items) _RibbonButton(item: i, onTap: () => onItem(i))],
+              children: [
+                for (final i in group.items)
+                  if (StoreScope.of(context).canUse(i.label)) _RibbonButton(item: i, onTap: () => onItem(i)),
+              ],
             ),
           ),
           const Spacer(),

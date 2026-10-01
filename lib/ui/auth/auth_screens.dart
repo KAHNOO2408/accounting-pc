@@ -274,6 +274,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _pass = TextEditingController();
+  final _user = TextEditingController();
   final _focus = FocusNode();
   bool _obscure = true;
   bool _showHint = false;
@@ -283,19 +284,21 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _pass.dispose();
+    _user.dispose();
     _focus.dispose();
     super.dispose();
   }
 
   void _submit() {
     final store = StoreScope.read(context);
-    if (store.checkPassword(_pass.text)) {
+    final login = store.multiUser ? (_user.text.trim().isEmpty ? 'admin' : _user.text) : 'admin';
+    if (store.login(login, _pass.text) != null) {
       widget.onSuccess();
       return;
     }
     setState(() {
       _fails++;
-      _err = 'رمز اشتباه است';
+      _err = StoreScope.read(context).multiUser ? 'نام کاربر یا رمز اشتباه است' : 'رمز اشتباه است';
       _pass.clear();
     });
     _focus.requestFocus();
@@ -327,10 +330,23 @@ class _LoginScreenState extends State<LoginScreen> {
           Text('برای ورود رمز خود را وارد کنید',
               textAlign: TextAlign.center, style: th.textTheme.bodyMedium?.copyWith(color: th.hintColor)),
           const SizedBox(height: 28),
+          if (store.multiUser) ...[
+            TextField(
+              controller: _user,
+              autofocus: true,
+              textDirection: TextDirection.ltr,
+              onSubmitted: (_) => _focus.requestFocus(),
+              decoration: const InputDecoration(
+                labelText: 'نام ورود کاربر (مدیر: admin)',
+                prefixIcon: Icon(Icons.person_outline_rounded),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           TextField(
             controller: _pass,
             focusNode: _focus,
-            autofocus: true,
+            autofocus: !store.multiUser,
             obscureText: _obscure,
             onSubmitted: (_) => _submit(),
             decoration: InputDecoration(

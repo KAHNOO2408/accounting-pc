@@ -82,17 +82,19 @@ class _GateState extends State<_Gate> {
 
   @override
   Widget build(BuildContext context) {
-    final s = StoreScope.of(context).settings;
+    final store = StoreScope.of(context);
+    final s = store.settings;
+    final needLogin = s.hasPassword || store.multiUser;
     Widget child;
     if (!s.setupDone && !_unlocked) {
       child = SetupScreen(key: const ValueKey('setup'), onDone: () => setState(() => _unlocked = true));
-    } else if (s.hasPassword && !_unlocked) {
+    } else if (needLogin && !_unlocked) {
       child = LoginScreen(key: const ValueKey('login'), onSuccess: () => setState(() => _unlocked = true));
     } else {
       child = Shell(
         key: const ValueKey('shell'),
         initialPage: widget.initialPage,
-        onLock: s.hasPassword ? () => setState(() => _unlocked = false) : null,
+        onLock: needLogin ? () => setState(() => _unlocked = false) : null,
       );
     }
     return AnimatedSwitcher(duration: const Duration(milliseconds: 250), child: child);

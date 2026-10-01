@@ -495,6 +495,7 @@ class _AssetDocState extends State<_AssetDoc> {
       docAmount: signed,
       receiveSide: sale,
       title: sale ? 'نحوه دریافت — فروش اموال و تجهیزات' : 'نحوه پرداخت — خرید اموال و تجهیزات',
+      skipLabel: _person == null ? null : 'ثبت سند بدون ${sale ? 'دریافت' : 'پرداخت'}',
     );
     if (items == null || !mounted) return;
     if (_person == null && signed + sumPayments(items) - sumReceipts(items) != 0) {

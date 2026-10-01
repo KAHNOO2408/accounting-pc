@@ -231,12 +231,20 @@ Future<List<PayItem>?> showPayMethodsDialog(BuildContext context,
         int? before,
         int docAmount = 0,
         bool? receiveSide,
-        String? title}) =>
+        String? title,
+        String? skipLabel}) =>
     showDialog<List<PayItem>>(
       context: context,
       barrierDismissible: false,
       builder: (_) => _PayMethodsDialog(
-          personId: personId, initial: items, extraDue: extraDue, before: before, docAmount: docAmount, receiveSide: receiveSide, title: title),
+          personId: personId,
+          initial: items,
+          extraDue: extraDue,
+          before: before,
+          docAmount: docAmount,
+          receiveSide: receiveSide,
+          title: title,
+          skipLabel: skipLabel),
     );
 
 class _PayMethodsDialog extends StatefulWidget {
@@ -247,8 +255,18 @@ class _PayMethodsDialog extends StatefulWidget {
   final int docAmount;
   final bool? receiveSide;
   final String? title;
+
+  /// When set, a button saves the document without any financial operation.
+  final String? skipLabel;
   const _PayMethodsDialog(
-      {required this.personId, required this.initial, this.extraDue = 0, this.before, this.docAmount = 0, this.receiveSide, this.title});
+      {required this.personId,
+      required this.initial,
+      this.extraDue = 0,
+      this.before,
+      this.docAmount = 0,
+      this.receiveSide,
+      this.title,
+      this.skipLabel});
 
   @override
   State<_PayMethodsDialog> createState() => _PayMethodsDialogState();
@@ -438,6 +456,14 @@ class _PayMethodsDialogState extends State<_PayMethodsDialog> {
                   const Spacer(),
                   OutlinedButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف (F10)')),
                   const SizedBox(width: 8),
+                  if (widget.skipLabel != null) ...[
+                    OutlinedButton.icon(
+                      onPressed: () => Navigator.pop(context, const <PayItem>[]),
+                      icon: const Icon(Icons.receipt_long_outlined, size: 18),
+                      label: Text(widget.skipLabel!),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                   FilledButton(onPressed: () => Navigator.pop(context, _items), child: const Text('تایید (F9)')),
                 ]),
               ),

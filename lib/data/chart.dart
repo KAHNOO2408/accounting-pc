@@ -53,6 +53,7 @@ const mCreditorsOther = '20203';
 const mOtherPersonsCr = '20204';
 const mCapital = '30101';
 const mRetained = '30103';
+const mPartners = '30104';
 const mIncome = '40101';
 const mSales = '40103';
 const mSalesReturn = '40104';
@@ -133,6 +134,7 @@ const List<Kol> chart = [
     Moeen(mCapital, 'سرمایه'),
     Moeen('30102', 'برداشت'),
     Moeen(mRetained, 'سود و زیان انباشته'),
+    Moeen(mPartners, 'حساب جاری صاحبان سهام', TafsiliKind.person),
   ]),
   Kol('401', 'درآمدها', Side.income, [
     Moeen(mIncome, 'درآمدهای عملیاتی', TafsiliKind.incomeCat),
