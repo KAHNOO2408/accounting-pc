@@ -7,6 +7,7 @@ import '../../data/models.dart';
 import '../../data/store.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
+import '../print.dart';
 import 'simple_dialogs.dart';
 
 String fmtQty(double q) {
@@ -24,11 +25,12 @@ double parseQty(String s) {
   return double.tryParse(t) ?? 0;
 }
 
-Future<void> showInvoiceEditor(BuildContext context, {Invoice? edit, InvoiceKind kind = InvoiceKind.sale}) {
+Future<void> showInvoiceEditor(BuildContext context,
+    {Invoice? edit, InvoiceKind kind = InvoiceKind.sale, bool proforma = false}) {
   return showDialog<void>(
     context: context,
     barrierDismissible: false,
-    builder: (_) => InvoiceEditor(edit: edit, kind: kind),
+    builder: (_) => InvoiceEditor(edit: edit, kind: kind, proforma: proforma),
   );
 }
 
@@ -73,7 +75,8 @@ class _Line {
 class InvoiceEditor extends StatefulWidget {
   final Invoice? edit;
   final InvoiceKind kind;
-  const InvoiceEditor({super.key, this.edit, this.kind = InvoiceKind.sale});
+  final bool proforma;
+  const InvoiceEditor({super.key, this.edit, this.kind = InvoiceKind.sale, this.proforma = false});
 
   @override
   State<InvoiceEditor> createState() => _InvoiceEditorState();
@@ -93,8 +96,12 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   final List<_Line> _lines = [];
   String? _err;
   bool _inited = false;
+  late bool _proforma;
+  Invoice? _saved;
 
   bool get _isEdit => widget.edit != null;
+
+  String get _title => _proforma ? 'پیش‌فاکتور فروش' : _kind.label;
 
   @override
   void didChangeDependencies() {
@@ -103,6 +110,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     _inited = true;
     final store = StoreScope.read(context);
     final e = widget.edit;
+    _proforma = e?.proforma ?? widget.proforma;
     if (e != null) {
       _kind = e.kind;
       _date = e.date;
@@ -116,10 +124,10 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       _note.text = e.note;
       _lines.addAll(e.lines.map(_Line.from));
     } else {
-      _kind = widget.kind;
+      _kind = _proforma ? InvoiceKind.sale : widget.kind;
       final n = DateTime.now();
       _date = DateTime(n.year, n.month, n.day);
-      _number.text = '${store.nextInvoiceNumber(_kind)}';
+      _number.text = '${store.nextInvoiceNumber(_kind, proforma: _proforma)}';
       _account = _defaultAccount(store);
     }
     if (_lines.isEmpty) _lines.add(_Line());
@@ -195,13 +203,13 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   void _setKind(InvoiceKind k) {
     final store = StoreScope.read(context);
     setState(() {
-      final wasDefault = !_isEdit && _number.text == '${store.nextInvoiceNumber(_kind)}';
+      final wasDefault = !_isEdit && _number.text == '${store.nextInvoiceNumber(_kind, proforma: _proforma)}';
       _kind = k;
       if (wasDefault) _number.text = '${store.nextInvoiceNumber(k)}';
     });
   }
 
-  bool _save({bool again = false}) {
+  Invoice? _save({bool again = false, bool close = true}) {
     final store = StoreScope.read(context);
     final lines = _lines.where((l) => !l.isEmpty).toList();
     String? err;
@@ -213,6 +221,8 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       err = 'شرح یا نام کالای هر ردیف را وارد کنید';
     } else if (_total < 0) {
       err = 'مبلغ نهایی منفی است؛ تخفیف را بررسی کنید';
+    } else if (_proforma) {
+      // no payment rules for a pro-forma
     } else if (_paidV > _total) {
       err = 'مبلغ پرداختی از مبلغ فاکتور بیشتر است';
     } else if (_paidV > 0 && _account == null) {
@@ -222,21 +232,22 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     }
     if (err != null) {
       setState(() => _err = err);
-      return false;
+      return null;
     }
-    final inv = widget.edit ??
-        Invoice(id: newId(), kind: _kind, number: 0, date: _date);
+    final paid = _proforma ? 0 : _paidV;
+    final inv = _saved ?? widget.edit ?? Invoice(id: newId(), kind: _kind, number: 0, date: _date);
     inv
       ..kind = _kind
-      ..number = int.tryParse(normalizeDigits(_number.text.trim())) ?? store.nextInvoiceNumber(_kind)
+      ..proforma = _proforma
+      ..number = int.tryParse(normalizeDigits(_number.text.trim())) ?? store.nextInvoiceNumber(_kind, proforma: _proforma)
       ..date = _date
-      ..dueDate = _paidV < _total ? _due : null
+      ..dueDate = paid < _total ? _due : null
       ..personId = _person
       ..lines = lines.map((l) => l.toLine()).toList()
       ..discount = parseMoney(_discount.text)
       ..extra = parseMoney(_extra.text)
-      ..paid = _paidV
-      ..accountId = _paidV > 0 ? _account : null
+      ..paid = paid
+      ..accountId = paid > 0 ? _account : null
       ..note = _note.text.trim();
     store.saveInvoice(inv);
     if (again) {
@@ -254,14 +265,39 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
         _note.clear();
         _due = null;
         _err = null;
-        _number.text = '${store.nextInvoiceNumber(_kind)}';
+        _saved = null;
+        _number.text = '${store.nextInvoiceNumber(_kind, proforma: _proforma)}';
       });
-      toast(context, '${_kind.label} ثبت شد');
-    } else {
+      toast(context, '$_title ثبت شد');
+    } else if (close) {
       Navigator.pop(context);
-      toast(context, '${_kind.label} شماره ${inv.number} ذخیره شد');
+      toast(context, '$_title شماره ${inv.number} ذخیره شد');
+    } else {
+      setState(() {
+        _saved = inv;
+        _err = null;
+      });
     }
-    return true;
+    return inv;
+  }
+
+  void _print() {
+    final inv = _save(close: false);
+    if (inv == null) return;
+    try {
+      printInvoice(StoreScope.read(context), inv);
+    } catch (e) {
+      toast(context, 'چاپ ناموفق: $e', error: true);
+    }
+  }
+
+  void _convert() {
+    final inv = _save(close: false);
+    if (inv == null) return;
+    final sale = StoreScope.read(context).convertProforma(inv);
+    final nav = Navigator.of(context);
+    nav.pop();
+    showInvoiceEditor(nav.context, edit: sale);
   }
 
   Future<void> _delete() async {
@@ -298,6 +334,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
         const SingleActivator(LogicalKeyboardKey.keyS, control: true): () => _save(),
         const SingleActivator(LogicalKeyboardKey.enter, control: true): () => _save(again: !_isEdit),
         const SingleActivator(LogicalKeyboardKey.insert): _addLine,
+        const SingleActivator(LogicalKeyboardKey.keyP, control: true): _print,
         const SingleActivator(LogicalKeyboardKey.escape): _close,
       },
       child: Dialog(
@@ -326,10 +363,11 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(
-                        '${_isEdit ? 'ویرایش ' : ''}${_kind.label}',
+                        '${_isEdit ? 'ویرایش ' : ''}$_title',
                         style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
+                    if (!_proforma)
                     SegmentedButton<InvoiceKind>(
                       showSelectedIcon: false,
                       segments: [
@@ -462,7 +500,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                             maxLines: 2,
                             decoration: const InputDecoration(labelText: 'توضیحات فاکتور'),
                           ),
-                          if (remaining > 0) ...[
+                          if (remaining > 0 && !_proforma) ...[
                             const SizedBox(height: 10),
                             DateField(
                               label: 'سررسید مانده (اختیاری)',
@@ -479,7 +517,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                       ),
                     ),
                     const SizedBox(width: 20),
-                    Expanded(flex: 6, child: _summary(context, store, th, remaining)),
+                    Expanded(flex: 6, child: _summary(context, store, th, _proforma ? 0 : remaining)),
                   ],
                 ),
               ),
@@ -498,6 +536,20 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                     const Spacer(),
                     TextButton(onPressed: _close, child: const Text('انصراف')),
                     const SizedBox(width: 8),
+                    OutlinedButton.icon(
+                      onPressed: _print,
+                      icon: const Icon(Icons.print_outlined, size: 18),
+                      label: const Text('چاپ (Ctrl+P)'),
+                    ),
+                    const SizedBox(width: 8),
+                    if (_proforma) ...[
+                      OutlinedButton.icon(
+                        onPressed: _convert,
+                        icon: const Icon(Icons.transform_rounded, size: 18),
+                        label: const Text('تبدیل به فاکتور فروش'),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     if (!_isEdit) ...[
                       OutlinedButton(onPressed: () => _save(again: true), child: const Text('ثبت و فاکتور بعدی (Ctrl+Enter)')),
                       const SizedBox(width: 8),
@@ -506,7 +558,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                       style: FilledButton.styleFrom(backgroundColor: _kindColor),
                       onPressed: () => _save(),
                       icon: const Icon(Icons.check_rounded, size: 18),
-                      label: const Text('ذخیره فاکتور (Ctrl+S)'),
+                      label: Text(_proforma ? 'ذخیره پیش‌فاکتور (Ctrl+S)' : 'ذخیره فاکتور (Ctrl+S)'),
                     ),
                   ],
                 ),
@@ -733,6 +785,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
           row('مبلغ نهایی',
               Money(_total, showUnit: true, style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: _kindColor)),
               bold: true),
+          if (!_proforma) ...[
           const Divider(height: 14),
           Row(
             children: [
@@ -779,6 +832,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                   color: remaining > 0 ? AppColors.debt : (remaining < 0 ? th.colorScheme.error : AppColors.income),
                 )),
           ),
+          ],
         ],
       ),
     );

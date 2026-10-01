@@ -477,6 +477,7 @@ class Invoice {
   String? accountId;
   DateTime? dueDate;
   String note;
+  bool proforma;
   int createdAt;
 
   Invoice({
@@ -492,6 +493,7 @@ class Invoice {
     this.accountId,
     this.dueDate,
     this.note = '',
+    this.proforma = false,
     int? createdAt,
   })  : lines = lines ?? [],
         createdAt = createdAt ?? DateTime.now().millisecondsSinceEpoch;
@@ -513,6 +515,7 @@ class Invoice {
         'accountId': accountId,
         'dueDate': dueDate == null ? null : _d(dueDate!),
         'note': note,
+        'proforma': proforma,
         'createdAt': createdAt,
       };
 
@@ -530,6 +533,64 @@ class Invoice {
         paid: _i(j['paid']),
         accountId: _sn(j['accountId']),
         dueDate: _pn(j['dueDate']),
+        note: _s(j['note']),
+        proforma: j['proforma'] == true,
+        createdAt: _i(j['createdAt']),
+      );
+}
+
+enum AdjustReason { waste, consume, count, convertOut, convertIn }
+
+extension AdjustReasonX on AdjustReason {
+  String get label => switch (this) {
+        AdjustReason.waste => 'ضایعات',
+        AdjustReason.consume => 'مصرف داخلی',
+        AdjustReason.count => 'اصلاح انبارگردانی',
+        AdjustReason.convertOut => 'تبدیل (خروج)',
+        AdjustReason.convertIn => 'تبدیل (ورود)',
+      };
+}
+
+/// Manual stock movement that is not a purchase or sale.
+class StockAdjust {
+  String id;
+  DateTime date;
+  String productId;
+  double qty; // signed: + adds to stock
+  AdjustReason reason;
+  String groupId; // pairs convert in/out
+  String note;
+  int createdAt;
+
+  StockAdjust({
+    required this.id,
+    required this.date,
+    required this.productId,
+    required this.qty,
+    required this.reason,
+    this.groupId = '',
+    this.note = '',
+    int? createdAt,
+  }) : createdAt = createdAt ?? DateTime.now().millisecondsSinceEpoch;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'date': _d(date),
+        'productId': productId,
+        'qty': qty,
+        'reason': reason.name,
+        'groupId': groupId,
+        'note': note,
+        'createdAt': createdAt,
+      };
+
+  factory StockAdjust.fromJson(Map<String, dynamic> j) => StockAdjust(
+        id: _s(j['id']),
+        date: _p(j['date']),
+        productId: _s(j['productId']),
+        qty: _dbl(j['qty']),
+        reason: _enum(AdjustReason.values, j['reason'], AdjustReason.waste),
+        groupId: _s(j['groupId']),
         note: _s(j['note']),
         createdAt: _i(j['createdAt']),
       );
@@ -593,14 +654,16 @@ class Loan {
 
 enum ChequeDirection { received, issued }
 
-enum ChequeStatus { pending, cleared, bounced, cancelled }
+enum ChequeStatus { pending, deposited, cleared, bounced, endorsed, cancelled }
 
 extension ChequeStatusX on ChequeStatus {
   String get label => switch (this) {
         ChequeStatus.pending => 'در انتظار',
-        ChequeStatus.cleared => 'پاس شده',
-        ChequeStatus.bounced => 'برگشتی',
-        ChequeStatus.cancelled => 'باطل / عودت',
+        ChequeStatus.deposited => 'نزد بانک (در جریان وصول)',
+        ChequeStatus.cleared => 'وصول / پاس شده',
+        ChequeStatus.bounced => 'برگشتی (عدم وصول)',
+        ChequeStatus.endorsed => 'واگذار شده',
+        ChequeStatus.cancelled => 'عودت / باطل',
       };
 }
 
@@ -615,6 +678,8 @@ class Cheque {
   String serial;
   ChequeStatus status;
   String? txnId;
+  String? depositAccountId;
+  String? endorsedTo;
   String note;
 
   Cheque({
@@ -628,11 +693,15 @@ class Cheque {
     this.serial = '',
     this.status = ChequeStatus.pending,
     this.txnId,
+    this.depositAccountId,
+    this.endorsedTo,
     this.note = '',
   });
 
   Map<String, dynamic> toJson() => {
         'id': id,
+        'depositAccountId': depositAccountId,
+        'endorsedTo': endorsedTo,
         'direction': direction.name,
         'amount': amount,
         'dueDate': _d(dueDate),
@@ -656,6 +725,8 @@ class Cheque {
         serial: _s(j['serial']),
         status: _enum(ChequeStatus.values, j['status'], ChequeStatus.pending),
         txnId: _sn(j['txnId']),
+        depositAccountId: _sn(j['depositAccountId']),
+        endorsedTo: _sn(j['endorsedTo']),
         note: _s(j['note']),
       );
 }
@@ -671,6 +742,9 @@ class AppSettings {
   String passwordSalt;
   String passwordHint;
   bool setupDone;
+  String businessName;
+  String businessPhone;
+  String businessAddress;
 
   AppSettings({
     this.themeMode = 'light',
@@ -681,6 +755,9 @@ class AppSettings {
     this.passwordSalt = '',
     this.passwordHint = '',
     this.setupDone = false,
+    this.businessName = '',
+    this.businessPhone = '',
+    this.businessAddress = '',
   });
 
   bool get hasPassword => passwordHash.isNotEmpty;
@@ -694,6 +771,9 @@ class AppSettings {
         'passwordSalt': passwordSalt,
         'passwordHint': passwordHint,
         'setupDone': setupDone,
+        'businessName': businessName,
+        'businessPhone': businessPhone,
+        'businessAddress': businessAddress,
       };
 
   factory AppSettings.fromJson(Map<String, dynamic> j) => AppSettings(
@@ -705,5 +785,8 @@ class AppSettings {
         passwordSalt: _s(j['passwordSalt']),
         passwordHint: _s(j['passwordHint']),
         setupDone: j['setupDone'] == true,
+        businessName: _s(j['businessName']),
+        businessPhone: _s(j['businessPhone']),
+        businessAddress: _s(j['businessAddress']),
       );
 }

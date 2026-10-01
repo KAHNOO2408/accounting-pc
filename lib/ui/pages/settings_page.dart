@@ -67,6 +67,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     children: [
                       const _ProfilePanel(),
                       const SizedBox(height: 16),
+                      const _BusinessPanel(),
+                      const SizedBox(height: 16),
                       Panel(
                         title: 'ظاهر',
                         child: Column(
@@ -118,16 +120,20 @@ class _SettingsPageState extends State<SettingsPage> {
                         child: Column(
                           children: [
                             for (final e in const [
-                              ('F2', 'ثبت فروش (فاکتور چندقلمی)'),
-                              ('F3', 'ثبت خرید'),
-                              ('F4', 'کالای جدید'),
+                              ('F6', 'فاکتور فروش'),
+                              ('F5', 'فاکتور خرید'),
+                              ('F7', 'پیش‌فاکتور'),
+                              ('F1 / F2', 'دریافت / پرداخت نقدی'),
+                              ('F3 / F4', 'دریافت / پرداخت چک'),
+                              ('Ctrl+A', 'جدول و مشاهده حساب‌ها'),
+                              ('F11', 'تهیه نسخه پشتیبان'),
                               ('Insert', 'افزودن ردیف در فاکتور'),
                               ('Ctrl+N', 'تراکنش جدید'),
                               ('Ctrl+E', 'هزینه جدید'),
                               ('Ctrl+I', 'درآمد جدید'),
                               ('Ctrl+T', 'انتقال بین حساب‌ها'),
                               ('Ctrl+F', 'جستجو در تراکنش‌ها'),
-                              ('Ctrl+1 … Ctrl+9', 'جابه‌جایی بین بخش‌ها'),
+                              ('Ctrl+P', 'چاپ فاکتور (داخل فاکتور)'),
                               ('Ctrl+S', 'ذخیره فرم (داخل پنجره تراکنش)'),
                               ('Ctrl+Enter', 'ثبت و تراکنش بعدی'),
                               ('Ctrl+L', 'قفل برنامه (اگر رمز دارد)'),
@@ -462,6 +468,72 @@ class _ProfilePanelState extends State<_ProfilePanel> {
               ],
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+
+class _BusinessPanel extends StatefulWidget {
+  const _BusinessPanel();
+
+  @override
+  State<_BusinessPanel> createState() => _BusinessPanelState();
+}
+
+class _BusinessPanelState extends State<_BusinessPanel> {
+  TextEditingController? _name, _phone, _address;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_name != null) return;
+    final s = StoreScope.read(context).settings;
+    _name = TextEditingController(text: s.businessName);
+    _phone = TextEditingController(text: s.businessPhone);
+    _address = TextEditingController(text: s.businessAddress);
+  }
+
+  @override
+  void dispose() {
+    _name?.dispose();
+    _phone?.dispose();
+    _address?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final store = StoreScope.of(context);
+    return Panel(
+      title: 'مشخصات فروشگاه (سربرگ فاکتور)',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(controller: _name, decoration: const InputDecoration(labelText: 'نام فروشگاه / شرکت')),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _phone,
+            textDirection: TextDirection.ltr,
+            decoration: const InputDecoration(labelText: 'تلفن'),
+          ),
+          const SizedBox(height: 10),
+          TextField(controller: _address, decoration: const InputDecoration(labelText: 'آدرس')),
+          const SizedBox(height: 10),
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: FilledButton.tonal(
+              onPressed: () {
+                store.updateSettings((s) => s
+                  ..businessName = _name!.text.trim()
+                  ..businessPhone = _phone!.text.trim()
+                  ..businessAddress = _address!.text.trim());
+                toast(context, 'مشخصات فروشگاه ذخیره شد');
+              },
+              child: const Text('ذخیره'),
+            ),
+          ),
         ],
       ),
     );

@@ -48,6 +48,7 @@ class AppStore extends ChangeNotifier {
   List<Product> products = [];
   List<Invoice> invoices = [];
   List<Loan> loans = [];
+  List<StockAdjust> adjusts = [];
   AppSettings settings = AppSettings();
   String? lastError;
 
@@ -112,6 +113,7 @@ class AppStore extends ChangeNotifier {
     products = list('products').map(Product.fromJson).toList();
     invoices = list('invoices').map(Invoice.fromJson).toList();
     loans = list('loans').map(Loan.fromJson).toList();
+    adjusts = list('adjusts').map(StockAdjust.fromJson).toList();
     final st = j['settings'];
     settings = st is Map<String, dynamic> ? AppSettings.fromJson(st) : AppSettings();
     _sortTxns();
@@ -129,6 +131,7 @@ class AppStore extends ChangeNotifier {
         'products': products.map((e) => e.toJson()).toList(),
         'invoices': invoices.map((e) => e.toJson()).toList(),
         'loans': loans.map((e) => e.toJson()).toList(),
+        'adjusts': adjusts.map((e) => e.toJson()).toList(),
         'settings': settings.toJson(),
       };
 
@@ -274,12 +277,14 @@ class AppStore extends ChangeNotifier {
     return s;
   }
 
+  static bool _open(Cheque c) => c.status == ChequeStatus.pending || c.status == ChequeStatus.deposited;
+
   int get pendingChequesIn => cheques
-      .where((c) => c.direction == ChequeDirection.received && c.status == ChequeStatus.pending)
+      .where((c) => c.direction == ChequeDirection.received && _open(c))
       .fold(0, (s, c) => s + c.amount);
 
   int get pendingChequesOut => cheques
-      .where((c) => c.direction == ChequeDirection.issued && c.status == ChequeStatus.pending)
+      .where((c) => c.direction == ChequeDirection.issued && _open(c))
       .fold(0, (s, c) => s + c.amount);
 
   /// Net worth = cash + receivables - payables + cheques in - out + stock - loans left.
@@ -367,7 +372,7 @@ class AppStore extends ChangeNotifier {
   List<Cheque> upcomingCheques({int days = 30}) {
     final limit = dateOnly(DateTime.now()).add(Duration(days: days));
     return cheques
-        .where((c) => c.status == ChequeStatus.pending && !c.dueDate.isAfter(limit))
+        .where((c) => _open(c) && !c.dueDate.isAfter(limit))
         .toList()
       ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
   }
@@ -487,14 +492,14 @@ class AppStore extends ChangeNotifier {
   void removeCheque(String id) {
     final c = cheque(id);
     if (c == null) return;
-    if (c.txnId != null) txns.removeWhere((t) => t.id == c.txnId);
+    txns.removeWhere((t) => t.chequeId == c.id);
     cheques.removeWhere((e) => e.id == id);
     _commit();
   }
 
   /// Marks a cheque as cleared and records the money movement.
   void clearCheque(Cheque c, {required String accountId, required TxnType asType, String? categoryId, required DateTime date}) {
-    if (c.txnId != null) txns.removeWhere((t) => t.id == c.txnId);
+    txns.removeWhere((t) => t.chequeId == c.id);
     final t = Txn(
       id: newId(),
       type: asType,
@@ -515,12 +520,67 @@ class AppStore extends ChangeNotifier {
   }
 
   void setChequeStatus(Cheque c, ChequeStatus s) {
-    if (s != ChequeStatus.cleared && c.txnId != null) {
-      txns.removeWhere((t) => t.id == c.txnId);
+    if (s != ChequeStatus.cleared && s != ChequeStatus.endorsed) {
+      txns.removeWhere((t) => t.chequeId == c.id);
       c.txnId = null;
+      c.endorsedTo = null;
     }
+    if (s == ChequeStatus.pending) c.depositAccountId = null;
     c.status = s;
     _commit();
+  }
+
+  /// Hands a received cheque to the bank for collection.
+  void depositCheque(Cheque c, String accountId) {
+    c
+      ..status = ChequeStatus.deposited
+      ..depositAccountId = accountId;
+    _commit();
+  }
+
+  /// Passes a received cheque on to another person (واگذاری).
+  /// Settles the issuer's debt and what I owe the receiver.
+  void endorseCheque(Cheque c, {required String toPersonId, required DateTime date}) {
+    txns.removeWhere((t) => t.chequeId == c.id);
+    final label = 'چک ${c.serial.isEmpty ? '' : '${c.serial} '}${c.bank}'.trim();
+    if (c.personId != null) {
+      txns.add(Txn(
+        id: newId(),
+        type: TxnType.collect,
+        amount: c.amount,
+        date: date,
+        personId: c.personId,
+        note: 'دریافت با $label (واگذار شد)',
+        chequeId: c.id,
+      ));
+    }
+    txns.add(Txn(
+      id: newId(),
+      type: TxnType.repay,
+      amount: c.amount,
+      date: date,
+      personId: toPersonId,
+      note: 'پرداخت با واگذاری $label',
+      chequeId: c.id,
+    ));
+    c
+      ..status = ChequeStatus.endorsed
+      ..endorsedTo = toPersonId
+      ..txnId = null;
+    _commit();
+  }
+
+  /// Weighted average due date of the given cheques (راس‌گیری).
+  DateTime? averageDue(List<Cheque> list) {
+    var total = 0;
+    var weighted = 0.0;
+    final base = dateOnly(DateTime.now());
+    for (final c in list) {
+      total += c.amount;
+      weighted += c.amount * c.dueDate.difference(base).inDays;
+    }
+    if (total == 0) return null;
+    return base.add(Duration(days: (weighted / total).round()));
   }
 
   void updateSettings(void Function(AppSettings s) fn) {
@@ -565,6 +625,9 @@ class AppStore extends ChangeNotifier {
 
   // ---------------------------------------------------------------- products & stock
 
+  /// Invoices that affect stock and the ledger (pro-formas excluded).
+  Iterable<Invoice> get realInvoices => invoices.where((i) => !i.proforma);
+
   List<Product> get productsSorted => [...products]..sort((a, b) => a.name.compareTo(b.name));
 
   void upsertProduct(Product p) {
@@ -577,7 +640,8 @@ class AppStore extends ChangeNotifier {
     _commit();
   }
 
-  bool productInUse(String id) => invoices.any((inv) => inv.lines.any((l) => l.productId == id));
+  bool productInUse(String id) =>
+      invoices.any((inv) => inv.lines.any((l) => l.productId == id)) || adjusts.any((a) => a.productId == id);
 
   /// Deletes when unused; otherwise archives. Returns true if deleted.
   bool removeProduct(String id) {
@@ -594,7 +658,10 @@ class AppStore extends ChangeNotifier {
   /// Current stock of a product (optionally excluding one invoice being edited).
   double stock(String productId, {String? excludeInvoiceId}) {
     var q = product(productId)?.openingQty ?? 0;
-    for (final inv in invoices) {
+    for (final a in adjusts) {
+      if (a.productId == productId) q += a.qty;
+    }
+    for (final inv in realInvoices) {
       if (inv.id == excludeInvoiceId) continue;
       for (final l in inv.lines) {
         if (l.productId == productId) q += inv.kind.stockSign * l.qty;
@@ -607,7 +674,7 @@ class AppStore extends ChangeNotifier {
   int avgCost(String productId) {
     var qty = 0.0;
     var cost = 0.0;
-    for (final inv in invoices) {
+    for (final inv in realInvoices) {
       if (inv.kind != InvoiceKind.purchase) continue;
       for (final l in inv.lines) {
         if (l.productId == productId && l.qty > 0) {
@@ -631,12 +698,30 @@ class AppStore extends ChangeNotifier {
 
   // ---------------------------------------------------------------- invoices
 
-  int nextInvoiceNumber(InvoiceKind kind) {
+  int nextInvoiceNumber(InvoiceKind kind, {bool proforma = false}) {
     var n = 1000;
     for (final i in invoices) {
-      if (i.kind == kind && i.number > n) n = i.number;
+      if (i.kind == kind && i.proforma == proforma && i.number > n) n = i.number;
     }
     return n + 1;
+  }
+
+  /// Turns a pro-forma into a real sale invoice; returns the new invoice.
+  Invoice convertProforma(Invoice pf) {
+    final inv = Invoice(
+      id: newId(),
+      kind: InvoiceKind.sale,
+      number: nextInvoiceNumber(InvoiceKind.sale),
+      date: dateOnly(DateTime.now()),
+      personId: pf.personId,
+      lines: pf.lines.map((l) => InvoiceLine.fromJson(l.toJson())).toList(),
+      discount: pf.discount,
+      extra: pf.extra,
+      note: pf.note.isEmpty ? 'از پیش‌فاکتور ${pf.number}' : '${pf.note} (پیش‌فاکتور ${pf.number})',
+    );
+    invoices.removeWhere((i) => i.id == pf.id);
+    saveInvoice(inv);
+    return inv;
   }
 
   List<Invoice> get invoicesSorted => [...invoices]
@@ -654,6 +739,10 @@ class AppStore extends ChangeNotifier {
       invoices.add(inv);
     }
     txns.removeWhere((t) => t.invoiceId == inv.id);
+    if (inv.proforma) {
+      _commit();
+      return;
+    }
     final title = '${inv.kind.label} شماره ${inv.number}';
     txns.add(Txn(
       id: newId(),
@@ -693,6 +782,32 @@ class AppStore extends ChangeNotifier {
     invoices.removeWhere((i) => i.id == id);
     txns.removeWhere((t) => t.invoiceId == id);
     _commit();
+  }
+
+  // ---------------------------------------------------------------- stock adjustments
+
+  void addAdjusts(List<StockAdjust> list) {
+    adjusts.addAll(list);
+    _commit();
+  }
+
+  /// Removes an adjustment and its pair (for conversions).
+  void removeAdjust(StockAdjust a) {
+    adjusts.removeWhere((x) => x.id == a.id || (a.groupId.isNotEmpty && x.groupId == a.groupId));
+    _commit();
+  }
+
+  /// Stock count: records the difference between counted and system quantity.
+  int applyCount(Map<String, double> counted, DateTime date) {
+    final list = <StockAdjust>[];
+    counted.forEach((pid, q) {
+      final diff = q - stock(pid);
+      if (diff.abs() > 1e-9) {
+        list.add(StockAdjust(id: newId(), date: date, productId: pid, qty: diff, reason: AdjustReason.count));
+      }
+    });
+    if (list.isNotEmpty) addAdjusts(list);
+    return list.length;
   }
 
   // ---------------------------------------------------------------- loans
@@ -774,7 +889,12 @@ class AppStore extends ChangeNotifier {
     final r = ProfitReport();
     final cost = <String, int>{};
     int c(String id) => cost.putIfAbsent(id, () => avgCost(id));
-    for (final inv in invoices) {
+    for (final a in adjusts) {
+      if (a.date.isBefore(from) || a.date.isAfter(to)) continue;
+      if (a.reason == AdjustReason.convertIn || a.reason == AdjustReason.convertOut) continue;
+      r.stockLoss += (-a.qty * c(a.productId)).round();
+    }
+    for (final inv in realInvoices) {
       if (inv.date.isBefore(from) || inv.date.isAfter(to)) continue;
       final sign = switch (inv.kind) {
         InvoiceKind.sale => 1,
@@ -928,10 +1048,11 @@ class ProfitReport {
   int discountsGiven = 0;
   int otherIncome = 0;
   int expenses = 0;
+  int stockLoss = 0; // waste, internal use and count differences at cost
   final Map<String, ProductProfit> byProduct = {};
 
   int get netSales => sales - saleReturns;
   int get grossProfit => netSales - cogs;
   int get netProfit =>
-      grossProfit + saleExtra - purchaseExtra + purchaseInvoiceDiscounts + discountsReceived - discountsGiven + otherIncome - expenses;
+      grossProfit + saleExtra - purchaseExtra + purchaseInvoiceDiscounts + discountsReceived - discountsGiven + otherIncome - expenses - stockLoss;
 }

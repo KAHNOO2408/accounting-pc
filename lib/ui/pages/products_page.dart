@@ -250,23 +250,33 @@ class _ProductsPageState extends State<ProductsPage> {
 
   Widget _detail(BuildContext context, AppStore store, Product p) {
     final th = Theme.of(context);
-    // movement history: oldest -> newest with running stock
-    final moves = <(Invoice, double)>[];
-    for (final inv in store.invoices) {
+    // movement history (kardex): oldest -> newest with running stock
+    final moves = <_Move>[];
+    for (final inv in store.realInvoices) {
       var q = 0.0;
       for (final l in inv.lines) {
         if (l.productId == p.id) q += l.qty;
       }
-      if (q != 0) moves.add((inv, q));
+      if (q != 0) {
+        moves.add(_Move(inv.date, '${inv.kind.label} ${inv.number}', inv.kind.stockSign * q, invoice: inv,
+            order: inv.createdAt));
+      }
     }
-    moves.sort((a, b) => a.$1.date.compareTo(b.$1.date));
+    for (final a in store.adjusts) {
+      if (a.productId == p.id) {
+        moves.add(_Move(a.date, a.reason.label + (a.note.isEmpty ? '' : ' — ${a.note}'), a.qty, adjust: a, order: a.createdAt));
+      }
+    }
+    moves.sort((a, b) {
+      final c = a.date.compareTo(b.date);
+      return c != 0 ? c : a.order.compareTo(b.order);
+    });
     var run = p.openingQty;
-    final rows = <(Invoice, double, double)>[];
     for (final m in moves) {
-      run += m.$1.kind.stockSign * m.$2;
-      rows.add((m.$1, m.$2, run));
+      run += m.qty;
+      m.balance = run;
     }
-    final shown = rows.reversed.toList();
+    final shown = moves.reversed.toList();
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -342,23 +352,30 @@ class _ProductsPageState extends State<ProductsPage> {
                     itemCount: shown.length,
                     itemBuilder: (context, i) {
                       final r = shown[i];
-                      final inc = r.$1.kind.stockSign > 0;
+                      final inc = r.qty > 0;
                       return ListTile(
                         dense: true,
-                        onTap: () => showInvoiceEditor(context, edit: r.$1),
+                        onTap: () async {
+                          if (r.invoice != null) {
+                            showInvoiceEditor(context, edit: r.invoice);
+                          } else if (r.adjust != null) {
+                            final ok = await confirm(context, 'حذف سند انبار', 'این ${r.adjust!.reason.label} حذف شود؟');
+                            if (ok) store.removeAdjust(r.adjust!);
+                          }
+                        },
                         leading: Icon(inc ? Icons.add_circle_outline : Icons.remove_circle_outline,
                             color: inc ? AppColors.income : AppColors.expense),
-                        title: Text('${r.$1.kind.label} ${r.$1.number}'),
-                        subtitle: Text(jFormat(r.$1.date)),
+                        title: Text(r.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        subtitle: Text(jFormat(r.date)),
                         trailing: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text('${inc ? '+' : '−'}${fmtQty(r.$2)}',
+                            Text('${inc ? '+' : '−'}${fmtQty(r.qty.abs())}',
                                 textDirection: TextDirection.ltr,
                                 style: TextStyle(
                                     fontWeight: FontWeight.w700, color: inc ? AppColors.income : AppColors.expense)),
-                            Text('مانده ${fmtQty(r.$3)}', style: th.textTheme.labelSmall?.copyWith(color: th.hintColor)),
+                            Text('مانده ${fmtQty(r.balance)}', style: th.textTheme.labelSmall?.copyWith(color: th.hintColor)),
                           ],
                         ),
                       );
@@ -369,4 +386,15 @@ class _ProductsPageState extends State<ProductsPage> {
       ),
     );
   }
+}
+
+class _Move {
+  final DateTime date;
+  final String title;
+  final double qty;
+  final Invoice? invoice;
+  final StockAdjust? adjust;
+  final int order;
+  double balance = 0;
+  _Move(this.date, this.title, this.qty, {this.invoice, this.adjust, this.order = 0});
 }

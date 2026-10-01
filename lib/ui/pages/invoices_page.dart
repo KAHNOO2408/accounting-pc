@@ -9,15 +9,17 @@ import '../widgets/common.dart';
 import 'transactions_page.dart' show RangePreset, RangePresetX;
 
 class InvoicesPage extends StatefulWidget {
-  const InvoicesPage({super.key});
+  final bool proforma;
+  final InvoiceKind? initialKind;
+  const InvoicesPage({super.key, this.proforma = false, this.initialKind});
 
   @override
   State<InvoicesPage> createState() => _InvoicesPageState();
 }
 
 class _InvoicesPageState extends State<InvoicesPage> {
-  InvoiceKind? _kind;
-  RangePreset _preset = RangePreset.thisMonth;
+  late InvoiceKind? _kind = widget.initialKind;
+  late RangePreset _preset = widget.proforma ? RangePreset.all : RangePreset.thisMonth;
   String _q = '';
 
   Color _kindColor(InvoiceKind k) => switch (k) {
@@ -33,6 +35,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
     final r = _preset.range();
     final q = normalizeDigits(_q.trim()).toLowerCase();
     final list = store.invoicesSorted.where((i) {
+      if (i.proforma != widget.proforma) return false;
       if (_kind != null && i.kind != _kind) return false;
       if (r.$1 != null && i.date.isBefore(r.$1!)) return false;
       if (r.$2 != null && i.date.isAfter(r.$2!)) return false;
@@ -64,22 +67,33 @@ class _InvoicesPageState extends State<InvoicesPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         PageHeader(
-          title: 'خرید و فروش',
-          subtitle: 'فاکتورهای فروش، خرید و برگشتی — هر فاکتور با هر تعداد قلم',
-          actions: [
+          title: widget.proforma ? 'لیست پیش‌فاکتورها' : 'خرید و فروش',
+          subtitle: widget.proforma
+              ? 'پیش‌فاکتورها روی انبار و حساب‌ها اثری ندارند؛ هر وقت قطعی شد تبدیل به فاکتور فروش کنید'
+              : 'فاکتورهای فروش، خرید و برگشتی — هر فاکتور با هر تعداد قلم',
+          actions: widget.proforma
+              ? [
+                  FilledButton.icon(
+                    onPressed: () => showInvoiceEditor(context, proforma: true),
+                    icon: const Icon(Icons.note_add_outlined, size: 18),
+                    label: const Text('پیش‌فاکتور جدید (F7)'),
+                  ),
+                ]
+              : [
             OutlinedButton.icon(
               onPressed: () => showInvoiceEditor(context, kind: InvoiceKind.purchase),
               icon: const Icon(Icons.shopping_cart_outlined, size: 18, color: AppColors.expense),
-              label: const Text('فاکتور خرید (F3)'),
+              label: const Text('فاکتور خرید (F5)'),
             ),
             FilledButton.icon(
               style: FilledButton.styleFrom(backgroundColor: AppColors.income),
               onPressed: () => showInvoiceEditor(context, kind: InvoiceKind.sale),
               icon: const Icon(Icons.sell_outlined, size: 18),
-              label: const Text('فاکتور فروش (F2)'),
+              label: const Text('فاکتور فروش (F6)'),
             ),
           ],
         ),
+        if (!widget.proforma)
         Padding(
           padding: const EdgeInsets.fromLTRB(28, 0, 28, 16),
           child: Row(
@@ -122,10 +136,12 @@ class _InvoicesPageState extends State<InvoicesPage> {
                   spacing: 6,
                   runSpacing: 6,
                   children: [
-                    ChoiceChip(label: const Text('همه'), selected: _kind == null, onSelected: (_) => setState(() => _kind = null)),
-                    for (final k in InvoiceKind.values)
-                      ChoiceChip(label: Text(k.short), selected: _kind == k, onSelected: (_) => setState(() => _kind = k)),
-                    const SizedBox(width: 12),
+                    if (!widget.proforma) ...[
+                      ChoiceChip(label: const Text('همه'), selected: _kind == null, onSelected: (_) => setState(() => _kind = null)),
+                      for (final k in InvoiceKind.values)
+                        ChoiceChip(label: Text(k.short), selected: _kind == k, onSelected: (_) => setState(() => _kind = k)),
+                      const SizedBox(width: 12),
+                    ],
                     for (final p in RangePreset.values.where((p) => p != RangePreset.custom))
                       ChoiceChip(label: Text(p.label), selected: _preset == p, onSelected: (_) => setState(() => _preset = p)),
                   ],
@@ -175,11 +191,11 @@ class _InvoicesPageState extends State<InvoicesPage> {
                     child: list.isEmpty
                         ? EmptyState(
                             icon: Icons.receipt_outlined,
-                            text: 'فاکتوری در این بازه نیست',
+                            text: widget.proforma ? 'پیش‌فاکتوری ثبت نشده' : 'فاکتوری در این بازه نیست',
                             action: FilledButton.icon(
-                              onPressed: () => showInvoiceEditor(context),
+                              onPressed: () => showInvoiceEditor(context, proforma: widget.proforma),
                               icon: const Icon(Icons.add_rounded),
-                              label: const Text('اولین فاکتور فروش'),
+                              label: Text(widget.proforma ? 'پیش‌فاکتور جدید' : 'اولین فاکتور فروش'),
                             ),
                           )
                         : ListView.separated(
@@ -208,7 +224,8 @@ class _InvoicesPageState extends State<InvoicesPage> {
                                           alignment: AlignmentDirectional.centerStart,
                                           child: FittedBox(
                                             fit: BoxFit.scaleDown,
-                                            child: Pill(inv.kind.short, color: c, icon: txnIcon(inv.kind.txnType)),
+                                            child: Pill(inv.proforma ? 'پیش‌فاکتور' : inv.kind.short,
+                                                color: inv.proforma ? AppColors.discount : c, icon: txnIcon(inv.kind.txnType)),
                                           ),
                                         ),
                                       ),
@@ -237,8 +254,10 @@ class _InvoicesPageState extends State<InvoicesPage> {
                                         width: 140,
                                         child: Align(
                                           alignment: Alignment.centerLeft,
-                                          child: inv.remaining == 0
-                                              ? Pill('تسویه', color: AppColors.income)
+                                          child: inv.proforma
+                                              ? const Text('—')
+                                              : inv.remaining == 0
+                                              ? const Pill('تسویه', color: AppColors.income)
                                               : Money(inv.remaining,
                                                   style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.debt)),
                                         ),

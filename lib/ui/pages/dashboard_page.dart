@@ -49,12 +49,12 @@ class DashboardPage extends StatelessWidget {
               style: FilledButton.styleFrom(backgroundColor: AppColors.income),
               onPressed: () => showInvoiceEditor(context, kind: InvoiceKind.sale),
               icon: const Icon(Icons.sell_outlined, size: 18),
-              label: const Text('ثبت فروش (F2)'),
+              label: const Text('فاکتور فروش (F6)'),
             ),
             OutlinedButton.icon(
               onPressed: () => showInvoiceEditor(context, kind: InvoiceKind.purchase),
               icon: const Icon(Icons.shopping_cart_outlined, size: 18, color: AppColors.expense),
-              label: const Text('ثبت خرید (F3)'),
+              label: const Text('فاکتور خرید (F5)'),
             ),
             OutlinedButton.icon(
               onPressed: () => showTxnDialog(context, type: TxnType.expense),

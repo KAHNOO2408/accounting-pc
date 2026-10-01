@@ -8,20 +8,24 @@ import '../theme.dart';
 import '../widgets/common.dart';
 
 class ChequesPage extends StatefulWidget {
-  const ChequesPage({super.key});
+  final ChequeDirection initialDirection;
+  final ChequeStatus? initialStatus;
+  const ChequesPage({super.key, this.initialDirection = ChequeDirection.received, this.initialStatus = ChequeStatus.pending});
 
   @override
   State<ChequesPage> createState() => _ChequesPageState();
 }
 
 class _ChequesPageState extends State<ChequesPage> {
-  ChequeDirection _dir = ChequeDirection.received;
-  ChequeStatus? _status = ChequeStatus.pending;
+  late ChequeDirection _dir = widget.initialDirection;
+  late ChequeStatus? _status = widget.initialStatus;
 
   Color _statusColor(ChequeStatus s, ThemeData th) => switch (s) {
         ChequeStatus.pending => AppColors.transfer,
+        ChequeStatus.deposited => AppColors.discount,
         ChequeStatus.cleared => AppColors.income,
         ChequeStatus.bounced => th.colorScheme.error,
+        ChequeStatus.endorsed => AppColors.debt,
         ChequeStatus.cancelled => th.hintColor,
       };
 
@@ -195,11 +199,15 @@ class _ChequesPageState extends State<ChequesPage> {
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
-                                            if (c.status == ChequeStatus.pending || c.status == ChequeStatus.bounced)
+                                            if (c.status == ChequeStatus.pending ||
+                                                c.status == ChequeStatus.deposited ||
+                                                c.status == ChequeStatus.bounced)
                                               TextButton.icon(
                                                 onPressed: () => showClearChequeDialog(context, c),
                                                 icon: const Icon(Icons.check_circle_outline, size: 18, color: AppColors.income),
-                                                label: const Text('پاس شد'),
+                                                label: Text(c.direction == ChequeDirection.issued
+                                                    ? 'پاس شد'
+                                                    : (c.status == ChequeStatus.deposited ? 'وصول نزد بانک' : 'وصول نقدی')),
                                               ),
                                             PopupMenuButton<String>(
                                               tooltip: 'گزینه‌ها',
@@ -211,6 +219,10 @@ class _ChequesPageState extends State<ChequesPage> {
                                                     store.setChequeStatus(c, ChequeStatus.cancelled);
                                                   case 'pending':
                                                     store.setChequeStatus(c, ChequeStatus.pending);
+                                                  case 'deposit':
+                                                    showDepositChequeDialog(context, c);
+                                                  case 'endorse':
+                                                    showEndorseChequeDialog(context, c);
                                                   case 'edit':
                                                     showChequeDialog(context, edit: c);
                                                   case 'delete':
@@ -224,16 +236,32 @@ class _ChequesPageState extends State<ChequesPage> {
                                                     if (ok) store.removeCheque(c.id);
                                                 }
                                               },
-                                              itemBuilder: (_) => [
-                                                const PopupMenuItem(value: 'edit', child: Text('ویرایش')),
-                                                if (c.status != ChequeStatus.pending)
-                                                  const PopupMenuItem(value: 'pending', child: Text('برگرداندن به «در انتظار»')),
-                                                if (c.status != ChequeStatus.bounced)
-                                                  const PopupMenuItem(value: 'bounce', child: Text('برگشت خورد')),
-                                                if (c.status != ChequeStatus.cancelled)
-                                                  const PopupMenuItem(value: 'cancel', child: Text('باطل / عودت')),
-                                                const PopupMenuItem(value: 'delete', child: Text('حذف')),
-                                              ],
+                                              itemBuilder: (_) {
+                                                final rec = c.direction == ChequeDirection.received;
+                                                final st = c.status;
+                                                return [
+                                                  const PopupMenuItem(value: 'edit', child: Text('ویرایش')),
+                                                  if (rec && st == ChequeStatus.pending) ...[
+                                                    const PopupMenuItem(value: 'deposit', child: Text('به حساب گذاشتن (نزد بانک)')),
+                                                    const PopupMenuItem(value: 'endorse', child: Text('واگذاری چک')),
+                                                  ],
+                                                  if (st == ChequeStatus.pending || st == ChequeStatus.deposited)
+                                                    PopupMenuItem(
+                                                      value: 'bounce',
+                                                      child: Text(st == ChequeStatus.deposited ? 'عدم وصول چک نزد بانک' : 'برگشت خورد (عدم وصول)'),
+                                                    ),
+                                                  if (st == ChequeStatus.pending || st == ChequeStatus.bounced)
+                                                    PopupMenuItem(
+                                                      value: 'cancel',
+                                                      child: Text(rec ? 'پس دادن چک وارده' : 'پس گرفتن چک صادره'),
+                                                    ),
+                                                  if (st == ChequeStatus.endorsed)
+                                                    const PopupMenuItem(value: 'pending', child: Text('پس گرفتن چک واگذار شده')),
+                                                  if (st != ChequeStatus.pending && st != ChequeStatus.endorsed)
+                                                    const PopupMenuItem(value: 'pending', child: Text('برگرداندن به «در انتظار»')),
+                                                  const PopupMenuItem(value: 'delete', child: Text('حذف')),
+                                                ];
+                                              },
                                             ),
                                           ],
                                         ),

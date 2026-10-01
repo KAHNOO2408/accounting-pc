@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/format.dart';
+import '../../core/jalali.dart';
 import '../../data/models.dart';
 import '../../data/store.dart';
 import '../widgets/common.dart';
@@ -184,7 +185,8 @@ class _ClearDialogState extends State<_ClearDialog> {
     if (_inited) return;
     _inited = true;
     final store = StoreScope.read(context);
-    _account = store.activeAccounts.where((a) => a.type == AccountType.bank).map((a) => a.id).firstOrNull ??
+    _account = widget.cheque.depositAccountId ??
+        store.activeAccounts.where((a) => a.type == AccountType.bank).map((a) => a.id).firstOrNull ??
         store.activeAccounts.map((a) => a.id).firstOrNull;
     final hasPerson = widget.cheque.personId != null;
     _as = _received
@@ -203,7 +205,7 @@ class _ClearDialogState extends State<_ClearDialog> {
     final kind = _received ? CategoryKind.income : CategoryKind.expense;
     final hasPerson = widget.cheque.personId != null;
     return FormDialog(
-      title: 'پاس شدن چک',
+      title: widget.cheque.direction == ChequeDirection.received ? 'اعلام وصول چک' : 'پاس شدن چک',
       width: 500,
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
@@ -262,6 +264,204 @@ class _ClearDialogState extends State<_ClearDialog> {
               onChanged: (v) => setState(() => _category = v),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+
+// ------------------------------------------------------------- deposit to bank
+
+Future<void> showDepositChequeDialog(BuildContext context, Cheque c) => showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        final store = StoreScope.read(ctx);
+        final banks = store.activeAccounts.where((a) => a.type == AccountType.bank).toList();
+        final list = banks.isEmpty ? store.activeAccounts : banks;
+        String? acc = list.isEmpty ? null : list.first.id;
+        return StatefulBuilder(
+          builder: (ctx, setS) => FormDialog(
+            title: 'به حساب گذاشتن چک',
+            width: 460,
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('انصراف')),
+              FilledButton(
+                onPressed: acc == null
+                    ? null
+                    : () {
+                        store.depositCheque(c, acc!);
+                        Navigator.pop(ctx);
+                      },
+                child: const Text('ثبت'),
+              ),
+            ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('چک به بانک سپرده می‌شود و پس از «اعلام وصول نزد بانک» به موجودی این حساب اضافه می‌شود.',
+                    style: Theme.of(ctx).textTheme.bodySmall),
+                const SizedBox(height: 14),
+                FieldDropdown<String?>(
+                  label: 'حساب بانکی',
+                  value: acc,
+                  items: [for (final a in list) DropdownMenuItem<String?>(value: a.id, child: Text(a.name))],
+                  onChanged: (v) => setS(() => acc = v),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+// ------------------------------------------------------------------ endorse
+
+Future<void> showEndorseChequeDialog(BuildContext context, Cheque c) => showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        String? person;
+        var date = dateOnly(DateTime.now());
+        return StatefulBuilder(builder: (ctx, setS) {
+          final store = StoreScope.of(ctx);
+          return FormDialog(
+            title: 'واگذاری چک',
+            width: 480,
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('انصراف')),
+              FilledButton(
+                onPressed: person == null
+                    ? null
+                    : () {
+                        store.endorseCheque(c, toPersonId: person!, date: date);
+                        Navigator.pop(ctx);
+                      },
+                child: const Text('واگذار شد'),
+              ),
+            ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('چک دریافتی به شخص دیگری داده می‌شود؛ از بدهی شما به او کم و حساب صادرکننده تسویه می‌شود.',
+                    style: Theme.of(ctx).textTheme.bodySmall),
+                const SizedBox(height: 14),
+                FieldDropdown<String?>(
+                  label: 'واگذار به',
+                  value: person,
+                  items: [
+                    for (final p in store.peopleSorted.where((p) => p.id != c.personId))
+                      DropdownMenuItem<String?>(value: p.id, child: Text(p.name)),
+                  ],
+                  onChanged: (v) => setS(() => person = v),
+                ),
+                const SizedBox(height: 14),
+                DateField(label: 'تاریخ واگذاری', value: date, onChanged: (d) => setS(() => date = d ?? date)),
+              ],
+            ),
+          );
+        });
+      },
+    );
+
+// ------------------------------------------------------ weighted due (راس‌گیری)
+
+Future<void> showChequeAverageDialog(BuildContext context) => showDialog<void>(
+      context: context,
+      builder: (_) => const _AverageDialog(),
+    );
+
+class _AverageDialog extends StatefulWidget {
+  const _AverageDialog();
+
+  @override
+  State<_AverageDialog> createState() => _AverageDialogState();
+}
+
+class _AverageDialogState extends State<_AverageDialog> {
+  ChequeDirection _dir = ChequeDirection.received;
+  final Set<String> _sel = {};
+
+  @override
+  Widget build(BuildContext context) {
+    final store = StoreScope.of(context);
+    final th = Theme.of(context);
+    final list = store.cheques
+        .where((c) =>
+            c.direction == _dir && (c.status == ChequeStatus.pending || c.status == ChequeStatus.deposited))
+        .toList()
+      ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+    final chosen = list.where((c) => _sel.contains(c.id)).toList();
+    final avg = store.averageDue(chosen);
+    final total = chosen.fold<int>(0, (s, c) => s + c.amount);
+    return FormDialog(
+      title: 'راس‌گیری چک‌ها',
+      width: 620,
+      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('بستن'))],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SegmentedButton<ChequeDirection>(
+            showSelectedIcon: false,
+            segments: const [
+              ButtonSegment(value: ChequeDirection.received, label: Text('چک‌های دریافتی')),
+              ButtonSegment(value: ChequeDirection.issued, label: Text('چک‌های پرداختی')),
+            ],
+            selected: {_dir},
+            onSelectionChanged: (s) => setState(() {
+              _dir = s.first;
+              _sel.clear();
+            }),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              TextButton(onPressed: () => setState(() => _sel.addAll(list.map((c) => c.id))), child: const Text('انتخاب همه')),
+              TextButton(onPressed: () => setState(_sel.clear), child: const Text('هیچ‌کدام')),
+            ],
+          ),
+          if (list.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(20),
+              child: Text('چک باز (در انتظار وصول) وجود ندارد', textAlign: TextAlign.center),
+            ),
+          for (final c in list)
+            CheckboxListTile(
+              dense: true,
+              value: _sel.contains(c.id),
+              onChanged: (v) => setState(() => v == true ? _sel.add(c.id) : _sel.remove(c.id)),
+              title: Text('${jFormat(c.dueDate)}  ·  ${store.person(c.personId)?.name ?? '—'}'),
+              secondary: Money(c.amount, style: const TextStyle(fontWeight: FontWeight.w600)),
+              controlAffinity: ListTileControlAffinity.leading,
+            ),
+          const Divider(),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: th.colorScheme.primary.withValues(alpha: 0.07),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${chosen.length} چک · جمع', style: th.textTheme.bodySmall),
+                      Money(total, showUnit: true, style: const TextStyle(fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text('سررسید میانگین (راس)', style: th.textTheme.bodySmall),
+                    Text(avg == null ? '—' : Jalali.fromDateTime(avg).formatWithWeekday(),
+                        style: th.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800, color: th.colorScheme.primary)),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

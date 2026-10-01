@@ -241,6 +241,73 @@ void main() {
     expect(s.txns.where((t) => t.invoiceId == sale.id), isEmpty);
   });
 
+  test('pro-forma, stock adjustments and cheque operations', () {
+    final s = _tempStore();
+    final cash = s.accounts.first.id;
+    final today = DateTime(2026, 10, 1);
+    final a = Product(id: newId(), name: 'Box', openingQty: 10);
+    final b = Product(id: newId(), name: 'Piece');
+    s.upsertProduct(a);
+    s.upsertProduct(b);
+
+    final pf = Invoice(
+      id: newId(),
+      kind: InvoiceKind.sale,
+      number: 1,
+      date: today,
+      proforma: true,
+      lines: [InvoiceLine(productId: a.id, qty: 2, unitPrice: 100)],
+    );
+    s.saveInvoice(pf);
+    expect(s.stock(a.id), 10);
+    expect(s.txns.where((t) => t.invoiceId == pf.id), isEmpty);
+    final sale = s.convertProforma(pf);
+    expect(sale.proforma, isFalse);
+    expect(s.stock(a.id), 8);
+    expect(s.invoices.where((i) => i.proforma), isEmpty);
+
+    s.addAdjusts([StockAdjust(id: newId(), date: today, productId: a.id, qty: -1, reason: AdjustReason.waste)]);
+    expect(s.stock(a.id), 7);
+    final g = newId();
+    s.addAdjusts([
+      StockAdjust(id: newId(), date: today, productId: a.id, qty: -1, reason: AdjustReason.convertOut, groupId: g),
+      StockAdjust(id: newId(), date: today, productId: b.id, qty: 20, reason: AdjustReason.convertIn, groupId: g),
+    ]);
+    expect(s.stock(a.id), 6);
+    expect(s.stock(b.id), 20);
+    expect(s.applyCount({a.id: 5, b.id: 20}, today), 1);
+    expect(s.stock(a.id), 5);
+    s.removeAdjust(s.adjusts.firstWhere((x) => x.groupId == g));
+    expect(s.stock(b.id), 0);
+
+    // cheques: deposit -> clear, endorse -> take back
+    final ali = Person(id: newId(), name: 'Ali');
+    final reza = Person(id: newId(), name: 'Reza');
+    s.upsertPerson(ali);
+    s.upsertPerson(reza);
+    s.upsertTxn(Txn(id: newId(), type: TxnType.lend, amount: 500, date: today, personId: ali.id));
+    s.upsertTxn(Txn(id: newId(), type: TxnType.borrow, amount: 500, date: today, personId: reza.id));
+    final c1 = Cheque(id: newId(), direction: ChequeDirection.received, amount: 500, dueDate: today, issueDate: today, personId: ali.id);
+    s.upsertCheque(c1);
+    s.endorseCheque(c1, toPersonId: reza.id, date: today);
+    expect(s.personBalance(ali.id), 0);
+    expect(s.personBalance(reza.id), 0);
+    s.setChequeStatus(c1, ChequeStatus.pending);
+    expect(s.personBalance(ali.id), 500);
+    expect(s.personBalance(reza.id), -500);
+    s.depositCheque(c1, cash);
+    expect(c1.status, ChequeStatus.deposited);
+    s.clearCheque(c1, accountId: cash, asType: TxnType.collect, date: today);
+    expect(s.personBalance(ali.id), 0);
+    final c2 = Cheque(
+        id: newId(), direction: ChequeDirection.received, amount: 100, dueDate: today.add(const Duration(days: 30)), issueDate: today);
+    final c3 = Cheque(
+        id: newId(), direction: ChequeDirection.received, amount: 300, dueDate: today.add(const Duration(days: 70)), issueDate: today);
+    final avg = s.averageDue([c2, c3])!;
+    expect(avg.difference(dateOnly(DateTime.now())).inDays,
+        ((100 * c2.dueDate.difference(dateOnly(DateTime.now())).inDays + 300 * c3.dueDate.difference(dateOnly(DateTime.now())).inDays) / 400).round());
+  });
+
   testWidgets('all pages render', (tester) async {
     tester.view.physicalSize = const Size(1600, 1000);
     tester.view.devicePixelRatio = 1.0;
@@ -276,13 +343,19 @@ void main() {
       expect(tester.takeException(), isNull, reason: page.name);
     }
 
-    // open a menu group and run "ثبت فروش"
+    for (final tab in ['اسناد', 'عملیات کالا', 'مالی', 'مالی ویژه', 'هزینه و درآمد', 'گزارشات', 'متفرقه', 'کنترل اسناد', 'خروج و پشتیبان']) {
+      await tester.tap(find.text(tab).first);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: tab);
+    }
+
+    // open the sales tab of the ribbon and start a sale invoice
     await tester.pumpWidget(const SizedBox());
     await tester.pumpWidget(TarazApp(store: s));
     await tester.pumpAndSettle();
     await tester.tap(find.text('خرید و فروش'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('ثبت فروش').last);
+    await tester.tap(find.text('فاکتور فروش').first);
     await tester.pumpAndSettle();
     expect(find.text('ذخیره فاکتور (Ctrl+S)'), findsOneWidget);
     // type a product and quantity
@@ -299,10 +372,10 @@ void main() {
     expect(s.invoices.length, 2);
     expect(s.stock(prod.id), 2);
 
-    // new transaction from the "دریافت و پرداخت" menu
-    await tester.tap(find.text('دریافت و پرداخت'));
+    // new transaction from the home tab
+    await tester.tap(find.text('خانه'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('تراکنش جدید').last);
+    await tester.tap(find.text('تراکنش جدید').first);
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextFormField).first, '25000');
     await tester.tap(find.text('ذخیره (Ctrl+S)'));
