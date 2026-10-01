@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 
 import '../core/hash.dart';
 import '../core/jalali.dart';
+import 'chart.dart';
 import 'models.dart';
 import 'storage.dart';
 
@@ -49,6 +50,7 @@ class AppStore extends ChangeNotifier {
   List<Invoice> invoices = [];
   List<Loan> loans = [];
   List<StockAdjust> adjusts = [];
+  List<Voucher> vouchers = [];
   AppSettings settings = AppSettings();
   String? lastError;
 
@@ -114,6 +116,7 @@ class AppStore extends ChangeNotifier {
     invoices = list('invoices').map(Invoice.fromJson).toList();
     loans = list('loans').map(Loan.fromJson).toList();
     adjusts = list('adjusts').map(StockAdjust.fromJson).toList();
+    vouchers = list('vouchers').map(Voucher.fromJson).toList();
     final st = j['settings'];
     settings = st is Map<String, dynamic> ? AppSettings.fromJson(st) : AppSettings();
     _sortTxns();
@@ -132,6 +135,7 @@ class AppStore extends ChangeNotifier {
         'invoices': invoices.map((e) => e.toJson()).toList(),
         'loans': loans.map((e) => e.toJson()).toList(),
         'adjusts': adjusts.map((e) => e.toJson()).toList(),
+        'vouchers': vouchers.map((e) => e.toJson()).toList(),
         'settings': settings.toJson(),
       };
 
@@ -240,6 +244,12 @@ class AppStore extends ChangeNotifier {
       if (upTo != null && t.date.isAfter(upTo)) continue;
       b += t.effectOn(accountId);
     }
+    for (final v in vouchers) {
+      if (upTo != null && v.date.isAfter(upTo)) continue;
+      for (final l in v.lines) {
+        if (l.tafsiliId == accountId) b += l.debit - l.credit;
+      }
+    }
     return b;
   }
 
@@ -252,9 +262,14 @@ class AppStore extends ChangeNotifier {
   }
 
   int personBalance(String personId) {
-    var b = 0;
+    var b = person(personId)?.opening ?? 0;
     for (final t in txns) {
       if (t.personId == personId) b += t.type.personSign * t.amount;
+    }
+    for (final v in vouchers) {
+      for (final l in v.lines) {
+        if (l.tafsiliId == personId) b += l.debit - l.credit;
+      }
     }
     return b;
   }
@@ -389,7 +404,9 @@ class AppStore extends ChangeNotifier {
     _commit();
   }
 
-  bool accountInUse(String id) => txns.any((t) => t.accountId == id || t.toAccountId == id);
+  bool accountInUse(String id) =>
+      txns.any((t) => t.accountId == id || t.toAccountId == id) ||
+      vouchers.any((v) => v.lines.any((l) => l.tafsiliId == id));
 
   /// Deletes when unused; otherwise archives. Returns true if deleted.
   bool removeAccount(String id) {
@@ -435,7 +452,10 @@ class AppStore extends ChangeNotifier {
   }
 
   bool personInUse(String id) =>
-      txns.any((t) => t.personId == id) || cheques.any((c) => c.personId == id);
+      txns.any((t) => t.personId == id) ||
+      cheques.any((c) => c.personId == id) ||
+      (person(id)?.opening ?? 0) != 0 ||
+      vouchers.any((v) => v.lines.any((l) => l.tafsiliId == id));
 
   bool removePerson(String id) {
     if (personInUse(id)) return false;
@@ -672,8 +692,13 @@ class AppStore extends ChangeNotifier {
 
   /// Weighted average purchase cost (net of line discounts).
   int avgCost(String productId) {
+    final p = product(productId);
     var qty = 0.0;
     var cost = 0.0;
+    if (p != null && p.openingQty > 0 && openingCost(p) > 0) {
+      qty = p.openingQty;
+      cost = p.openingQty * openingCost(p);
+    }
     for (final inv in realInvoices) {
       if (inv.kind != InvoiceKind.purchase) continue;
       for (final l in inv.lines) {
@@ -783,6 +808,84 @@ class AppStore extends ChangeNotifier {
     txns.removeWhere((t) => t.invoiceId == id);
     _commit();
   }
+
+  // ---------------------------------------------------------------- vouchers & opening
+
+  List<Voucher> get vouchersSorted => [...vouchers]..sort((a, b) => a.number.compareTo(b.number));
+
+  int nextVoucherNumber() => vouchers.fold<int>(1, (n, v) => v.number >= n ? v.number + 1 : n);
+  int nextFixedNumber() => vouchers.fold<int>(1, (n, v) => v.fixedNumber >= n ? v.fixedNumber + 1 : n);
+
+  void saveVoucher(Voucher v) {
+    final i = vouchers.indexWhere((e) => e.id == v.id);
+    if (i >= 0) {
+      vouchers[i] = v;
+    } else {
+      vouchers.add(v);
+    }
+    _commit();
+  }
+
+  void removeVoucher(String id) {
+    vouchers.removeWhere((v) => v.id == id);
+    _commit();
+  }
+
+  /// Name of the detail (تفصیلی) a voucher line points to.
+  String tafsiliName(VoucherLine l) {
+    final m = findMoeen(l.moeen);
+    if (m == null || l.tafsiliId == null) return '';
+    return switch (m.kind) {
+      TafsiliKind.cash || TafsiliKind.bank => account(l.tafsiliId)?.name ?? '',
+      TafsiliKind.person => person(l.tafsiliId)?.name ?? '',
+      TafsiliKind.product => product(l.tafsiliId)?.name ?? '',
+      TafsiliKind.incomeCat || TafsiliKind.expenseCat => category(l.tafsiliId)?.name ?? '',
+      TafsiliKind.none => '',
+    };
+  }
+
+  /// Balance of a free (non-entity) ledger: opening + voucher lines, on its natural side.
+  int ledgerBalance(String moeenCode) {
+    final m = findMoeen(moeenCode);
+    if (m == null) return 0;
+    var b = settings.openingOther[moeenCode] ?? 0;
+    for (final v in vouchers) {
+      for (final l in v.lines) {
+        if (l.moeen != moeenCode || (m.hasEntity && l.tafsiliId != null)) continue;
+        b += m.debitNature ? l.debit - l.credit : l.credit - l.debit;
+      }
+    }
+    return b;
+  }
+
+  /// Saves the opening voucher (سند افتتاحیه).
+  void applyOpening({
+    required DateTime date,
+    required Map<String, int> accountOpenings,
+    required Map<String, int> personOpenings,
+    required Map<String, double> productQty,
+    required Map<String, int> productCost,
+    required Map<String, int> other,
+    bool updateBuyPrice = false,
+  }) {
+    settings.openingDate = date;
+    accountOpenings.forEach((id, v) => account(id)?.opening = v);
+    personOpenings.forEach((id, v) => person(id)?.opening = v);
+    productQty.forEach((id, q) => product(id)?.openingQty = q);
+    productCost.forEach((id, c) {
+      final p = product(id);
+      if (p == null) return;
+      p.openingCost = c;
+      if (updateBuyPrice && c > 0) p.buyPrice = c;
+    });
+    settings.openingOther
+      ..clear()
+      ..addAll(Map.of(other)..removeWhere((k, v) => v == 0));
+    _commit();
+  }
+
+  /// Opening cost per unit of a product (used for opening stock value).
+  int openingCost(Product p) => p.openingCost > 0 ? p.openingCost : p.buyPrice;
 
   // ---------------------------------------------------------------- stock adjustments
 
@@ -944,6 +1047,15 @@ class AppStore extends ChangeNotifier {
           r.discountsGiven += t.amount;
         default:
           break;
+      }
+    }
+    for (final v in vouchers) {
+      if (v.date.isBefore(from) || v.date.isAfter(to)) continue;
+      for (final l in v.lines) {
+        final m = findMoeen(l.moeen);
+        if (m == null) continue;
+        if (m.side == Side.income) r.otherIncome += l.credit - l.debit;
+        if (m.side == Side.expense) r.expenses += l.debit - l.credit;
       }
     }
     return r;

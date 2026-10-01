@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:taraz/core/format.dart';
 import 'package:taraz/core/hash.dart';
 import 'package:taraz/core/jalali.dart';
+import 'package:taraz/data/chart.dart';
 import 'package:taraz/data/models.dart';
 import 'package:taraz/data/storage.dart';
 import 'package:taraz/data/store.dart';
@@ -308,6 +309,50 @@ void main() {
         ((100 * c2.dueDate.difference(dateOnly(DateTime.now())).inDays + 300 * c3.dueDate.difference(dateOnly(DateTime.now())).inDays) / 400).round());
   });
 
+  test('manual vouchers and opening voucher', () {
+    final s = _tempStore();
+    final cash = s.accounts.first.id;
+    final ali = Person(id: newId(), name: 'Ali');
+    s.upsertPerson(ali);
+    final pr = Product(id: newId(), name: 'Cable', buyPrice: 70);
+    s.upsertProduct(pr);
+
+    s.applyOpening(
+      date: DateTime(2026, 3, 21),
+      accountOpenings: {cash: 1000},
+      personOpenings: {ali.id: 300},
+      productQty: {pr.id: 10},
+      productCost: {pr.id: 50},
+      other: {'10501': 2000, '20601': 500},
+    );
+    expect(s.balance(cash), 1000);
+    expect(s.personBalance(ali.id), 300);
+    expect(s.stock(pr.id), 10);
+    expect(s.avgCost(pr.id), 50);
+    expect(s.ledgerBalance('10501'), 2000);
+    expect(s.ledgerBalance('20601'), 500);
+
+    // cash 200 to Ali (he now owes more) and a manual expense
+    s.saveVoucher(Voucher(id: newId(), number: s.nextVoucherNumber(), fixedNumber: 1, date: DateTime(2026, 10, 1), lines: [
+      VoucherLine(moeen: mDebtorsTrade, tafsiliId: ali.id, debit: 200),
+      VoucherLine(moeen: mCash, tafsiliId: cash, credit: 200),
+    ]));
+    expect(s.balance(cash), 800);
+    expect(s.personBalance(ali.id), 500);
+    s.saveVoucher(Voucher(id: newId(), number: s.nextVoucherNumber(), fixedNumber: 2, date: DateTime(2026, 10, 1), lines: [
+      VoucherLine(moeen: '50102', debit: 120),
+      VoucherLine(moeen: '20601', credit: 120),
+    ]));
+    expect(s.nextVoucherNumber(), 3);
+    expect(s.ledgerBalance('20601'), 620);
+    expect(s.profit(DateTime(2026, 10, 1), DateTime(2026, 10, 1)).expenses, 120);
+
+    final again = AppStore.open(s.storage);
+    expect(again.vouchers.length, 2);
+    expect(again.personBalance(ali.id), 500);
+    expect(again.settings.openingOther['10501'], 2000);
+  });
+
   testWidgets('all pages render', (tester) async {
     tester.view.physicalSize = const Size(1600, 1000);
     tester.view.devicePixelRatio = 1.0;
@@ -348,6 +393,30 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull, reason: tab);
     }
+
+    // opening voucher: decline the backup prompt and check the form
+    await tester.tap(find.text('اسناد').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('سند افتتاحیه').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('خیر'));
+    await tester.pumpAndSettle();
+    expect(find.text('جمع دارایی ها'), findsOneWidget);
+    await tester.tap(find.text('صندوق و تنخواه'));
+    await tester.pumpAndSettle();
+    expect(find.text('لیست دفاتر موجود در گروه صندوق و تنخواه'), findsOneWidget);
+    await tester.tap(find.text('تایید (F9)').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('تایید (F9)').last);
+    await tester.pumpAndSettle();
+    expect(s.settings.openingDate, isNotNull);
+
+    // manual voucher dialog opens
+    await tester.tap(find.text('سند حسابداری دستی').first);
+    await tester.pumpAndSettle();
+    expect(find.text('جمع بدهکاری: '), findsOneWidget);
+    await tester.tap(find.text('خروج'));
+    await tester.pumpAndSettle();
 
     // open the sales tab of the ribbon and start a sale invoice
     await tester.pumpWidget(const SizedBox());

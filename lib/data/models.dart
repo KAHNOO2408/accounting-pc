@@ -151,15 +151,108 @@ class Person {
   String phone;
   String note;
 
-  Person({required this.id, required this.name, this.phone = '', this.note = ''});
+  /// Opening balance from the opening voucher (positive = they owe me).
+  int opening;
 
-  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'phone': phone, 'note': note};
+  Person({required this.id, required this.name, this.phone = '', this.note = '', this.opening = 0});
+
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'phone': phone, 'note': note, 'opening': opening};
 
   factory Person.fromJson(Map<String, dynamic> j) => Person(
         id: _s(j['id']),
         name: _s(j['name']),
         phone: _s(j['phone']),
         note: _s(j['note']),
+        opening: _i(j['opening']),
+      );
+}
+
+// ---------------------------------------------------------------------------
+
+/// One row of a manual accounting voucher (سند حسابداری دستی).
+class VoucherLine {
+  String moeen;
+  String? tafsiliId;
+  String desc;
+  int debit;
+  int credit;
+
+  VoucherLine({required this.moeen, this.tafsiliId, this.desc = '', this.debit = 0, this.credit = 0});
+
+  VoucherLine copy() => VoucherLine.fromJson(toJson());
+
+  Map<String, dynamic> toJson() =>
+      {'moeen': moeen, 'tafsiliId': tafsiliId, 'desc': desc, 'debit': debit, 'credit': credit};
+
+  factory VoucherLine.fromJson(Map<String, dynamic> j) => VoucherLine(
+        moeen: _s(j['moeen']),
+        tafsiliId: _sn(j['tafsiliId']),
+        desc: _s(j['desc']),
+        debit: _i(j['debit']),
+        credit: _i(j['credit']),
+      );
+}
+
+class Voucher {
+  String id;
+  int number;
+  int fixedNumber;
+  DateTime date;
+  String desc;
+  String center;
+  String archivePath;
+  DateTime? followDate;
+  String followDesc;
+  List<VoucherLine> lines;
+  int createdAt;
+
+  Voucher({
+    required this.id,
+    required this.number,
+    required this.fixedNumber,
+    required this.date,
+    this.desc = '',
+    this.center = 'اصلی',
+    this.archivePath = '',
+    this.followDate,
+    this.followDesc = '',
+    List<VoucherLine>? lines,
+    int? createdAt,
+  })  : lines = lines ?? [],
+        createdAt = createdAt ?? DateTime.now().millisecondsSinceEpoch;
+
+  int get totalDebit => lines.fold(0, (s, l) => s + l.debit);
+  int get totalCredit => lines.fold(0, (s, l) => s + l.credit);
+  bool get balanced => totalDebit == totalCredit;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'number': number,
+        'fixedNumber': fixedNumber,
+        'date': _d(date),
+        'desc': desc,
+        'center': center,
+        'archivePath': archivePath,
+        'followDate': followDate == null ? null : _d(followDate!),
+        'followDesc': followDesc,
+        'lines': lines.map((l) => l.toJson()).toList(),
+        'createdAt': createdAt,
+      };
+
+  factory Voucher.fromJson(Map<String, dynamic> j) => Voucher(
+        id: _s(j['id']),
+        number: _i(j['number']),
+        fixedNumber: _i(j['fixedNumber']),
+        date: _p(j['date']),
+        desc: _s(j['desc']),
+        center: _s(j['center']).isEmpty ? 'اصلی' : _s(j['center']),
+        archivePath: _s(j['archivePath']),
+        followDate: _pn(j['followDate']),
+        followDesc: _s(j['followDesc']),
+        lines: (j['lines'] is List)
+            ? (j['lines'] as List).whereType<Map<String, dynamic>>().map(VoucherLine.fromJson).toList()
+            : <VoucherLine>[],
+        createdAt: _i(j['createdAt']),
       );
 }
 
@@ -351,6 +444,9 @@ class Product {
   int buyPrice;
   int sellPrice;
   double openingQty;
+
+  /// Unit cost of the opening quantity (0 = use buy price).
+  int openingCost;
   double minQty;
   bool archived;
   String note;
@@ -363,6 +459,7 @@ class Product {
     this.buyPrice = 0,
     this.sellPrice = 0,
     this.openingQty = 0,
+    this.openingCost = 0,
     this.minQty = 0,
     this.archived = false,
     this.note = '',
@@ -376,6 +473,7 @@ class Product {
         'buyPrice': buyPrice,
         'sellPrice': sellPrice,
         'openingQty': openingQty,
+        'openingCost': openingCost,
         'minQty': minQty,
         'archived': archived,
         'note': note,
@@ -389,6 +487,7 @@ class Product {
         buyPrice: _i(j['buyPrice']),
         sellPrice: _i(j['sellPrice']),
         openingQty: _dbl(j['openingQty']),
+        openingCost: _i(j['openingCost']),
         minQty: _dbl(j['minQty']),
         archived: j['archived'] == true,
         note: _s(j['note']),
@@ -746,6 +845,10 @@ class AppSettings {
   String businessPhone;
   String businessAddress;
 
+  /// Opening voucher date and free-amount ledgers (moeen code -> amount on its natural side).
+  DateTime? openingDate;
+  Map<String, int> openingOther;
+
   AppSettings({
     this.themeMode = 'light',
     this.currency = 'تومان',
@@ -758,7 +861,9 @@ class AppSettings {
     this.businessName = '',
     this.businessPhone = '',
     this.businessAddress = '',
-  });
+    this.openingDate,
+    Map<String, int>? openingOther,
+  }) : openingOther = openingOther ?? {};
 
   bool get hasPassword => passwordHash.isNotEmpty;
 
@@ -774,6 +879,8 @@ class AppSettings {
         'businessName': businessName,
         'businessPhone': businessPhone,
         'businessAddress': businessAddress,
+        'openingDate': openingDate == null ? null : _d(openingDate!),
+        'openingOther': openingOther,
       };
 
   factory AppSettings.fromJson(Map<String, dynamic> j) => AppSettings(
@@ -788,5 +895,9 @@ class AppSettings {
         businessName: _s(j['businessName']),
         businessPhone: _s(j['businessPhone']),
         businessAddress: _s(j['businessAddress']),
+        openingDate: _pn(j['openingDate']),
+        openingOther: (j['openingOther'] is Map)
+            ? {for (final e in (j['openingOther'] as Map).entries) '${e.key}': _i(e.value)}
+            : <String, int>{},
       );
 }

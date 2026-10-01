@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/jalali.dart';
+import '../../data/chart.dart';
 import '../../data/models.dart';
 import '../../data/store.dart';
 import '../shell.dart';
@@ -28,6 +29,12 @@ class BalanceSheetPage extends StatelessWidget {
       ..add(('حساب‌های دریافتنی (طلب از اشخاص)', store.totalReceivable))
       ..add(('اسناد دریافتنی (چک‌های در جریان)', store.pendingChequesIn))
       ..add(('موجودی کالا (به قیمت تمام‌شده)', store.stockValue()));
+    for (final m in allMoeens.where((m) => !m.hasEntity)) {
+      if (m.side != Side.asset && m.side != Side.liability) continue;
+      final v = store.ledgerBalance(m.code);
+      if (v == 0) continue;
+      (m.side == Side.asset ? assets : liabilities).add((m.name, v));
+    }
     liabilities
       ..add(('حساب‌های پرداختنی (بدهی به اشخاص)', store.totalPayable))
       ..add(('اسناد پرداختنی (چک‌های صادره)', store.pendingChequesOut))

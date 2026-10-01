@@ -8,6 +8,8 @@ import 'auth/auth_screens.dart';
 import 'dialogs/cheque_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
+import 'dialogs/opening_dialog.dart';
+import 'dialogs/voucher_dialog.dart';
 import 'dialogs/txn_dialog.dart';
 import 'pages/accounts_page.dart';
 import 'pages/home_page.dart';
@@ -21,11 +23,13 @@ import 'pages/reports_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/stock_ops.dart';
 import 'pages/transactions_page.dart';
+import 'pages/vouchers_page.dart';
 import 'theme.dart';
 import 'widgets/common.dart';
 
 enum AppPage {
   home,
+  vouchers,
   invoices,
   proformas,
   products,
@@ -118,10 +122,10 @@ final List<_Tab> _tabs = [
   _Tab('اسناد', [
     _Group('اسناد', [
       _Item('لیست اسناد', Icons.list_alt_rounded, _blue,
-          shortcut: 'Alt+F1', activator: _k(LogicalKeyboardKey.f1, alt: true), run: _page(AppPage.transactions)),
+          shortcut: 'Alt+F1', activator: _k(LogicalKeyboardKey.f1, alt: true), run: _page(AppPage.vouchers)),
       _Item('سند حسابداری دستی', Icons.edit_note_rounded, _blue,
-          shortcut: 'Alt+F2', activator: _k(LogicalKeyboardKey.f2, alt: true), run: (c, _) => showTxnDialog(c, title: 'سند دستی')),
-      const _Item('سند افتتاحیه', Icons.flag_outlined, _amber),
+          shortcut: 'Alt+F2', activator: _k(LogicalKeyboardKey.f2, alt: true), run: (c, _) => showVoucherDialog(c)),
+      _Item('سند افتتاحیه', Icons.flag_outlined, _amber, run: (c, _) => openOpeningVoucher(c)),
       const _Item('مرکز اسناد', Icons.home_work_outlined, _amber),
     ]),
     _Group('اختتامیه', [
@@ -459,6 +463,7 @@ class _ShellState extends State<Shell> {
 
   Widget _body() => switch (_page) {
         AppPage.home => const HomePage(),
+        AppPage.vouchers => const VouchersPage(),
         AppPage.invoices => InvoicesPage(key: ValueKey('inv$_invoiceKind'), initialKind: _invoiceKind),
         AppPage.proformas => const InvoicesPage(key: ValueKey('proformas'), proforma: true),
         AppPage.products => const ProductsPage(),
