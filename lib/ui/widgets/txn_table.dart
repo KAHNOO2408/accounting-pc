@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../core/jalali.dart';
 import '../../data/models.dart';
 import '../../data/store.dart';
+import '../dialogs/invoice_editor.dart';
 import '../dialogs/txn_dialog.dart';
+import '../shell.dart';
 import '../theme.dart';
 import 'common.dart';
 
@@ -157,11 +159,7 @@ class _TxnRowState extends State<_TxnRow> {
           ? t.type.personSign * t.amount
           : (t.type == TxnType.income ? t.amount : -t.amount);
     } else {
-      signed = switch (t.type) {
-        TxnType.income || TxnType.borrow || TxnType.collect => t.amount,
-        TxnType.transfer => t.amount,
-        _ => -t.amount,
-      };
+      signed = t.type == TxnType.transfer ? t.amount : t.type.accountSign * t.amount;
     }
 
     final title = _title(store, t);
@@ -179,7 +177,7 @@ class _TxnRowState extends State<_TxnRow> {
       onEnter: (_) => setState(() => _hover = true),
       onExit: (_) => setState(() => _hover = false),
       child: InkWell(
-        onTap: () => showTxnDialog(context, edit: t),
+        onTap: () => openTxn(context, t),
         child: Container(
           color: bg,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
@@ -244,7 +242,9 @@ class _TxnRowState extends State<_TxnRow> {
                   tooltip: 'گزینه‌ها',
                   icon: const Icon(Icons.more_vert, size: 18),
                   onSelected: (v) async {
-                    if (v == 'edit') {
+                    if (v == 'open') {
+                      openTxn(context, t);
+                    } else if (v == 'edit') {
                       showTxnDialog(context, edit: t);
                     } else if (v == 'dup') {
                       showTxnDialog(context, edit: t, duplicate: true);
@@ -253,11 +253,19 @@ class _TxnRowState extends State<_TxnRow> {
                       if (ok) store.removeTxn(t.id);
                     }
                   },
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(value: 'edit', child: Text('ویرایش')),
-                    PopupMenuItem(value: 'dup', child: Text('کپی به عنوان تراکنش جدید')),
-                    PopupMenuItem(value: 'del', child: Text('حذف')),
-                  ],
+                  itemBuilder: (_) => t.type.isSystem
+                      ? [
+                          PopupMenuItem(
+                            value: 'open',
+                            child: Text(t.invoiceId != null ? 'باز کردن فاکتور' : 'رفتن به وام‌ها'),
+                          ),
+                          if (t.type == TxnType.loanPay) const PopupMenuItem(value: 'del', child: Text('حذف این پرداخت')),
+                        ]
+                      : const [
+                          PopupMenuItem(value: 'edit', child: Text('ویرایش')),
+                          PopupMenuItem(value: 'dup', child: Text('کپی به عنوان تراکنش جدید')),
+                          PopupMenuItem(value: 'del', child: Text('حذف')),
+                        ],
                 ),
               ),
             ],
@@ -280,7 +288,31 @@ class _TxnRowState extends State<_TxnRow> {
         return [cat ?? 'بدون دسته', if (per != null) per, if (acc != null && widget.ledgerAccountId == null) acc]
             .join('  ·  ');
       default:
-        return [per ?? '?', if (acc != null && widget.ledgerAccountId == null) acc].join('  ·  ');
+        if (t.type.isLoan) {
+          return [store.loan(t.loanId)?.title ?? 'وام', if (acc != null && widget.ledgerAccountId == null) acc]
+              .join('  ·  ');
+        }
+        if (t.invoiceId != null && per == null) {
+          final inv = store.invoice(t.invoiceId);
+          final who = inv == null || !inv.kind.buySide ? 'مشتری نقدی' : 'فروشنده متفرقه';
+          return [who, if (acc != null && widget.ledgerAccountId == null) acc].join('  ·  ');
+        }
+        return [per ?? 'بدون طرف حساب', if (acc != null && widget.ledgerAccountId == null) acc].join('  ·  ');
     }
   }
+}
+
+/// Opens the right editor for a ledger row (invoice, loan or plain transaction).
+void openTxn(BuildContext context, Txn t) {
+  final store = StoreScope.read(context);
+  if (t.invoiceId != null) {
+    final inv = store.invoice(t.invoiceId);
+    if (inv != null) showInvoiceEditor(context, edit: inv);
+    return;
+  }
+  if (t.type.isLoan) {
+    Nav.of(context).go(AppPage.loans);
+    return;
+  }
+  showTxnDialog(context, edit: t);
 }

@@ -45,6 +45,9 @@ class AppStore extends ChangeNotifier {
   List<Person> people = [];
   List<Txn> txns = [];
   List<Cheque> cheques = [];
+  List<Product> products = [];
+  List<Invoice> invoices = [];
+  List<Loan> loans = [];
   AppSettings settings = AppSettings();
   String? lastError;
 
@@ -106,6 +109,9 @@ class AppStore extends ChangeNotifier {
     people = list('people').map(Person.fromJson).toList();
     txns = list('txns').map(Txn.fromJson).toList();
     cheques = list('cheques').map(Cheque.fromJson).toList();
+    products = list('products').map(Product.fromJson).toList();
+    invoices = list('invoices').map(Invoice.fromJson).toList();
+    loans = list('loans').map(Loan.fromJson).toList();
     final st = j['settings'];
     settings = st is Map<String, dynamic> ? AppSettings.fromJson(st) : AppSettings();
     _sortTxns();
@@ -120,6 +126,9 @@ class AppStore extends ChangeNotifier {
         'people': people.map((e) => e.toJson()).toList(),
         'txns': txns.map((e) => e.toJson()).toList(),
         'cheques': cheques.map((e) => e.toJson()).toList(),
+        'products': products.map((e) => e.toJson()).toList(),
+        'invoices': invoices.map((e) => e.toJson()).toList(),
+        'loans': loans.map((e) => e.toJson()).toList(),
         'settings': settings.toJson(),
       };
 
@@ -176,6 +185,30 @@ class AppStore extends ChangeNotifier {
     if (id == null) return null;
     for (final c in cheques) {
       if (c.id == id) return c;
+    }
+    return null;
+  }
+
+  Product? product(String? id) {
+    if (id == null) return null;
+    for (final p in products) {
+      if (p.id == id) return p;
+    }
+    return null;
+  }
+
+  Invoice? invoice(String? id) {
+    if (id == null) return null;
+    for (final i in invoices) {
+      if (i.id == id) return i;
+    }
+    return null;
+  }
+
+  Loan? loan(String? id) {
+    if (id == null) return null;
+    for (final l in loans) {
+      if (l.id == id) return l;
     }
     return null;
   }
@@ -249,8 +282,15 @@ class AppStore extends ChangeNotifier {
       .where((c) => c.direction == ChequeDirection.issued && c.status == ChequeStatus.pending)
       .fold(0, (s, c) => s + c.amount);
 
-  /// Net worth = cash + receivables - payables + pending cheques in - out.
-  int get netWorth => totalBalance + totalReceivable - totalPayable + pendingChequesIn - pendingChequesOut;
+  /// Net worth = cash + receivables - payables + cheques in - out + stock - loans left.
+  int get netWorth =>
+      totalBalance +
+      totalReceivable -
+      totalPayable +
+      pendingChequesIn -
+      pendingChequesOut +
+      stockValue() -
+      totalLoanRemaining;
 
   MonthTotals totalsBetween(DateTime from, DateTime to) {
     final m = MonthTotals();
@@ -423,6 +463,8 @@ class AppStore extends ChangeNotifier {
       }
     }
     txns.removeWhere((e) => e.id == id);
+    final l = loan(t.loanId);
+    if (l != null && l.closed && loanPaidCount(l.id) < l.installments) l.closed = false;
     _commit();
   }
 
@@ -521,6 +563,272 @@ class AppStore extends ChangeNotifier {
     }
   }
 
+  // ---------------------------------------------------------------- products & stock
+
+  List<Product> get productsSorted => [...products]..sort((a, b) => a.name.compareTo(b.name));
+
+  void upsertProduct(Product p) {
+    final i = products.indexWhere((e) => e.id == p.id);
+    if (i >= 0) {
+      products[i] = p;
+    } else {
+      products.add(p);
+    }
+    _commit();
+  }
+
+  bool productInUse(String id) => invoices.any((inv) => inv.lines.any((l) => l.productId == id));
+
+  /// Deletes when unused; otherwise archives. Returns true if deleted.
+  bool removeProduct(String id) {
+    if (productInUse(id)) {
+      product(id)?.archived = true;
+      _commit();
+      return false;
+    }
+    products.removeWhere((p) => p.id == id);
+    _commit();
+    return true;
+  }
+
+  /// Current stock of a product (optionally excluding one invoice being edited).
+  double stock(String productId, {String? excludeInvoiceId}) {
+    var q = product(productId)?.openingQty ?? 0;
+    for (final inv in invoices) {
+      if (inv.id == excludeInvoiceId) continue;
+      for (final l in inv.lines) {
+        if (l.productId == productId) q += inv.kind.stockSign * l.qty;
+      }
+    }
+    return q;
+  }
+
+  /// Weighted average purchase cost (net of line discounts).
+  int avgCost(String productId) {
+    var qty = 0.0;
+    var cost = 0.0;
+    for (final inv in invoices) {
+      if (inv.kind != InvoiceKind.purchase) continue;
+      for (final l in inv.lines) {
+        if (l.productId == productId && l.qty > 0) {
+          qty += l.qty;
+          cost += l.total;
+        }
+      }
+    }
+    if (qty <= 0) return product(productId)?.buyPrice ?? 0;
+    return (cost / qty).round();
+  }
+
+  int stockValue() {
+    var v = 0;
+    for (final p in products) {
+      final q = stock(p.id);
+      if (q > 0) v += (q * avgCost(p.id)).round();
+    }
+    return v;
+  }
+
+  // ---------------------------------------------------------------- invoices
+
+  int nextInvoiceNumber(InvoiceKind kind) {
+    var n = 1000;
+    for (final i in invoices) {
+      if (i.kind == kind && i.number > n) n = i.number;
+    }
+    return n + 1;
+  }
+
+  List<Invoice> get invoicesSorted => [...invoices]
+    ..sort((a, b) {
+      final c = b.date.compareTo(a.date);
+      return c != 0 ? c : b.createdAt.compareTo(a.createdAt);
+    });
+
+  /// Saves an invoice and regenerates its ledger entries.
+  void saveInvoice(Invoice inv) {
+    final i = invoices.indexWhere((e) => e.id == inv.id);
+    if (i >= 0) {
+      invoices[i] = inv;
+    } else {
+      invoices.add(inv);
+    }
+    txns.removeWhere((t) => t.invoiceId == inv.id);
+    final title = '${inv.kind.label} شماره ${inv.number}';
+    txns.add(Txn(
+      id: newId(),
+      type: inv.kind.txnType,
+      amount: inv.total,
+      date: inv.date,
+      personId: inv.personId,
+      note: inv.note.isEmpty ? title : '$title — ${inv.note}',
+      dueDate: inv.dueDate,
+      invoiceId: inv.id,
+      createdAt: inv.createdAt,
+    ));
+    if (inv.paid > 0 && inv.accountId != null) {
+      txns.add(Txn(
+        id: newId(),
+        type: inv.kind.moneyIn ? TxnType.collect : TxnType.repay,
+        amount: inv.paid,
+        date: inv.date,
+        accountId: inv.accountId,
+        personId: inv.personId,
+        note: 'تسویه $title',
+        invoiceId: inv.id,
+        createdAt: inv.createdAt + 1,
+      ));
+    }
+    // remember last prices on products
+    for (final l in inv.lines) {
+      final p = product(l.productId);
+      if (p == null || l.qty <= 0) continue;
+      if (inv.kind == InvoiceKind.purchase) p.buyPrice = l.unitPrice;
+      if (inv.kind == InvoiceKind.sale && p.sellPrice == 0) p.sellPrice = l.unitPrice;
+    }
+    _commit();
+  }
+
+  void removeInvoice(String id) {
+    invoices.removeWhere((i) => i.id == id);
+    txns.removeWhere((t) => t.invoiceId == id);
+    _commit();
+  }
+
+  // ---------------------------------------------------------------- loans
+
+  List<Txn> loanPayments(String loanId) =>
+      txns.where((t) => t.loanId == loanId && t.type == TxnType.loanPay).toList()
+        ..sort((a, b) => a.date.compareTo(b.date));
+
+  int loanPaid(String loanId) => loanPayments(loanId).fold(0, (s, t) => s + t.amount);
+
+  int loanPaidCount(String loanId) => loanPayments(loanId).length;
+
+  DateTime installmentDue(Loan l, int index) =>
+      Jalali.fromDateTime(l.firstDue).addMonths(index).toDateTime();
+
+  /// Next unpaid installment due date, or null when finished.
+  DateTime? loanNextDue(Loan l) {
+    final n = loanPaidCount(l.id);
+    if (n >= l.installments || l.closed) return null;
+    return installmentDue(l, n);
+  }
+
+  int get totalLoanRemaining {
+    var s = 0;
+    for (final l in loans) {
+      if (l.closed) continue;
+      final r = l.totalPayable - loanPaid(l.id);
+      if (r > 0) s += r;
+    }
+    return s;
+  }
+
+  void saveLoan(Loan l, {bool recordReceive = false, DateTime? receiveDate}) {
+    final i = loans.indexWhere((e) => e.id == l.id);
+    if (i >= 0) {
+      loans[i] = l;
+    } else {
+      loans.add(l);
+    }
+    if (recordReceive && l.accountId != null && l.principal > 0) {
+      txns.removeWhere((t) => t.loanId == l.id && t.type == TxnType.loanIn);
+      txns.add(Txn(
+        id: newId(),
+        type: TxnType.loanIn,
+        amount: l.principal,
+        date: receiveDate ?? dateOnly(DateTime.now()),
+        accountId: l.accountId,
+        note: 'دریافت ${l.title}',
+        loanId: l.id,
+      ));
+    }
+    _commit();
+  }
+
+  void payInstallment(Loan l, {required String accountId, required int amount, required DateTime date}) {
+    final n = loanPaidCount(l.id) + 1;
+    txns.add(Txn(
+      id: newId(),
+      type: TxnType.loanPay,
+      amount: amount,
+      date: date,
+      accountId: accountId,
+      note: 'قسط $n از ${l.installments} — ${l.title}',
+      loanId: l.id,
+    ));
+    if (n >= l.installments) l.closed = true;
+    _commit();
+  }
+
+  void removeLoan(String id) {
+    loans.removeWhere((l) => l.id == id);
+    txns.removeWhere((t) => t.loanId == id);
+    _commit();
+  }
+
+  // ---------------------------------------------------------------- profit
+
+  ProfitReport profit(DateTime from, DateTime to) {
+    final r = ProfitReport();
+    final cost = <String, int>{};
+    int c(String id) => cost.putIfAbsent(id, () => avgCost(id));
+    for (final inv in invoices) {
+      if (inv.date.isBefore(from) || inv.date.isAfter(to)) continue;
+      final sign = switch (inv.kind) {
+        InvoiceKind.sale => 1,
+        InvoiceKind.saleReturn => -1,
+        _ => 0,
+      };
+      if (inv.kind == InvoiceKind.purchase) {
+        r.purchases += inv.total;
+        r.purchaseExtra += inv.extra;
+        r.purchaseInvoiceDiscounts += inv.discount;
+      }
+      if (inv.kind == InvoiceKind.purchaseReturn) r.purchaseReturns += inv.total;
+      if (sign == 0) continue;
+      final net = inv.total - inv.extra; // extra charges on sales count as revenue below
+      if (sign > 0) {
+        r.sales += net;
+        r.saleExtra += inv.extra;
+      } else {
+        r.saleReturns += net;
+      }
+      // spread the invoice-level discount over lines for per-product profit
+      final sub = inv.subtotal;
+      for (final l in inv.lines) {
+        final share = sub == 0 ? 0 : (inv.discount * l.total / sub).round();
+        final revenue = l.total - share;
+        final unitCost = l.productId == null ? 0 : c(l.productId!);
+        final lineCost = (l.qty * unitCost).round();
+        r.cogs += sign * lineCost;
+        final key = l.productId ?? 'free:${l.title}';
+        final row = r.byProduct.putIfAbsent(
+            key, () => ProductProfit(product(l.productId)?.name ?? (l.title.isEmpty ? 'بدون نام' : l.title)));
+        row.qty += sign * l.qty;
+        row.revenue += sign * revenue;
+        row.cost += sign * lineCost;
+      }
+    }
+    for (final t in txns) {
+      if (t.date.isBefore(from) || t.date.isAfter(to)) continue;
+      switch (t.type) {
+        case TxnType.income:
+          r.otherIncome += t.amount;
+        case TxnType.expense:
+          r.expenses += t.amount;
+        case TxnType.purchaseDiscount:
+          r.discountsReceived += t.amount;
+        case TxnType.saleDiscount:
+          r.discountsGiven += t.amount;
+        default:
+          break;
+      }
+    }
+    return r;
+  }
+
   // ---------------------------------------------------------------- backup
 
   String exportBackup() {
@@ -596,4 +904,34 @@ class StoreScope extends InheritedNotifier<AppStore> {
 
   static AppStore read(BuildContext context) =>
       context.getInheritedWidgetOfExactType<StoreScope>()!.notifier!;
+}
+
+class ProductProfit {
+  final String name;
+  double qty = 0;
+  int revenue = 0;
+  int cost = 0;
+  ProductProfit(this.name);
+  int get profit => revenue - cost;
+}
+
+class ProfitReport {
+  int sales = 0; // net of invoice discounts, excluding extra charges
+  int saleExtra = 0;
+  int saleReturns = 0;
+  int cogs = 0;
+  int purchases = 0;
+  int purchaseExtra = 0;
+  int purchaseInvoiceDiscounts = 0;
+  int purchaseReturns = 0;
+  int discountsReceived = 0;
+  int discountsGiven = 0;
+  int otherIncome = 0;
+  int expenses = 0;
+  final Map<String, ProductProfit> byProduct = {};
+
+  int get netSales => sales - saleReturns;
+  int get grossProfit => netSales - cogs;
+  int get netProfit =>
+      grossProfit + saleExtra - purchaseExtra + purchaseInvoiceDiscounts + discountsReceived - discountsGiven + otherIncome - expenses;
 }

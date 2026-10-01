@@ -5,6 +5,8 @@ class AppColors {
   static const expense = Color(0xFFC2410C);
   static const transfer = Color(0xFF2563EB);
   static const debt = Color(0xFF7C3AED);
+  static const loan = Color(0xFFB45309);
+  static const discount = Color(0xFF0891B2);
   static const sidebar = Color(0xFF0E1A24);
   static const sidebarHover = Color(0xFF172836);
 }

@@ -27,8 +27,14 @@ class TarazApp extends StatelessWidget {
 
   /// Skips the login screen (used by tests).
   final bool startUnlocked;
+  final AppPage initialPage;
 
-  const TarazApp({super.key, required this.store, this.startUnlocked = false});
+  const TarazApp({
+    super.key,
+    required this.store,
+    this.startUnlocked = false,
+    this.initialPage = AppPage.dashboard,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +60,7 @@ class TarazApp extends StatelessWidget {
           },
           theme: buildTheme(brightness: Brightness.light, accent: accent),
           darkTheme: buildTheme(brightness: Brightness.dark, accent: accent),
-          home: _Gate(startUnlocked: startUnlocked),
+          home: _Gate(startUnlocked: startUnlocked, initialPage: initialPage),
         );
       }),
     );
@@ -64,7 +70,8 @@ class TarazApp extends StatelessWidget {
 /// Decides between first-run setup, login and the main window.
 class _Gate extends StatefulWidget {
   final bool startUnlocked;
-  const _Gate({required this.startUnlocked});
+  final AppPage initialPage;
+  const _Gate({required this.startUnlocked, required this.initialPage});
 
   @override
   State<_Gate> createState() => _GateState();
@@ -82,7 +89,11 @@ class _GateState extends State<_Gate> {
     } else if (s.hasPassword && !_unlocked) {
       child = LoginScreen(key: const ValueKey('login'), onSuccess: () => setState(() => _unlocked = true));
     } else {
-      child = Shell(key: const ValueKey('shell'), onLock: s.hasPassword ? () => setState(() => _unlocked = false) : null);
+      child = Shell(
+        key: const ValueKey('shell'),
+        initialPage: widget.initialPage,
+        onLock: s.hasPassword ? () => setState(() => _unlocked = false) : null,
+      );
     }
     return AnimatedSwitcher(duration: const Duration(milliseconds: 250), child: child);
   }

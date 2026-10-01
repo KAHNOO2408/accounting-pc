@@ -8,9 +8,11 @@ import '../theme.dart';
 import 'jalali_picker.dart';
 
 Color txnColor(TxnType t) => switch (t) {
-      TxnType.income => AppColors.income,
-      TxnType.expense => AppColors.expense,
+      TxnType.income || TxnType.sale || TxnType.purchaseReturn => AppColors.income,
+      TxnType.expense || TxnType.purchase || TxnType.saleReturn => AppColors.expense,
       TxnType.transfer => AppColors.transfer,
+      TxnType.loanIn || TxnType.loanPay => AppColors.loan,
+      TxnType.purchaseDiscount || TxnType.saleDiscount => AppColors.discount,
       _ => AppColors.debt,
     };
 
@@ -22,6 +24,14 @@ IconData txnIcon(TxnType t) => switch (t) {
       TxnType.borrow => Icons.call_received_rounded,
       TxnType.collect => Icons.download_rounded,
       TxnType.repay => Icons.upload_rounded,
+      TxnType.sale => Icons.sell_outlined,
+      TxnType.purchase => Icons.shopping_cart_outlined,
+      TxnType.saleReturn => Icons.assignment_return_outlined,
+      TxnType.purchaseReturn => Icons.assignment_return_outlined,
+      TxnType.purchaseDiscount => Icons.local_offer_outlined,
+      TxnType.saleDiscount => Icons.local_offer_outlined,
+      TxnType.loanIn => Icons.real_estate_agent_outlined,
+      TxnType.loanPay => Icons.event_repeat_outlined,
     };
 
 IconData accountIcon(AccountType t) => switch (t) {
@@ -29,7 +39,8 @@ IconData accountIcon(AccountType t) => switch (t) {
       AccountType.bank => Icons.account_balance_outlined,
       AccountType.card => Icons.credit_card_rounded,
       AccountType.wallet => Icons.account_balance_wallet_outlined,
-      AccountType.other => Icons.savings_outlined,
+      AccountType.savings => Icons.savings_outlined,
+      AccountType.other => Icons.folder_outlined,
     };
 
 /// Amount always rendered left-to-right so the sign and separators stay correct.

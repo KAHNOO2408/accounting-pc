@@ -13,24 +13,45 @@ Future<void> showTxnDialog(
   TxnType? type,
   String? accountId,
   String? personId,
+  String? toAccountId,
   bool duplicate = false,
+  String? title,
 }) {
   return showDialog<void>(
     context: context,
-    builder: (_) => TxnDialog(edit: edit, type: type, accountId: accountId, personId: personId, duplicate: duplicate),
+    builder: (_) => TxnDialog(
+      edit: edit,
+      type: type,
+      accountId: accountId,
+      personId: personId,
+      toAccountId: toAccountId,
+      duplicate: duplicate,
+      title: title,
+    ),
   );
 }
 
-enum _Group { income, expense, transfer, debt }
+enum _Group { income, expense, transfer, debt, discount }
 
 class TxnDialog extends StatefulWidget {
   final Txn? edit;
   final TxnType? type;
   final String? accountId;
   final String? personId;
+  final String? toAccountId;
   final bool duplicate;
+  final String? title;
 
-  const TxnDialog({super.key, this.edit, this.type, this.accountId, this.personId, this.duplicate = false});
+  const TxnDialog({
+    super.key,
+    this.edit,
+    this.type,
+    this.accountId,
+    this.personId,
+    this.toAccountId,
+    this.duplicate = false,
+    this.title,
+  });
 
   @override
   State<TxnDialog> createState() => _TxnDialogState();
@@ -74,6 +95,8 @@ class _TxnDialogState extends State<TxnDialog> {
       _date = DateTime.now();
       _account = widget.accountId ?? (store.activeAccounts.isNotEmpty ? store.activeAccounts.first.id : null);
       _person = widget.personId;
+      _toAccount = widget.toAccountId;
+      if (_type.needsPerson && widget.accountId == null) _account = null;
     }
     _date = DateTime(_date.year, _date.month, _date.day);
   }
@@ -89,6 +112,7 @@ class _TxnDialogState extends State<TxnDialog> {
         TxnType.income => _Group.income,
         TxnType.expense => _Group.expense,
         TxnType.transfer => _Group.transfer,
+        TxnType.purchaseDiscount || TxnType.saleDiscount => _Group.discount,
         _ => _Group.debt,
       };
 
@@ -104,6 +128,8 @@ class _TxnDialogState extends State<TxnDialog> {
           _type = TxnType.transfer;
         case _Group.debt:
           if (!_type.isDebt) _type = TxnType.lend;
+        case _Group.discount:
+          if (!_type.isDiscount) _type = TxnType.saleDiscount;
       }
       final store = StoreScope.read(context);
       final c = store.category(_category);
@@ -121,9 +147,9 @@ class _TxnDialogState extends State<TxnDialog> {
     String? err;
     if (amount <= 0) {
       err = 'مبلغ را وارد کنید';
-    } else if (_type.isDebt && _person == null) {
-      err = 'شخص را انتخاب کنید';
-    } else if (!_type.isDebt && _account == null) {
+    } else if (_type.needsPerson && _person == null) {
+      err = 'طرف حساب را انتخاب کنید';
+    } else if (!_type.needsPerson && _account == null) {
       err = 'حساب را انتخاب کنید';
     } else if (_type == TxnType.transfer && (_toAccount == null || _toAccount == _account)) {
       err = 'حساب مقصد معتبر نیست';
@@ -180,7 +206,7 @@ class _TxnDialogState extends State<TxnDialog> {
         const SingleActivator(LogicalKeyboardKey.enter, control: true): () => _save(again: !_isEdit),
       },
       child: FormDialog(
-        title: _isEdit ? 'ویرایش تراکنش' : (widget.duplicate ? 'کپی تراکنش' : 'تراکنش جدید'),
+        title: _isEdit ? 'ویرایش تراکنش' : (widget.duplicate ? 'کپی تراکنش' : (widget.title ?? 'تراکنش جدید')),
         width: 620,
         leading: _isEdit
             ? TextButton.icon(
@@ -211,6 +237,7 @@ class _TxnDialogState extends State<TxnDialog> {
                   ButtonSegment(value: _Group.income, label: Text('درآمد'), icon: Icon(Icons.south_west_rounded, size: 16)),
                   ButtonSegment(value: _Group.transfer, label: Text('انتقال'), icon: Icon(Icons.swap_horiz_rounded, size: 16)),
                   ButtonSegment(value: _Group.debt, label: Text('بدهی و طلب'), icon: Icon(Icons.handshake_outlined, size: 16)),
+                  ButtonSegment(value: _Group.discount, label: Text('تخفیف'), icon: Icon(Icons.local_offer_outlined, size: 16)),
                 ],
                 selected: {_group},
                 onSelectionChanged: (s) => _setGroup(s.first),
@@ -224,6 +251,23 @@ class _TxnDialogState extends State<TxnDialog> {
                     ButtonSegment(value: TxnType.borrow, label: Text('قرض گرفتم')),
                     ButtonSegment(value: TxnType.collect, label: Text('طلب را گرفتم')),
                     ButtonSegment(value: TxnType.repay, label: Text('بدهی را دادم')),
+                  ],
+                  selected: {_type},
+                  onSelectionChanged: (s) => setState(() => _type = s.first),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _debtHint(_type),
+                  style: th.textTheme.bodySmall?.copyWith(color: th.hintColor),
+                ),
+              ],
+              if (_group == _Group.discount) ...[
+                const SizedBox(height: 10),
+                SegmentedButton<TxnType>(
+                  showSelectedIcon: false,
+                  segments: const [
+                    ButtonSegment(value: TxnType.saleDiscount, label: Text('تخفیف از فروش (به مشتری)')),
+                    ButtonSegment(value: TxnType.purchaseDiscount, label: Text('تخفیف از خرید (از فروشنده)')),
                   ],
                   selected: {_type},
                   onSelectionChanged: (s) => setState(() => _type = s.first),
@@ -256,10 +300,11 @@ class _TxnDialogState extends State<TxnDialog> {
                 children: [
                   Expanded(
                     child: FieldDropdown<String?>(
-                      label: _type == TxnType.transfer ? 'از حساب' : (_type.isDebt ? 'حساب (اختیاری)' : 'حساب'),
+                      label: _type == TxnType.transfer ? 'از حساب' : (_type.needsPerson ? 'حساب (اختیاری)' : 'حساب'),
                       value: _account,
                       items: [
-                        if (_type.isDebt) const DropdownMenuItem<String?>(value: null, child: Text('بدون حساب (فقط ثبت در دفتر)')),
+                        if (_type.needsPerson)
+                          const DropdownMenuItem<String?>(value: null, child: Text('بدون حساب (فقط ثبت در دفتر)')),
                         for (final a in accounts)
                           DropdownMenuItem<String?>(
                             value: a.id,
@@ -334,10 +379,10 @@ class _TxnDialogState extends State<TxnDialog> {
                   children: [
                     Expanded(
                       child: FieldDropdown<String?>(
-                        label: _type.isDebt ? 'طرف حساب' : 'طرف حساب (اختیاری)',
+                        label: _type.needsPerson ? 'طرف حساب' : 'طرف حساب (اختیاری)',
                         value: _person,
                         items: [
-                          if (!_type.isDebt) const DropdownMenuItem<String?>(value: null, child: Text('—')),
+                          if (!_type.needsPerson) const DropdownMenuItem<String?>(value: null, child: Text('—')),
                           for (final p in people)
                             DropdownMenuItem<String?>(
                               value: p.id,
@@ -395,6 +440,8 @@ class _TxnDialogState extends State<TxnDialog> {
         TxnType.borrow => 'پولی که از کسی گرفته‌اید و باید پس بدهید (بدهی شما زیاد می‌شود).',
         TxnType.collect => 'دریافت بخشی یا کل طلب از طرف حساب.',
         TxnType.repay => 'پرداخت بخشی یا کل بدهی به طرف حساب.',
+        TxnType.saleDiscount => 'تخفیفی که به مشتری داده‌اید؛ از طلب شما از او کم می‌شود.',
+        TxnType.purchaseDiscount => 'تخفیفی که فروشنده به شما داده؛ از بدهی شما به او کم می‌شود.',
         _ => '',
       };
 }

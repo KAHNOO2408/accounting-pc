@@ -53,7 +53,7 @@ class _PeoplePageState extends State<PeoplePage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         PageHeader(
-          title: 'اشخاص، بدهی و طلب',
+          title: 'مخاطبین، بدهی و طلب',
           subtitle: 'حساب‌وکتاب با افراد و مشتری‌ها',
           actions: [
             FilledButton.icon(

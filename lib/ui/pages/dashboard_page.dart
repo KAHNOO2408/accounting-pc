@@ -5,6 +5,7 @@ import '../../core/jalali.dart';
 import '../../data/models.dart';
 import '../../data/store.dart';
 import '../dialogs/cheque_dialogs.dart';
+import '../dialogs/invoice_editor.dart';
 import '../dialogs/txn_dialog.dart';
 import '../shell.dart';
 import '../theme.dart';
@@ -22,6 +23,7 @@ class DashboardPage extends StatelessWidget {
     final now = Jalali.now();
     final mt = store.monthTotals(now);
     final prev = store.monthTotals(now.addMonths(-1));
+    final sales = store.profit(now.firstOfMonth.toDateTime(), now.lastOfMonth.toDateTime());
 
     final months = <MonthBar>[];
     for (var i = 5; i >= 0; i--) {
@@ -43,20 +45,21 @@ class DashboardPage extends StatelessWidget {
           title: 'پیشخوان',
           subtitle: '${now.formatWithWeekday()} — خلاصه وضعیت مالی شما',
           actions: [
+            FilledButton.icon(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.income),
+              onPressed: () => showInvoiceEditor(context, kind: InvoiceKind.sale),
+              icon: const Icon(Icons.sell_outlined, size: 18),
+              label: const Text('ثبت فروش (F2)'),
+            ),
             OutlinedButton.icon(
-              onPressed: () => showTxnDialog(context, type: TxnType.income),
-              icon: const Icon(Icons.south_west_rounded, size: 18, color: AppColors.income),
-              label: const Text('درآمد (Ctrl+I)'),
+              onPressed: () => showInvoiceEditor(context, kind: InvoiceKind.purchase),
+              icon: const Icon(Icons.shopping_cart_outlined, size: 18, color: AppColors.expense),
+              label: const Text('ثبت خرید (F3)'),
             ),
             OutlinedButton.icon(
               onPressed: () => showTxnDialog(context, type: TxnType.expense),
               icon: const Icon(Icons.north_east_rounded, size: 18, color: AppColors.expense),
               label: const Text('هزینه (Ctrl+E)'),
-            ),
-            OutlinedButton.icon(
-              onPressed: () => showTxnDialog(context, type: TxnType.transfer),
-              icon: const Icon(Icons.swap_horiz_rounded, size: 18, color: AppColors.transfer),
-              label: const Text('انتقال (Ctrl+T)'),
             ),
           ],
         ),
@@ -72,11 +75,11 @@ class DashboardPage extends StatelessWidget {
                 hint: '${store.activeAccounts.length} حساب فعال',
               ),
               StatTile(
-                label: 'درآمد ${now.monthName}',
-                value: mt.income,
+                label: 'فروش و درآمد ${now.monthName}',
+                value: sales.netSales + mt.income,
                 icon: Icons.south_west_rounded,
                 color: AppColors.income,
-                hint: delta(mt.income, prev.income),
+                hint: 'سود ناخالص فروش: ${compactMoney(sales.grossProfit)}',
               ),
               StatTile(
                 label: 'هزینه ${now.monthName}',
@@ -285,6 +288,17 @@ class _UpcomingPanel extends StatelessWidget {
           amount: t.amount,
           onTap: () => Nav.of(context).go(AppPage.people, personId: t.personId),
         ),
+      for (final l in store.loans)
+        if (store.loanNextDue(l) != null && !store.loanNextDue(l)!.isAfter(today.add(const Duration(days: 30))))
+          _UpRow(
+            icon: Icons.event_repeat_outlined,
+            color: AppColors.loan,
+            title: 'قسط ${l.title}',
+            sub: '${jFormat(store.loanNextDue(l)!)} · ${when(store.loanNextDue(l)!)}',
+            subColor: whenColor(store.loanNextDue(l)!),
+            amount: l.installmentAmount,
+            onTap: () => Nav.of(context).go(AppPage.loans),
+          ),
     ];
 
     return Panel(

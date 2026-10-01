@@ -7,12 +7,13 @@ import '../widgets/common.dart';
 
 // ============================================================== Account
 
-Future<String?> showAccountDialog(BuildContext context, {Account? edit}) =>
-    showDialog<String>(context: context, builder: (_) => _AccountDialog(edit: edit));
+Future<String?> showAccountDialog(BuildContext context, {Account? edit, AccountType? type}) =>
+    showDialog<String>(context: context, builder: (_) => _AccountDialog(edit: edit, type: type));
 
 class _AccountDialog extends StatefulWidget {
   final Account? edit;
-  const _AccountDialog({this.edit});
+  final AccountType? type;
+  const _AccountDialog({this.edit, this.type});
 
   @override
   State<_AccountDialog> createState() => _AccountDialogState();
@@ -24,6 +25,7 @@ class _AccountDialogState extends State<_AccountDialog> {
   late final TextEditingController _number;
   late final TextEditingController _opening;
   late final TextEditingController _note;
+  late final TextEditingController _goal;
   late AccountType _type;
   late int _color;
   late bool _negOpening;
@@ -38,14 +40,15 @@ class _AccountDialogState extends State<_AccountDialog> {
     _number = TextEditingController(text: e?.number ?? '');
     _opening = TextEditingController(text: e == null || e.opening == 0 ? '' : groupDigits(e.opening.abs()));
     _note = TextEditingController(text: e?.note ?? '');
-    _type = e?.type ?? AccountType.bank;
+    _goal = TextEditingController(text: (e?.goal ?? 0) == 0 ? '' : groupDigits(e!.goal));
+    _type = e?.type ?? widget.type ?? AccountType.bank;
     _color = e?.color ?? palette[1];
     _negOpening = (e?.opening ?? 0) < 0;
   }
 
   @override
   void dispose() {
-    for (final c in [_name, _bank, _number, _opening, _note]) {
+    for (final c in [_name, _bank, _number, _opening, _note, _goal]) {
       c.dispose();
     }
     super.dispose();
@@ -66,6 +69,7 @@ class _AccountDialogState extends State<_AccountDialog> {
       ..number = _number.text.trim()
       ..opening = op
       ..color = _color
+      ..goal = _type == AccountType.savings ? parseMoney(_goal.text) : 0
       ..note = _note.text.trim();
     store.upsertAccount(a);
     Navigator.pop(context, a.id);
@@ -136,6 +140,10 @@ class _AccountDialogState extends State<_AccountDialog> {
               ),
             ],
           ),
+          if (_type == AccountType.savings) ...[
+            const SizedBox(height: 6),
+            MoneyField(controller: _goal, label: 'هدف پس‌انداز (اختیاری)'),
+          ],
           const SizedBox(height: 6),
           Text('رنگ', style: th.textTheme.labelLarge),
           const SizedBox(height: 8),
