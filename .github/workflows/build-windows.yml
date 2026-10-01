@@ -36,10 +36,26 @@ jobs:
 
       - name: Tests (logic + UI smoke test)
         continue-on-error: true
-        run: flutter test
+        shell: pwsh
+        run: |
+          flutter test --reporter expanded 2>&1 | Tee-Object -FilePath test.log
+          if ($LASTEXITCODE -ne 0) {
+            $lines = Get-Content test.log | Select-String -Pattern 'FAILED|Expected|Actual|Exception|Error|error|overflowed|\[E\]|test/app_test.dart|lib/' | Select-Object -First 80
+            $msg = ($lines | ForEach-Object { $_.Line.Trim() }) -join '%0A'
+            Write-Output "::error title=tests::$msg"
+            exit 1
+          }
 
       - name: Build
-        run: flutter build windows --release
+        shell: pwsh
+        run: |
+          flutter build windows --release 2>&1 | Tee-Object -FilePath build.log
+          if ($LASTEXITCODE -ne 0) {
+            $lines = Get-Content build.log | Select-String -Pattern 'error|Error|failed|Failed|\.dart:|\.cpp|\.h\(|MSB|CMake' | Select-Object -First 80
+            $msg = ($lines | ForEach-Object { $_.Line.Trim() }) -join '%0A'
+            Write-Output "::error title=build::$msg"
+            exit 1
+          }
 
       - name: Package zip
         shell: pwsh
