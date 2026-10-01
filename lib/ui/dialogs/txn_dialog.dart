@@ -73,6 +73,10 @@ class _TxnDialogState extends State<TxnDialog> {
 
   bool get _isEdit => widget.edit != null && !widget.duplicate;
 
+  /// The type picker is shown only for a generic "new transaction";
+  /// when the menu item already decides the type, the form goes straight in.
+  bool get _freeType => widget.edit == null && widget.type == null;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -206,7 +210,11 @@ class _TxnDialogState extends State<TxnDialog> {
         const SingleActivator(LogicalKeyboardKey.enter, control: true): () => _save(again: !_isEdit),
       },
       child: FormDialog(
-        title: _isEdit ? 'ویرایش تراکنش' : (widget.duplicate ? 'کپی تراکنش' : (widget.title ?? 'تراکنش جدید')),
+        title: _isEdit
+            ? 'ویرایش ${_type.label}'
+            : (widget.duplicate
+                ? 'کپی ${_type.label}'
+                : (widget.title ?? (_freeType ? 'تراکنش جدید' : (_type.isDebt ? 'بدهی و طلب' : _type.label)))),
         width: 620,
         leading: _isEdit
             ? TextButton.icon(
@@ -230,6 +238,7 @@ class _TxnDialogState extends State<TxnDialog> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (_freeType)
               SegmentedButton<_Group>(
                 showSelectedIcon: false,
                 segments: const [
@@ -242,8 +251,8 @@ class _TxnDialogState extends State<TxnDialog> {
                 selected: {_group},
                 onSelectionChanged: (s) => _setGroup(s.first),
               ),
-              if (_group == _Group.debt) ...[
-                const SizedBox(height: 10),
+              if (_group == _Group.debt && !_isEdit) ...[
+                if (_freeType) const SizedBox(height: 10),
                 SegmentedButton<TxnType>(
                   showSelectedIcon: false,
                   segments: const [
@@ -261,7 +270,7 @@ class _TxnDialogState extends State<TxnDialog> {
                   style: th.textTheme.bodySmall?.copyWith(color: th.hintColor),
                 ),
               ],
-              if (_group == _Group.discount) ...[
+              if (_group == _Group.discount && _freeType) ...[
                 const SizedBox(height: 10),
                 SegmentedButton<TxnType>(
                   showSelectedIcon: false,
@@ -278,6 +287,8 @@ class _TxnDialogState extends State<TxnDialog> {
                   style: th.textTheme.bodySmall?.copyWith(color: th.hintColor),
                 ),
               ],
+              if (_group == _Group.discount && !_freeType)
+                Text(_debtHint(_type), style: th.textTheme.bodySmall?.copyWith(color: th.hintColor)),
               const SizedBox(height: 18),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,

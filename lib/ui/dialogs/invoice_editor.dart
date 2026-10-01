@@ -200,15 +200,6 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     });
   }
 
-  void _setKind(InvoiceKind k) {
-    final store = StoreScope.read(context);
-    setState(() {
-      final wasDefault = !_isEdit && _number.text == '${store.nextInvoiceNumber(_kind, proforma: _proforma)}';
-      _kind = k;
-      if (wasDefault) _number.text = '${store.nextInvoiceNumber(k)}';
-    });
-  }
-
   Invoice? _save({bool again = false, bool close = true}) {
     final store = StoreScope.read(context);
     final lines = _lines.where((l) => !l.isEmpty).toList();
@@ -366,15 +357,6 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                         '${_isEdit ? 'ویرایش ' : ''}$_title',
                         style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
                       ),
-                    ),
-                    if (!_proforma)
-                    SegmentedButton<InvoiceKind>(
-                      showSelectedIcon: false,
-                      segments: [
-                        for (final k in InvoiceKind.values) ButtonSegment(value: k, label: Text(k.short)),
-                      ],
-                      selected: {_kind},
-                      onSelectionChanged: (s) => _setKind(s.first),
                     ),
                     const SizedBox(width: 8),
                     IconButton(tooltip: 'بستن (Esc)', onPressed: _close, icon: const Icon(Icons.close_rounded)),

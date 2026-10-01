@@ -79,7 +79,7 @@ class _ChequeDialogState extends State<_ChequeDialog> {
     final store = StoreScope.of(context);
     final th = Theme.of(context);
     return FormDialog(
-      title: widget.edit == null ? 'ثبت چک' : 'ویرایش چک',
+      title: '${widget.edit == null ? 'ثبت' : 'ویرایش'} چک ${_dir == ChequeDirection.received ? 'دریافتی' : 'پرداختی'}',
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
         FilledButton(onPressed: _save, child: const Text('ذخیره')),
@@ -87,16 +87,6 @@ class _ChequeDialogState extends State<_ChequeDialog> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SegmentedButton<ChequeDirection>(
-            showSelectedIcon: false,
-            segments: const [
-              ButtonSegment(value: ChequeDirection.received, label: Text('چک دریافتی'), icon: Icon(Icons.download_rounded, size: 16)),
-              ButtonSegment(value: ChequeDirection.issued, label: Text('چک پرداختی'), icon: Icon(Icons.upload_rounded, size: 16)),
-            ],
-            selected: {_dir},
-            onSelectionChanged: widget.edit?.status == ChequeStatus.cleared ? null : (s) => setState(() => _dir = s.first),
-          ),
-          const SizedBox(height: 18),
           MoneyField(controller: _amount, autofocus: true, label: 'مبلغ چک'),
           const SizedBox(height: 6),
           Row(

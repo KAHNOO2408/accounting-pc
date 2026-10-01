@@ -207,7 +207,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   @override
   Widget build(BuildContext context) {
     return FormDialog(
-      title: widget.edit == null ? 'دسته‌بندی جدید' : 'ویرایش دسته‌بندی',
+      title: '${widget.edit == null ? 'دسته جدید' : 'ویرایش دسته'} ${_kind == CategoryKind.income ? 'درآمد' : 'هزینه'}',
       width: 440,
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
@@ -216,16 +216,6 @@ class _CategoryDialogState extends State<_CategoryDialog> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SegmentedButton<CategoryKind>(
-            showSelectedIcon: false,
-            segments: const [
-              ButtonSegment(value: CategoryKind.expense, label: Text('هزینه')),
-              ButtonSegment(value: CategoryKind.income, label: Text('درآمد')),
-            ],
-            selected: {_kind},
-            onSelectionChanged: widget.edit != null ? null : (s) => setState(() => _kind = s.first),
-          ),
-          const SizedBox(height: 14),
           TextField(
             controller: _name,
             autofocus: true,
