@@ -33,7 +33,7 @@ class TarazApp extends StatelessWidget {
     super.key,
     required this.store,
     this.startUnlocked = false,
-    this.initialPage = AppPage.dashboard,
+    this.initialPage = AppPage.home,
   });
 
   @override

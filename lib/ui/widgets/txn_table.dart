@@ -257,7 +257,7 @@ class _TxnRowState extends State<_TxnRow> {
                       ? [
                           PopupMenuItem(
                             value: 'open',
-                            child: Text(t.invoiceId != null ? 'باز کردن فاکتور' : 'رفتن به وام‌ها'),
+                            child: Text(t.invoiceId != null ? 'باز کردن فاکتور' : 'باز کردن'),
                           ),
                           if (t.type == TxnType.loanPay) const PopupMenuItem(value: 'del', child: Text('حذف این پرداخت')),
                         ]
@@ -310,9 +310,6 @@ void openTxn(BuildContext context, Txn t) {
     if (inv != null) showInvoiceEditor(context, edit: inv);
     return;
   }
-  if (t.type.isLoan) {
-    Nav.of(context).go(AppPage.loans);
-    return;
-  }
+  if (t.type.isLoan) return;
   showTxnDialog(context, edit: t);
 }

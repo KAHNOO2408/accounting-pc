@@ -146,7 +146,7 @@ class _AccountsTablePageState extends State<AccountsTablePage> {
         for (final a in store.accounts) {
           final b = store.balance(a.id);
           rows.add((a.name, a.type.label, b > 0 ? b : 0, b < 0 ? -b : 0,
-              () => Nav.of(context).go(a.type == AccountType.savings ? AppPage.savings : AppPage.accounts, accountId: a.id)));
+              () => Nav.of(context).go(AppPage.accounts, accountId: a.id)));
         }
       case _Tab.products:
         for (final p in store.productsSorted) {

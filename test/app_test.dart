@@ -138,7 +138,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(s.settings.setupDone, isTrue);
     expect(s.settings.hasPassword, isTrue);
-    expect(find.text('پیشخوان'), findsWidgets);
+    expect(find.text('خرید و فروش'), findsWidgets);
 
     // a fresh launch asks for the password
     await tester.pumpWidget(const SizedBox());
@@ -152,7 +152,7 @@ void main() {
     await tester.enterText(find.byType(TextField).first, '1234');
     await tester.tap(find.text('ورود'));
     await tester.pumpAndSettle();
-    expect(find.text('پیشخوان'), findsWidgets);
+    expect(find.text('خرید و فروش'), findsWidgets);
   });
 
   test('invoices, stock, profit and loans', () {
@@ -343,7 +343,7 @@ void main() {
       expect(tester.takeException(), isNull, reason: page.name);
     }
 
-    for (final tab in ['اسناد', 'عملیات کالا', 'مالی', 'مالی ویژه', 'هزینه و درآمد', 'گزارشات', 'متفرقه', 'کنترل اسناد', 'خروج و پشتیبان']) {
+    for (final tab in ['خرید و فروش', 'عملیات کالا', 'مالی', 'مالی ویژه', 'هزینه و درآمد', 'گزارشات', 'متفرقه', 'کنترل اسناد', 'خروج و پشتیبان']) {
       await tester.tap(find.text(tab).first);
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull, reason: tab);
@@ -372,10 +372,10 @@ void main() {
     expect(s.invoices.length, 2);
     expect(s.stock(prod.id), 2);
 
-    // new transaction from the home tab
-    await tester.tap(find.text('خانه'));
+    // cash payment from the finance tab
+    await tester.tap(find.text('مالی').first);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('تراکنش جدید').first);
+    await tester.tap(find.text('پرداخت نقدی').first);
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextFormField).first, '25000');
     await tester.tap(find.text('ذخیره (Ctrl+S)'));

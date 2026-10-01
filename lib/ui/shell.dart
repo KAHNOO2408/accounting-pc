@@ -8,20 +8,16 @@ import 'auth/auth_screens.dart';
 import 'dialogs/cheque_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
-import 'dialogs/product_dialog.dart';
 import 'dialogs/txn_dialog.dart';
 import 'pages/accounts_page.dart';
-import 'pages/categories_page.dart';
+import 'pages/home_page.dart';
 import 'pages/cheques_page.dart';
-import 'pages/dashboard_page.dart';
 import 'pages/invoices_page.dart';
 import 'pages/ledger_pages.dart';
-import 'pages/loans_page.dart';
 import 'pages/people_page.dart';
 import 'pages/products_page.dart';
 import 'pages/profit_page.dart';
 import 'pages/reports_page.dart';
-import 'pages/savings_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/stock_ops.dart';
 import 'pages/transactions_page.dart';
@@ -29,17 +25,14 @@ import 'theme.dart';
 import 'widgets/common.dart';
 
 enum AppPage {
-  dashboard,
+  home,
   invoices,
   proformas,
   products,
   stockCount,
   transactions,
   accounts,
-  savings,
-  loans,
   cheques,
-  categories,
   people,
   accountsTable,
   balanceSheet,
@@ -122,28 +115,6 @@ final _accTable = _Item('جدول و مشاهده حساب‌ها', Icons.table_
     shortcut: 'Ctrl+A', activator: _k(LogicalKeyboardKey.keyA, ctrl: true), run: _page(AppPage.accountsTable));
 
 final List<_Tab> _tabs = [
-  _Tab('خانه', [
-    _Group('پرکاربرد', [
-      _Item('پیشخوان', Icons.home_rounded, _blue, run: _page(AppPage.dashboard)),
-      _Item('تراکنش جدید', Icons.add_circle_outline, _blue,
-          shortcut: 'Ctrl+N', activator: _k(LogicalKeyboardKey.keyN, ctrl: true), run: (c, _) => showTxnDialog(c)),
-      _Item('فاکتور فروش', Icons.sell_outlined, _green,
-          shortcut: 'F6', run: (c, _) => showInvoiceEditor(c, kind: InvoiceKind.sale)),
-      _Item('فاکتور خرید', Icons.shopping_cart_outlined, _red,
-          shortcut: 'F5', run: (c, _) => showInvoiceEditor(c, kind: InvoiceKind.purchase)),
-      _Item('بدهی و طلب', Icons.handshake_outlined, _violet,
-          run: (c, _) => showTxnDialog(c, type: TxnType.lend, title: 'بدهی و طلب')),
-      _Item('مخاطبین', Icons.contacts_outlined, _violet, run: _page(AppPage.people)),
-    ]),
-    _Group('مالی شخصی', [
-      _Item('حساب‌ها و بانک', Icons.account_balance_outlined, _blue, run: _page(AppPage.accounts)),
-      _Item('پس‌انداز', Icons.savings_outlined, _violet, run: _page(AppPage.savings)),
-      _Item('وام و اقساط', Icons.real_estate_agent_outlined, _amber, run: _page(AppPage.loans)),
-      _Item('چک‌ها', Icons.request_page_outlined, _cyan, run: _page(AppPage.cheques)),
-      _Item('سود', Icons.trending_up_rounded, _green, run: _page(AppPage.profit)),
-      _Item('گزارشات', Icons.bar_chart_rounded, _blue, run: _page(AppPage.reports)),
-    ]),
-  ]),
   _Tab('اسناد', [
     _Group('اسناد', [
       _Item('لیست اسناد', Icons.list_alt_rounded, _blue,
@@ -158,12 +129,12 @@ final List<_Tab> _tabs = [
       const _Item('تقسیم سود و زیان سال مالی', Icons.pie_chart_outline_rounded, _amber),
       const _Item('تقسیم سود و زیان صاحبان سهام', Icons.groups_2_outlined, _amber),
       const _Item('سند اختتامیه', Icons.sports_score_rounded, _slate),
-      const _Item('انتقال تراز اختتامیه به افتتاحیه', Icons.move_down_rounded, _slate),
+      const _Item('انتقال تراز اختتامیه به تراز افتتاحیه', Icons.move_down_rounded, _slate),
       const _Item('انتقال حساب‌ها به دفتر', Icons.drive_file_move_outline, _slate),
     ]),
     _Group('تسعیر نرخ', [
-      const _Item('کاهش قیمت تمام‌شده کالا', Icons.trending_down_rounded, _red),
-      const _Item('افزایش قیمت تمام‌شده کالا', Icons.trending_up_rounded, _green),
+      const _Item('اعمال کاهش در قیمت تمام شده کالا', Icons.trending_down_rounded, _red),
+      const _Item('اعمال افزایش در قیمت تمام شده کالا', Icons.trending_up_rounded, _green),
       const _Item('تسعیر نرخ ارز', Icons.currency_exchange_rounded, _amber),
     ]),
     _Group('سایر اسناد', [
@@ -212,7 +183,6 @@ final List<_Tab> _tabs = [
           shortcut: 'Ctrl+F5',
           activator: _k(LogicalKeyboardKey.f5, ctrl: true),
           run: (c, _) => showInvoiceEditor(c, kind: InvoiceKind.purchaseReturn)),
-      _Item('فهرست فاکتورها', Icons.receipt_outlined, _blue, run: _page(AppPage.invoices)),
       _accTable,
     ]),
   ]),
@@ -226,7 +196,6 @@ final List<_Tab> _tabs = [
       _Item('ضایعات یا مصرف کالا', Icons.delete_sweep_outlined, _red,
           shortcut: 'Ctrl+7', activator: _k(LogicalKeyboardKey.digit7, ctrl: true), run: (c, _) => showWasteDialog(c)),
       _Item('تبدیل کالا', Icons.autorenew_rounded, _amber, run: (c, _) => showConvertDialog(c)),
-      _Item('کالای جدید', Icons.add_box_outlined, _green, run: (c, _) => showProductDialog(c)),
     ]),
     _Group('پیش فاکتور', [
       _Item('پیش فاکتور', Icons.note_add_outlined, _cyan,
@@ -322,8 +291,6 @@ final List<_Tab> _tabs = [
           activator: _k(LogicalKeyboardKey.f6, shift: true),
           run: (c, _) => showTxnDialog(c, type: TxnType.transfer, title: 'مبادلات داخلی')),
       _Item('دریافت پرداخت بین حساب‌ها', Icons.compare_arrows_rounded, _blue,
-          shortcut: 'Ctrl+T',
-          activator: _k(LogicalKeyboardKey.keyT, ctrl: true),
           run: (c, _) => showTxnDialog(c, type: TxnType.transfer, title: 'دریافت و پرداخت بین حساب‌ها')),
       const _Item('جا به جایی چک', Icons.swap_horiz_rounded, _slate),
       _Item('راس‌گیری چک', Icons.calculate_outlined, _cyan, run: (c, _) => showChequeAverageDialog(c)),
@@ -331,23 +298,24 @@ final List<_Tab> _tabs = [
     ]),
   ]),
   _Tab('هزینه و درآمد', [
-    _Group('درآمد', [
-      _Item('ثبت درآمدها', Icons.add_card_outlined, _green,
+    _Group('', [
+      _Item('ثبت درآمد ها', Icons.add_card_outlined, _green,
           shortcut: 'Alt+F11',
           activator: _k(LogicalKeyboardKey.f11, alt: true),
           run: (c, _) => showTxnDialog(c, type: TxnType.income, title: 'ثبت درآمد')),
       _Item('برگشت درآمد', Icons.undo_rounded, _amber,
+          shortcut: 'Alt+F11',
           run: (c, _) => showTxnDialog(c, type: TxnType.expense, title: 'برگشت درآمد')),
     ]),
-    _Group('هزینه', [
+    _Group('', [
+      const _Item('پرداخت هزینه های مرکب', Icons.playlist_add_rounded, _slate, shortcut: 'Shift+F7'),
+      _Item('برگشت هزینه', Icons.redo_rounded, _amber,
+          shortcut: 'Alt+F10',
+          run: (c, _) => showTxnDialog(c, type: TxnType.income, title: 'برگشت هزینه')),
       _Item('پرداخت هزینه', Icons.receipt_long_outlined, _red,
           shortcut: 'Alt+F10',
           activator: _k(LogicalKeyboardKey.f10, alt: true),
           run: (c, _) => showTxnDialog(c, type: TxnType.expense, title: 'پرداخت هزینه')),
-      const _Item('پرداخت هزینه‌های مرکب', Icons.playlist_add_rounded, _slate, shortcut: 'Shift+F7'),
-      _Item('برگشت هزینه', Icons.redo_rounded, _amber,
-          run: (c, _) => showTxnDialog(c, type: TxnType.income, title: 'برگشت هزینه')),
-      _Item('دسته‌بندی‌ها', Icons.sell_outlined, _blue, run: _page(AppPage.categories)),
       _accTable,
     ]),
   ]),
@@ -389,7 +357,7 @@ final List<_Tab> _tabs = [
       const _Item('واحدهای شمارش', Icons.straighten_rounded, _slate),
       const _Item('لیست ارزها', Icons.attach_money_rounded, _slate),
       const _Item('لیست انبارها', Icons.warehouse_outlined, _slate),
-      const _Item('تصویر پس‌زمینه', Icons.wallpaper_rounded, _slate),
+      const _Item('تصویر پس زمینه', Icons.wallpaper_rounded, _slate),
       const _Item('ارسال پیام', Icons.sms_outlined, _slate, shortcut: 'Ctrl+F11'),
     ]),
     _Group('کاربران', [
@@ -404,7 +372,7 @@ final List<_Tab> _tabs = [
       const _Item('چک کاردکس', Icons.playlist_add_check_rounded, _slate),
       _Item('کنترل کالا', Icons.inventory_2_outlined, _amber,
           run: _page(AppPage.products, hint: 'کالاهای کم‌موجود یا منفی با رنگ قرمز/نارنجی مشخص‌اند')),
-      _Item('محاسبه قیمت تمام‌شده', Icons.functions_rounded, _amber,
+      _Item('محاسبه قیمت تمام شده', Icons.functions_rounded, _amber,
           run: _page(AppPage.products, hint: 'قیمت تمام‌شده خودکار با میانگین موزون خرید محاسبه می‌شود')),
       const _Item('کنترل تراز اسناد', Icons.balance_rounded, _slate),
       const _Item('گزارش خلاف ماهیت', Icons.report_gmailerrorred_outlined, _slate),
@@ -423,7 +391,7 @@ final List<_Tab> _tabs = [
       _Item('تهیه کپی نسخه پشتیبان', Icons.backup_outlined, _green,
           shortcut: 'F11', activator: _k(LogicalKeyboardKey.f11), run: (c, _) => quickBackup(c)),
       _Item('درباره ما', Icons.info_outline_rounded, _blue, run: (c, _) => showAboutTaraz(c)),
-      _Item('اطلاعات نسخه', Icons.verified_outlined, _blue, run: (c, _) => showAboutTaraz(c, license: true)),
+      _Item('اطلاعات نسخه خریداری شده', Icons.verified_outlined, _blue, run: (c, _) => showAboutTaraz(c, license: true)),
       const _Item('ارتباط از راه دور', Icons.support_agent_rounded, _slate),
     ]),
   ]),
@@ -435,7 +403,7 @@ class Shell extends StatefulWidget {
   /// Null when no password is set (lock button hidden).
   final VoidCallback? onLock;
   final AppPage initialPage;
-  const Shell({super.key, this.onLock, this.initialPage = AppPage.dashboard});
+  const Shell({super.key, this.onLock, this.initialPage = AppPage.home});
 
   @override
   State<Shell> createState() => _ShellState();
@@ -490,21 +458,18 @@ class _ShellState extends State<Shell> {
   }
 
   Widget _body() => switch (_page) {
-        AppPage.dashboard => const DashboardPage(),
+        AppPage.home => const HomePage(),
         AppPage.invoices => InvoicesPage(key: ValueKey('inv$_invoiceKind'), initialKind: _invoiceKind),
         AppPage.proformas => const InvoicesPage(key: ValueKey('proformas'), proforma: true),
         AppPage.products => const ProductsPage(),
         AppPage.stockCount => const StockCountPage(),
         AppPage.transactions => TransactionsPage(searchFocus: _searchFocus),
         AppPage.accounts => AccountsPage(key: ValueKey('acc$_focusAccount'), initialAccountId: _focusAccount),
-        AppPage.savings => const SavingsPage(),
-        AppPage.loans => const LoansPage(),
         AppPage.cheques => ChequesPage(
             key: ValueKey('chq$_chequeDir$_chequeStatus'),
             initialDirection: _chequeDir ?? ChequeDirection.received,
             initialStatus: _chequeDir == null ? ChequeStatus.pending : _chequeStatus,
           ),
-        AppPage.categories => const CategoriesPage(),
         AppPage.people => PeoplePage(key: ValueKey('per$_focusPerson'), initialPersonId: _focusPerson),
         AppPage.accountsTable => const AccountsTablePage(),
         AppPage.balanceSheet => const BalanceSheetPage(),
@@ -517,8 +482,6 @@ class _ShellState extends State<Shell> {
   Widget build(BuildContext context) {
     final store = StoreScope.of(context);
     final bindings = <ShortcutActivator, VoidCallback>{
-      const SingleActivator(LogicalKeyboardKey.keyE, control: true): () => showTxnDialog(context, type: TxnType.expense),
-      const SingleActivator(LogicalKeyboardKey.keyI, control: true): () => showTxnDialog(context, type: TxnType.income),
       const SingleActivator(LogicalKeyboardKey.keyF, control: true): _search,
       if (widget.onLock != null) const SingleActivator(LogicalKeyboardKey.keyL, control: true): widget.onLock!,
     };
@@ -556,7 +519,7 @@ class _ShellState extends State<Shell> {
                   onSearch: _search,
                   onLock: widget.onLock,
                   onSettings: () => _go(AppPage.settings),
-                  onHome: () => _go(AppPage.dashboard),
+                  onHome: () => _go(AppPage.home),
                 ),
                 AnimatedSize(
                   duration: const Duration(milliseconds: 160),
