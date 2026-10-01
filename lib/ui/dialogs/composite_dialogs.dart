@@ -924,7 +924,7 @@ class _ExpenseDialogState extends State<_ExpenseDialog> with SingleTickerProvide
   }
 
   int get _allocated =>
-      _accRows.fold(0, (s, r) => s + r.v) + _prodRows.fold(0, (s, r) => s + r.v) + parseMoney(_duty.text) + parseMoney(_tax.text);
+      _accRows.fold<int>(0, (s, r) => s + r.v) + _prodRows.fold<int>(0, (s, r) => s + r.v) + parseMoney(_duty.text) + parseMoney(_tax.text);
 
   int get _total => parseMoney(_amount.text);
 
