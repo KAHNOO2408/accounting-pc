@@ -398,3 +398,55 @@ List<LedgerSection> generalLedger(AppStore s, List<Posting> journal, ReportFilte
   }
   return list;
 }
+
+// =================================================================== year end
+
+/// Lines of the closing document (سند اختتامیه): every account that has a
+/// balance at the end of [date] is reversed to zero.
+List<VoucherLine> closingLines(AppStore s, DateTime date) {
+  final end = DateTime(date.year, date.month, date.day, 23, 59, 59);
+  final bal = <String, int>{};
+  final keyMoeen = <String, String>{};
+  final keyTaf = <String, String?>{};
+  for (final p in buildJournal(s)) {
+    if (p.date.isAfter(end)) continue;
+    final k = '${p.moeen}|${p.tafsiliId ?? ''}';
+    bal[k] = (bal[k] ?? 0) + p.debit - p.credit;
+    keyMoeen[k] = p.moeen;
+    keyTaf[k] = p.tafsiliId;
+  }
+  final keys = bal.keys.where((k) => bal[k] != 0).toList()..sort();
+  return [
+    for (final k in keys)
+      VoucherLine(
+        moeen: keyMoeen[k]!,
+        tafsiliId: keyTaf[k],
+        desc: 'بستن حساب',
+        debit: bal[k]! < 0 ? -bal[k]! : 0,
+        credit: bal[k]! > 0 ? bal[k]! : 0,
+      ),
+  ];
+}
+
+/// Problems to fix before closing (بررسی های لازم برای ثبت تراز اختتامیه).
+List<String> closingIssues(AppStore s, DateTime date) {
+  final out = <String>[];
+  final day = DateTime(date.year, date.month, date.day);
+  if (s.pendingClosing != null) {
+    out.add('سند اختتامیه قبلی (سند ${s.pendingClosing!.number}) هنوز به تراز افتتاحیه منتقل نشده است');
+  }
+  if (s.vouchers.any((v) => v.kind == 'closing' && !v.date.isBefore(day))) {
+    out.add('بعد از این تاریخ سند اختتامیه دیگری ثبت شده است');
+  }
+  final next = DateTime(day.year, day.month, day.day + 1);
+  if (s.vouchers.any((v) => !v.isYearEnd && !v.date.isBefore(next)) || s.invoices.any((i) => !i.date.isBefore(next))) {
+    out.add('بعد از تاریخ اختتامیه اسناد دیگری ثبت شده است');
+  }
+  for (final p in s.products) {
+    if (s.stock(p.id) < 0) out.add('موجودی کالای «${p.name}» منفی است');
+  }
+  for (final v in s.vouchers) {
+    if (v.totalDebit != v.totalCredit) out.add('سند شماره ${v.number} تراز نیست');
+  }
+  return out;
+}

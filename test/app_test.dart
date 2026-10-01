@@ -10,7 +10,10 @@ import 'package:taraz/data/storage.dart';
 import 'package:taraz/data/store.dart';
 import 'package:taraz/main.dart';
 import 'package:taraz/ui/dialogs/composite_dialogs.dart';
+import 'package:taraz/ui/dialogs/price_dialog.dart';
+import 'package:taraz/ui/print_designer.dart';
 import 'package:taraz/ui/shell.dart';
+import 'package:taraz/ui/widgets/common.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -486,6 +489,114 @@ void main() {
     expect(j.fold<int>(0, (a, p) => a + p.debit), j.fold<int>(0, (a, p) => a + p.credit));
   });
 
+  test('closing document and transfer to opening', () {
+    final s = _tempStore();
+    final cash = s.accounts.firstWhere((a) => a.type == AccountType.cash).id;
+    final d = DateTime(2026, 3, 10);
+    final ali = Person(id: newId(), name: 'Ali');
+    s.upsertPerson(ali);
+    final prod = Product(id: newId(), name: 'Cable', buyPrice: 30, sellPrice: 50, openingQty: 10);
+    s.upsertProduct(prod);
+    s.upsertTxn(Txn(id: newId(), type: TxnType.income, amount: 500, date: d, accountId: cash));
+    s.upsertTxn(Txn(id: newId(), type: TxnType.expense, amount: 200, date: d, accountId: cash));
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: d, personId: ali.id,
+        lines: [InvoiceLine(productId: prod.id, qty: 2, unitPrice: 50)]));
+    final cashBefore = s.balance(cash);
+    final aliBefore = s.personBalance(ali.id);
+    final costBefore = s.avgCost(prod.id);
+    final profitBefore = s.profit(DateTime(2026, 1, 1), DateTime(2026, 12, 31));
+
+    final end = DateTime(2026, 3, 20);
+    expect(closingIssues(s, end), isEmpty);
+    final lines = closingLines(s, end);
+    expect(lines, isNotEmpty);
+    expect(lines.fold<int>(0, (a, l) => a + l.debit), lines.fold<int>(0, (a, l) => a + l.credit));
+    final closing = Voucher(id: newId(), number: 1, fixedNumber: 1, date: end, lines: lines, kind: 'closing');
+    s.saveVoucher(closing);
+    expect(s.balance(cash), 0);
+    expect(s.personBalance(ali.id), 0);
+    expect(s.avgCost(prod.id), costBefore);
+    expect(s.profit(DateTime(2026, 1, 1), DateTime(2026, 12, 31)).netProfit, profitBefore.netProfit);
+    expect(s.pendingClosing?.id, closing.id);
+    expect(closingIssues(s, end), isNotEmpty);
+
+    final re = s.transferClosing(closing, date: DateTime(2026, 3, 21));
+    expect(s.pendingClosing, isNull);
+    expect(s.balance(cash), cashBefore);
+    expect(s.personBalance(ali.id), aliBefore);
+    expect(re.totalDebit, re.totalCredit);
+    expect(re.lines.where((l) => l.moeen == mRetained).length, 1);
+    final j = buildJournal(s);
+    expect(j.fold<int>(0, (a, p) => a + p.debit), j.fold<int>(0, (a, p) => a + p.credit));
+    s.removeVoucher(re.id);
+    expect(s.pendingClosing?.id, closing.id);
+  });
+
+  test('invoice settlement, unit price helpers and print templates', () {
+    final s = _tempStore();
+    final cash = s.accounts.firstWhere((a) => a.type == AccountType.cash).id;
+    final ali = Person(id: newId(), name: 'Ali');
+    s.upsertPerson(ali);
+    final prod = Product(id: newId(), name: 'Glass', code: 'G-1', sellPrice: 750, sellPrice2: 700, openingQty: 5);
+    s.upsertProduct(prod);
+    final d = DateTime(2026, 10, 1);
+    final inv = Invoice(id: newId(), kind: InvoiceKind.sale, number: 7, date: d, personId: ali.id,
+        lines: [InvoiceLine(productId: prod.id, qty: 2, unitPrice: 750)]);
+    s.saveInvoice(inv);
+    expect(s.personBalance(ali.id), 1500);
+    final v = saveInvoiceSettlement(s, inv, [
+      PayItem(PayMethod.cashIn, amount: 1000, accountId: cash),
+      PayItem(PayMethod.saleDiscount, amount: 100),
+    ])!;
+    expect(v.kind, 'settle');
+    expect(s.personBalance(ali.id), 400);
+    expect(s.personBalance(ali.id, excludeInvoiceId: inv.id), -1100);
+    expect(s.balance(cash), 1000);
+    expect(s.settlementsOf(inv.id).length, 1);
+
+    // walk-in customer
+    final inv2 = Invoice(id: newId(), kind: InvoiceKind.sale, number: 8, date: d,
+        lines: [InvoiceLine(productId: prod.id, qty: 1, unitPrice: 700)]);
+    s.saveInvoice(inv2);
+    saveInvoiceSettlement(s, inv2, [PayItem(PayMethod.cashIn, amount: 700, accountId: cash)]);
+    expect(s.balance(cash), 1700);
+    final j = buildJournal(s);
+    expect(j.fold<int>(0, (a, p) => a + p.debit), j.fold<int>(0, (a, p) => a + p.credit));
+    s.removeInvoice(inv2.id);
+    expect(s.balance(cash), 1000);
+
+    expect(roundPrice(12345, 1000), 12000);
+    expect(roundPrice(12345, 1000, up: true), 13000);
+    expect(roundPrice(12000, 1000, up: true), 12000);
+    expect(lastBuyPrice(s, prod), 0);
+
+    // print templates
+    final t = s.defaultTemplate(PrintDocType.invoice);
+    final doc = buildPrintDoc(s, inv, t);
+    expect(doc.title, 'فاکتور فروش');
+    expect(doc.rows.single.contains('Glass'), isTrue);
+    expect(doc.totals.any((x) => x.$1.startsWith('کل مانده حساب')), isTrue);
+    final wh = buildPrintDoc(s, inv, s.defaultTemplate(PrintDocType.warehouse));
+    expect(wh.headers.contains('فی'), isFalse);
+    expect(wh.signatures.first, 'امضاء تحویل دهنده');
+    final bc = buildPrintDoc(s, inv, s.defaultTemplate(PrintDocType.barcode));
+    expect(bc.labels.length, 2);
+    expect(bc.labels.first.code, 'G-1');
+    expect(code128('G-1').length, (3 + 2) * 11 + 13);
+    expect(printDocHtml(doc, t), contains('فاکتور فروش'));
+    final mine = t.copy()
+      ..id = newId()
+      ..name = 'طرح ۲'
+      ..paper = '80mm'
+      ..columns = ['name', 'qty', 'total'];
+    s.saveTemplate(mine);
+    s.setDefaultTemplate(mine);
+    final again = AppStore.open(s.storage);
+    expect(again.defaultTemplate(PrintDocType.invoice).name, 'طرح ۲');
+    expect(buildPrintDoc(again, inv, again.defaultTemplate(PrintDocType.invoice)).headers, ['شرح کالا', 'تعداد', 'مبلغ کل']);
+    expect(again.product(prod.id)!.sellPrice2, 700);
+  });
+
   testWidgets('all pages render', (tester) async {
     tester.view.physicalSize = const Size(1600, 1000);
     tester.view.devicePixelRatio = 1.0;
@@ -610,6 +721,14 @@ void main() {
     await tester.tap(find.text('اسناد').first);
     await tester.pumpAndSettle();
 
+    // closing dialog opens
+    await tester.tap(find.text('سند اختتامیه').first);
+    await tester.pumpAndSettle();
+    expect(find.text('تراز اختتامیه - حسابهای ترازنامه ای'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('انصراف (F10)').last);
+    await tester.pumpAndSettle();
+
     // manual voucher dialog opens
     await tester.tap(find.text('سند حسابداری دستی').first);
     await tester.pumpAndSettle();
@@ -625,7 +744,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('فاکتور فروش').first);
     await tester.pumpAndSettle();
-    expect(find.text('ذخیره فاکتور (Ctrl+S)'), findsOneWidget);
+    expect(find.text('تایید و تسویه (F9)'), findsOneWidget);
     // type a product and quantity
     final fields = find.byType(TextField);
     await tester.enterText(find.descendant(of: find.byType(RawAutocomplete<Product>), matching: find.byType(TextField)), 'Cable');
@@ -633,12 +752,42 @@ void main() {
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
     expect(fields, findsWidgets);
-    await tester.tap(find.text('تسویه کامل'));
+    // print type menu → warehouse slip → report builder → new template
+    await tester.tap(find.text('تعیین نوع چاپ (F12)'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('ذخیره فاکتور (Ctrl+S)'));
+    await tester.tap(find.text('چاپ حواله انبار').last);
+    await tester.pumpAndSettle();
+    expect(find.text('گزارش سازی — چاپ حواله انبار'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('ساخت گزارش'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('ذخیره طرح (F9)'));
+    await tester.pumpAndSettle();
+    expect(s.printTemplates.length, 1);
+    await tester.tap(find.text('انصراف (F10)').last);
     await tester.pumpAndSettle();
     expect(s.invoices.length, 2);
+
+    // settle in cash from the «نحوه دریافت» window
+    final cashBefore = s.balance(s.accounts.first.id);
+    await tester.tap(find.text('تایید و تسویه (F9)'));
+    await tester.pumpAndSettle();
+    expect(find.text('بدهی قبلی'), findsOneWidget);
+    await tester.tap(find.text('دریافت نقدی').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.descendant(of: find.byType(MoneyField), matching: find.byType(TextField)).last, '50');
+    await tester.tap(find.text('افزودن').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('تایید').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('تایید (F9)').last);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(s.invoices.length, 2);
     expect(s.stock(prod.id), 2);
+    expect(s.vouchers.where((v) => v.kind == 'settle').length, 1);
+    expect(s.balance(s.accounts.first.id), cashBefore + 50);
 
     // cash payment from the finance tab
     await tester.tap(find.text('مالی').first);

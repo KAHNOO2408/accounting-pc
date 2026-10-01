@@ -52,6 +52,7 @@ const mCreditorsFx = '20202';
 const mCreditorsOther = '20203';
 const mOtherPersonsCr = '20204';
 const mCapital = '30101';
+const mRetained = '30103';
 const mIncome = '40101';
 const mSales = '40103';
 const mSalesReturn = '40104';
@@ -127,7 +128,7 @@ const List<Kol> chart = [
   Kol('301', 'حقوق صاحبان سهام', Side.equity, [
     Moeen(mCapital, 'سرمایه'),
     Moeen('30102', 'برداشت'),
-    Moeen('30103', 'سود و زیان انباشته'),
+    Moeen(mRetained, 'سود و زیان انباشته'),
   ]),
   Kol('401', 'درآمدها', Side.income, [
     Moeen(mIncome, 'درآمدهای عملیاتی', TafsiliKind.incomeCat),

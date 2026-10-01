@@ -193,20 +193,62 @@ List<VoucherLine> applyPayItems(AppStore s, String? personId, List<PayItem> item
   return lines;
 }
 
+/// Saves the settlement (تسویه) of an invoice as a separate document linked to it.
+Voucher? saveInvoiceSettlement(AppStore s, Invoice inv, List<PayItem> items) {
+  if (items.isEmpty) return null;
+  final desc = 'تسویه ${inv.kind.label} شماره ${inv.number}';
+  final lines = applyPayItems(s, inv.personId, items, inv.date, desc);
+  if (inv.personId == null) {
+    // cash customer: the walk-in debtor account takes the other side
+    final net = lines.fold<int>(0, (a, l) => a + l.debit - l.credit);
+    if (net > 0) lines.add(VoucherLine(moeen: mDebtorsOther, desc: desc, credit: net));
+    if (net < 0) lines.add(VoucherLine(moeen: mDebtorsOther, desc: desc, debit: -net));
+  }
+  if (lines.isEmpty) return null;
+  final v = Voucher(
+    id: newId(),
+    number: s.nextVoucherNumber(),
+    fixedNumber: s.nextFixedNumber(),
+    date: inv.date,
+    desc: desc,
+    lines: lines,
+    kind: 'settle',
+    meta: {'invoice': inv.id},
+  );
+  s.saveVoucher(v);
+  return v;
+}
+
 // ===================================================== financial operations window
 
-Future<List<PayItem>?> showPayMethodsDialog(BuildContext context, {required String? personId, required List<PayItem> items, int extraDue = 0}) =>
+/// [before] overrides the previous balance of the person, [docAmount] is the
+/// signed amount of the document being settled (sale +, purchase −) and
+/// [receiveSide] activates only the receipts (true) or payments (false) column.
+Future<List<PayItem>?> showPayMethodsDialog(BuildContext context,
+        {required String? personId,
+        required List<PayItem> items,
+        int extraDue = 0,
+        int? before,
+        int docAmount = 0,
+        bool? receiveSide,
+        String? title}) =>
     showDialog<List<PayItem>>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => _PayMethodsDialog(personId: personId, initial: items, extraDue: extraDue),
+      builder: (_) => _PayMethodsDialog(
+          personId: personId, initial: items, extraDue: extraDue, before: before, docAmount: docAmount, receiveSide: receiveSide, title: title),
     );
 
 class _PayMethodsDialog extends StatefulWidget {
   final String? personId;
   final List<PayItem> initial;
   final int extraDue;
-  const _PayMethodsDialog({required this.personId, required this.initial, this.extraDue = 0});
+  final int? before;
+  final int docAmount;
+  final bool? receiveSide;
+  final String? title;
+  const _PayMethodsDialog(
+      {required this.personId, required this.initial, this.extraDue = 0, this.before, this.docAmount = 0, this.receiveSide, this.title});
 
   @override
   State<_PayMethodsDialog> createState() => _PayMethodsDialogState();
@@ -215,8 +257,11 @@ class _PayMethodsDialog extends StatefulWidget {
 class _PayMethodsDialogState extends State<_PayMethodsDialog> {
   late final List<PayItem> _items = [...widget.initial];
   bool _printAfter = false;
+  late bool _payOn = widget.receiveSide != true;
+  late bool _recOn = widget.receiveSide != false;
 
   Future<void> _open(PayMethod m) async {
+    if (m.payment ? !_payOn : !_recOn) return;
     if (m.disabled) {
       toast(context, 'حساب ارزی تعریف نشده است');
       return;
@@ -239,8 +284,8 @@ class _PayMethodsDialogState extends State<_PayMethodsDialog> {
     final th = Theme.of(context);
     final pay = sumPayments(_items);
     final rec = sumReceipts(_items);
-    final before = (widget.personId == null ? 0 : store.personBalance(widget.personId!)) + widget.extraDue;
-    final after = before + pay - rec;
+    final before = widget.before ?? (widget.personId == null ? 0 : store.personBalance(widget.personId!)) + widget.extraDue;
+    final after = before + widget.docAmount + pay - rec;
     final keys = <ShortcutActivator, VoidCallback>{
       const SingleActivator(LogicalKeyboardKey.f9): () => Navigator.pop(context, _items),
       const SingleActivator(LogicalKeyboardKey.f10): () => Navigator.pop(context),
@@ -261,10 +306,29 @@ class _PayMethodsDialogState extends State<_PayMethodsDialog> {
 
     Widget column(bool payment) {
       final color = payment ? AppColors.expense : AppColors.income;
-      return Column(
+      final on = payment ? _payOn : _recOn;
+      return Opacity(
+        opacity: on ? 1 : 0.45,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(payment ? 'پرداخت' : 'دریافت', style: th.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800, color: color)),
+          Row(children: [
+            Text(payment ? 'پرداخت' : 'دریافت', style: th.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800, color: color)),
+            const SizedBox(width: 12),
+            Checkbox(
+              value: on,
+              onChanged: (v) => setState(() {
+                if (payment) {
+                  _payOn = v ?? false;
+                  if (!_payOn) _items.removeWhere((i) => i.method.payment);
+                } else {
+                  _recOn = v ?? false;
+                  if (!_recOn) _items.removeWhere((i) => !i.method.payment);
+                }
+              }),
+            ),
+            const Text('فعال'),
+          ]),
           const SizedBox(height: 8),
           Row(children: [
             Expanded(child: Text(payment ? 'نحوه پرداخت' : 'نحوه دریافت', style: th.textTheme.labelMedium?.copyWith(color: th.hintColor))),
@@ -305,6 +369,7 @@ class _PayMethodsDialogState extends State<_PayMethodsDialog> {
               ]),
             ),
         ],
+        ),
       );
     }
 
@@ -322,7 +387,7 @@ class _PayMethodsDialogState extends State<_PayMethodsDialog> {
               HeaderBand(
                 padding: const EdgeInsets.fromLTRB(20, 14, 12, 12),
                 child: Row(children: [
-                  Text('عملیات مالی — نحوه دریافت و پرداخت', style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.white)),
+                  Text(widget.title ?? 'عملیات مالی — نحوه دریافت و پرداخت', style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.white)),
                   const SizedBox(width: 12),
                   if (widget.personId != null) Pill(store.person(widget.personId)?.name ?? '', color: Colors.white),
                   const Spacer(),
@@ -355,6 +420,10 @@ class _PayMethodsDialogState extends State<_PayMethodsDialog> {
                   Expanded(
                     child: Column(children: [
                       _sum(th, before >= 0 ? 'بدهی قبلی' : 'طلب قبلی', before.abs(), th.colorScheme.primary),
+                      if (widget.docAmount != 0) ...[
+                        const SizedBox(height: 6),
+                        _sum(th, 'مبلغ این سند', widget.docAmount.abs(), AppColors.loan),
+                      ],
                       const SizedBox(height: 6),
                       _sum(th, after >= 0 ? 'مانده دریافتنی' : 'مانده پرداختنی', after.abs(), after == 0 ? AppColors.income : AppColors.debt),
                     ]),

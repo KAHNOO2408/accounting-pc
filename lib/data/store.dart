@@ -52,6 +52,10 @@ class AppStore extends ChangeNotifier {
   List<StockAdjust> adjusts = [];
   List<Voucher> vouchers = [];
   List<ChequeBook> chequeBooks = [];
+  List<PrintTemplate> printTemplates = [];
+
+  /// Default template id per print type.
+  Map<String, String> defaultTemplates = {};
   AppSettings settings = AppSettings();
   String? lastError;
 
@@ -119,6 +123,9 @@ class AppStore extends ChangeNotifier {
     adjusts = list('adjusts').map(StockAdjust.fromJson).toList();
     vouchers = list('vouchers').map(Voucher.fromJson).toList();
     chequeBooks = list('chequeBooks').map(ChequeBook.fromJson).toList();
+    printTemplates = list('printTemplates').map(PrintTemplate.fromJson).toList();
+    final dt = j['defaultTemplates'];
+    defaultTemplates = dt is Map ? {for (final e in dt.entries) '${e.key}': '${e.value}'} : {};
     final st = j['settings'];
     settings = st is Map<String, dynamic> ? AppSettings.fromJson(st) : AppSettings();
     _sortTxns();
@@ -139,6 +146,8 @@ class AppStore extends ChangeNotifier {
         'adjusts': adjusts.map((e) => e.toJson()).toList(),
         'vouchers': vouchers.map((e) => e.toJson()).toList(),
         'chequeBooks': chequeBooks.map((e) => e.toJson()).toList(),
+        'printTemplates': printTemplates.map((e) => e.toJson()).toList(),
+        'defaultTemplates': defaultTemplates,
         'settings': settings.toJson(),
       };
 
@@ -264,9 +273,10 @@ class AppStore extends ChangeNotifier {
     return s;
   }
 
-  int personBalance(String personId) {
+  int personBalance(String personId, {String? excludeInvoiceId}) {
     var b = person(personId)?.opening ?? 0;
     for (final t in txns) {
+      if (excludeInvoiceId != null && t.invoiceId == excludeInvoiceId) continue;
       if (t.personId == personId) b += t.type.personSign * t.amount;
     }
     for (final v in vouchers) {
@@ -713,6 +723,7 @@ class AppStore extends ChangeNotifier {
     }
     // costs charged to the product by vouchers (e.g. freight in a composite expense)
     for (final v in vouchers) {
+      if (v.isYearEnd) continue;
       for (final l in v.lines) {
         if (l.moeen == mStock && l.tafsiliId == productId) cost += l.debit - l.credit;
       }
@@ -812,7 +823,11 @@ class AppStore extends ChangeNotifier {
     _commit();
   }
 
+  /// Settlement documents (تسویه) created for an invoice.
+  List<Voucher> settlementsOf(String invoiceId) => vouchers.where((v) => v.kind == 'settle' && v.meta['invoice'] == invoiceId).toList();
+
   void removeInvoice(String id) {
+    vouchers.removeWhere((v) => v.kind == 'settle' && v.meta['invoice'] == id);
     invoices.removeWhere((i) => i.id == id);
     txns.removeWhere((t) => t.invoiceId == id);
     _commit();
@@ -835,8 +850,97 @@ class AppStore extends ChangeNotifier {
     _commit();
   }
 
+  // ---------------------------------------------------------------- print templates
+
+  /// Templates of a print type; a built-in «طرح ۱» is used when none exist.
+  List<PrintTemplate> templatesOf(PrintDocType t) {
+    final list = printTemplates.where((x) => x.type == t).toList();
+    if (list.isEmpty) list.add(builtinTemplate(t));
+    return list;
+  }
+
+  PrintTemplate builtinTemplate(PrintDocType t) => PrintTemplate(
+        id: 'builtin-${t.name}',
+        type: t,
+        name: 'طرح ۱',
+        paper: t == PrintDocType.barcode ? 'A4' : 'A5',
+        columns: t == PrintDocType.warehouse ? ['idx', 'code', 'name', 'qty', 'unit'] : null,
+      );
+
+  PrintTemplate defaultTemplate(PrintDocType t) {
+    final list = templatesOf(t);
+    return list.where((x) => x.id == defaultTemplates[t.name]).firstOrNull ?? list.first;
+  }
+
+  void saveTemplate(PrintTemplate t) {
+    final i = printTemplates.indexWhere((x) => x.id == t.id);
+    if (i >= 0) {
+      printTemplates[i] = t;
+    } else {
+      printTemplates.add(t);
+    }
+    _commit();
+  }
+
+  void removeTemplate(String id) {
+    printTemplates.removeWhere((x) => x.id == id);
+    defaultTemplates.removeWhere((_, v) => v == id);
+    _commit();
+  }
+
+  void setDefaultTemplate(PrintTemplate t) {
+    defaultTemplates[t.type.name] = t.id;
+    _commit();
+  }
+
+  // ---------------------------------------------------------------- year end
+
+  /// The latest closing document whose balances were not transferred yet.
+  Voucher? get pendingClosing {
+    final list = vouchers.where((v) => v.kind == 'closing' && v.meta['reopen'] == null).toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+    return list.firstOrNull;
+  }
+
+  /// انتقال تراز اختتامیه به تراز افتتاحیه — re-opens the balance-sheet
+  /// accounts of [closing] (net profit goes to «سود و زیان انباشته»).
+  Voucher transferClosing(Voucher closing, {required DateTime date, int? number, String desc = ''}) {
+    final lines = <VoucherLine>[];
+    var profit = 0;
+    for (final l in closing.lines) {
+      final m = findMoeen(l.moeen);
+      if (m == null) continue;
+      if (m.side == Side.income || m.side == Side.expense) {
+        profit += l.debit - l.credit;
+      } else {
+        lines.add(VoucherLine(moeen: l.moeen, tafsiliId: l.tafsiliId, desc: 'انتقال از تراز اختتامیه', debit: l.credit, credit: l.debit));
+      }
+    }
+    if (profit > 0) lines.add(VoucherLine(moeen: mRetained, desc: 'سود سال قبل', credit: profit));
+    if (profit < 0) lines.add(VoucherLine(moeen: mRetained, desc: 'زیان سال قبل', debit: -profit));
+    final v = Voucher(
+      id: newId(),
+      number: number ?? nextVoucherNumber(),
+      fixedNumber: nextFixedNumber(),
+      date: date,
+      desc: desc.isEmpty ? 'انتقال تراز اختتامیه به تراز افتتاحیه' : desc,
+      lines: lines,
+      kind: 'reopen',
+      meta: {'closing': closing.id},
+    );
+    closing.meta['reopen'] = v.id;
+    vouchers.add(v);
+    _commit();
+    return v;
+  }
+
   void removeVoucher(String id) {
     final v = vouchers.where((x) => x.id == id).firstOrNull;
+    if (v != null && v.kind == 'reopen') {
+      for (final c in vouchers.where((c) => c.meta['reopen'] == id)) {
+        c.meta.remove('reopen');
+      }
+    }
     if (v != null && v.kind == 'chequeMove') {
       // put moved cheques back in the source box
       final from = v.meta['from'] as String?;
@@ -1161,7 +1265,7 @@ class AppStore extends ChangeNotifier {
       }
     }
     for (final v in vouchers) {
-      if (v.date.isBefore(from) || v.date.isAfter(to)) continue;
+      if (v.date.isBefore(from) || v.date.isAfter(to) || v.isYearEnd) continue;
       for (final l in v.lines) {
         final m = findMoeen(l.moeen);
         if (m == null) continue;

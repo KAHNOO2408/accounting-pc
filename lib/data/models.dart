@@ -206,6 +206,7 @@ class Voucher {
   List<VoucherLine> lines;
 
   /// manual | composite (دریافت پرداخت مرکب) | expense (پرداخت هزینه‌های مرکب) | chequeMove (جا به جایی چک)
+  /// | closing (سند اختتامیه) | reopen (انتقال تراز اختتامیه به افتتاحیه) | settle (تسویه فاکتور)
   String kind;
 
   /// Extra data of special documents (e.g. cheque move: from, to, cheque ids).
@@ -216,6 +217,9 @@ class Voucher {
         'composite' => 'دریافت و پرداخت مرکب',
         'expense' => 'پرداخت هزینه مرکب',
         'chequeMove' => 'جا به جایی چک',
+        'closing' => 'سند اختتامیه',
+        'reopen' => 'افتتاحیه (انتقال تراز)',
+        'settle' => 'تسویه فاکتور',
         _ => 'سند دستی',
       };
 
@@ -236,6 +240,9 @@ class Voucher {
   })  : lines = lines ?? [],
         meta = meta ?? {},
         createdAt = createdAt ?? DateTime.now().millisecondsSinceEpoch;
+
+  /// Year-end documents that only move balances (not real operations).
+  bool get isYearEnd => kind == 'closing' || kind == 'reopen';
 
   int get totalDebit => lines.fold(0, (s, l) => s + l.debit);
   int get totalCredit => lines.fold(0, (s, l) => s + l.credit);
@@ -463,6 +470,10 @@ class Product {
   String unit;
   int buyPrice;
   int sellPrice;
+
+  /// بهای فروش ۲ و ۳ (e.g. wholesale / partner prices).
+  int sellPrice2;
+  int sellPrice3;
   double openingQty;
 
   /// Unit cost of the opening quantity (0 = use buy price).
@@ -478,6 +489,8 @@ class Product {
     this.unit = 'عدد',
     this.buyPrice = 0,
     this.sellPrice = 0,
+    this.sellPrice2 = 0,
+    this.sellPrice3 = 0,
     this.openingQty = 0,
     this.openingCost = 0,
     this.minQty = 0,
@@ -492,6 +505,8 @@ class Product {
         'unit': unit,
         'buyPrice': buyPrice,
         'sellPrice': sellPrice,
+        'sellPrice2': sellPrice2,
+        'sellPrice3': sellPrice3,
         'openingQty': openingQty,
         'openingCost': openingCost,
         'minQty': minQty,
@@ -506,6 +521,8 @@ class Product {
         unit: _s(j['unit']).isEmpty ? 'عدد' : _s(j['unit']),
         buyPrice: _i(j['buyPrice']),
         sellPrice: _i(j['sellPrice']),
+        sellPrice2: _i(j['sellPrice2']),
+        sellPrice3: _i(j['sellPrice3']),
         openingQty: _dbl(j['openingQty']),
         openingCost: _i(j['openingCost']),
         minQty: _dbl(j['minQty']),
@@ -1010,4 +1027,109 @@ class ChequeLeaf {
   final Cheque? cheque;
   ChequeLeaf(this.book, this.number, this.state, this.cheque);
   String get serial => book.serialOf(number);
+}
+
+// ---------------------------------------------------------------------------
+
+/// Kinds of printouts chosen from «تعیین نوع چاپ».
+enum PrintDocType { invoice, warehouse, barcode, consign }
+
+extension PrintDocTypeX on PrintDocType {
+  String get label => switch (this) {
+        PrintDocType.invoice => 'چاپ فاکتور',
+        PrintDocType.warehouse => 'چاپ حواله انبار',
+        PrintDocType.barcode => 'چاپ بارکد',
+        PrintDocType.consign => 'امانی',
+      };
+}
+
+/// Column keys of the printed rows table.
+const Map<String, String> printColumns = {
+  'idx': 'ردیف',
+  'code': 'کد کالا',
+  'name': 'شرح کالا',
+  'qty': 'تعداد',
+  'unit': 'واحد',
+  'price': 'فی',
+  'disc': 'تخفیف',
+  'total': 'مبلغ کل',
+};
+
+/// A user-designed print layout (طرح چاپ).
+class PrintTemplate {
+  String id;
+  PrintDocType type;
+  String name;
+  String paper; // A4 | A5 | 80mm
+  String title; // empty → default title
+  String footer;
+  bool showHeader;
+  bool showBuyer;
+  bool showWords;
+  bool showBalance;
+  bool showNote;
+  bool showSignatures;
+  bool showPrice; // barcode labels
+  List<String> columns;
+  int fontSize;
+  int labelCols;
+
+  PrintTemplate({
+    required this.id,
+    required this.type,
+    this.name = 'طرح ۱',
+    this.paper = 'A5',
+    this.title = '',
+    this.footer = '',
+    this.showHeader = true,
+    this.showBuyer = true,
+    this.showWords = true,
+    this.showBalance = true,
+    this.showNote = true,
+    this.showSignatures = true,
+    this.showPrice = true,
+    List<String>? columns,
+    this.fontSize = 12,
+    this.labelCols = 3,
+  }) : columns = columns ?? printColumns.keys.where((k) => k != 'code').toList();
+
+  PrintTemplate copy() => PrintTemplate.fromJson(toJson());
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'type': type.name,
+        'name': name,
+        'paper': paper,
+        'title': title,
+        'footer': footer,
+        'showHeader': showHeader,
+        'showBuyer': showBuyer,
+        'showWords': showWords,
+        'showBalance': showBalance,
+        'showNote': showNote,
+        'showSignatures': showSignatures,
+        'showPrice': showPrice,
+        'columns': columns,
+        'fontSize': fontSize,
+        'labelCols': labelCols,
+      };
+
+  factory PrintTemplate.fromJson(Map<String, dynamic> j) => PrintTemplate(
+        id: _s(j['id']),
+        type: PrintDocType.values.firstWhere((e) => e.name == j['type'], orElse: () => PrintDocType.invoice),
+        name: _s(j['name']).isEmpty ? 'طرح' : _s(j['name']),
+        paper: _s(j['paper']).isEmpty ? 'A5' : _s(j['paper']),
+        title: _s(j['title']),
+        footer: _s(j['footer']),
+        showHeader: j['showHeader'] != false,
+        showBuyer: j['showBuyer'] != false,
+        showWords: j['showWords'] != false,
+        showBalance: j['showBalance'] != false,
+        showNote: j['showNote'] != false,
+        showSignatures: j['showSignatures'] != false,
+        showPrice: j['showPrice'] != false,
+        columns: j['columns'] is List ? [for (final c in j['columns'] as List) '$c'] : null,
+        fontSize: j['fontSize'] == null ? 12 : _i(j['fontSize']),
+        labelCols: j['labelCols'] == null ? 3 : _i(j['labelCols']),
+      );
 }

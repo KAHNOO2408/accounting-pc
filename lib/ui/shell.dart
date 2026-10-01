@@ -8,6 +8,7 @@ import '../data/store.dart';
 import 'auth/auth_screens.dart';
 import 'dialogs/cheque_dialogs.dart';
 import 'dialogs/chequebook_dialogs.dart';
+import 'dialogs/closing_dialogs.dart';
 import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
@@ -136,8 +137,8 @@ final List<_Tab> _tabs = [
       _Item('خلاصه حساب سود و زیان', Icons.query_stats_rounded, _green, run: _page(AppPage.profit)),
       const _Item('تقسیم سود و زیان سال مالی', Icons.pie_chart_outline_rounded, _amber),
       const _Item('تقسیم سود و زیان صاحبان سهام', Icons.groups_2_outlined, _amber),
-      const _Item('سند اختتامیه', Icons.sports_score_rounded, _slate),
-      const _Item('انتقال تراز اختتامیه به تراز افتتاحیه', Icons.move_down_rounded, _slate),
+      _Item('سند اختتامیه', Icons.sports_score_rounded, _red, run: (c, _) => showClosingDialog(c)),
+      _Item('انتقال تراز اختتامیه به تراز افتتاحیه', Icons.move_down_rounded, _green, run: (c, _) => showTransferClosingDialog(c)),
       const _Item('انتقال حساب‌ها به دفتر', Icons.drive_file_move_outline, _slate),
     ]),
     _Group('تسعیر نرخ', [

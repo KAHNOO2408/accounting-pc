@@ -7,7 +7,9 @@ import '../../data/models.dart';
 import '../../data/store.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
-import '../print.dart';
+import '../print_designer.dart';
+import 'composite_dialogs.dart';
+import 'price_dialog.dart';
 import 'simple_dialogs.dart';
 
 String fmtQty(double q) {
@@ -100,6 +102,10 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   Invoice? _saved;
 
   bool get _isEdit => widget.edit != null;
+
+  /// Old invoices paid from one account keep the simple paid/account fields;
+  /// everything else is settled through the «نحوه دریافت و پرداخت» window.
+  bool get _legacy => (widget.edit?.paid ?? 0) > 0;
 
   String get _title => _proforma ? 'پیش‌فاکتور فروش' : _kind.label;
 
@@ -200,7 +206,12 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     });
   }
 
-  Invoice? _save({bool again = false, bool close = true}) {
+  Future<void> _pickPrice(_Line l, Product p) async {
+    final v = await showUnitPriceDialog(context, product: p, personId: _person, current: l.p);
+    if (v != null && mounted) setState(() => l.price.text = groupDigits(v));
+  }
+
+  Future<Invoice?> _save({bool again = false, bool close = true, bool settle = true}) async {
     final store = StoreScope.read(context);
     final lines = _lines.where((l) => !l.isEmpty).toList();
     String? err;
@@ -212,8 +223,8 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       err = 'شرح یا نام کالای هر ردیف را وارد کنید';
     } else if (_total < 0) {
       err = 'مبلغ نهایی منفی است؛ تخفیف را بررسی کنید';
-    } else if (_proforma) {
-      // no payment rules for a pro-forma
+    } else if (_proforma || !_legacy) {
+      // pro-forma: no payment; others are settled in the settlement window
     } else if (_paidV > _total) {
       err = 'مبلغ پرداختی از مبلغ فاکتور بیشتر است';
     } else if (_paidV > 0 && _account == null) {
@@ -225,7 +236,28 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       setState(() => _err = err);
       return null;
     }
-    final paid = _proforma ? 0 : _paidV;
+    List<PayItem> items = const [];
+    if (!_proforma && !_legacy && settle) {
+      final signed = _kind.txnType.personSign * _total;
+      final before = _person == null ? 0 : store.personBalance(_person!, excludeInvoiceId: (_saved ?? widget.edit)?.id);
+      final r = await showPayMethodsDialog(
+        context,
+        personId: _person,
+        items: const [],
+        before: before,
+        docAmount: signed,
+        receiveSide: _kind.moneyIn,
+        title: '${_kind.moneyIn ? 'نحوه دریافت' : 'نحوه پرداخت'} — $_title',
+      );
+      if (r == null || !mounted) return null;
+      final after = signed + sumPayments(r) - sumReceipts(r);
+      if (_person == null && after != 0) {
+        setState(() => _err = 'فاکتور کامل تسویه نشده؛ برای ثبت مانده (نسیه) طرف حساب را انتخاب کنید');
+        return null;
+      }
+      items = r;
+    }
+    final paid = _proforma || !_legacy ? 0 : _paidV;
     final inv = _saved ?? widget.edit ?? Invoice(id: newId(), kind: _kind, number: 0, date: _date);
     inv
       ..kind = _kind
@@ -241,6 +273,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       ..accountId = paid > 0 ? _account : null
       ..note = _note.text.trim();
     store.saveInvoice(inv);
+    if (items.isNotEmpty) saveInvoiceSettlement(store, inv, items);
     if (again) {
       setState(() {
         for (final l in _lines) {
@@ -272,19 +305,22 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     return inv;
   }
 
-  void _print() {
-    final inv = _save(close: false);
+  Future<void> _print() async {
+    final inv = await _save(close: false, settle: false);
     if (inv == null) return;
     try {
-      printInvoice(StoreScope.read(context), inv);
+      if (mounted) {
+        final s = StoreScope.read(context);
+        printWithTemplate(s, inv, s.defaultTemplate(PrintDocType.invoice));
+      }
     } catch (e) {
       toast(context, 'چاپ ناموفق: $e', error: true);
     }
   }
 
-  void _convert() {
-    final inv = _save(close: false);
-    if (inv == null) return;
+  Future<void> _convert() async {
+    final inv = await _save(close: false);
+    if (inv == null || !mounted) return;
     final sale = StoreScope.read(context).convertProforma(inv);
     final nav = Navigator.of(context);
     nav.pop();
@@ -318,14 +354,19 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     final store = StoreScope.of(context);
     final th = Theme.of(context);
     final size = MediaQuery.of(context).size;
-    final remaining = _total - _paidV;
+    final remaining = _legacy ? _total - _paidV : _total;
 
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.keyS, control: true): () => _save(),
+        const SingleActivator(LogicalKeyboardKey.f9): () => _save(),
         const SingleActivator(LogicalKeyboardKey.enter, control: true): () => _save(again: !_isEdit),
         const SingleActivator(LogicalKeyboardKey.insert): _addLine,
         const SingleActivator(LogicalKeyboardKey.keyP, control: true): _print,
+        const SingleActivator(LogicalKeyboardKey.f12): () async {
+          final inv = await _save(close: false, settle: false);
+          if (inv != null && mounted) await showReportBuilder(context, inv, PrintDocType.invoice);
+        },
         const SingleActivator(LogicalKeyboardKey.escape): _close,
       },
       child: Dialog(
@@ -482,7 +523,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                             maxLines: 2,
                             decoration: const InputDecoration(labelText: 'توضیحات فاکتور'),
                           ),
-                          if (remaining > 0 && !_proforma) ...[
+                          if (remaining > 0 && !_proforma && _person != null) ...[
                             const SizedBox(height: 10),
                             DateField(
                               label: 'سررسید مانده (اختیاری)',
@@ -518,6 +559,14 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                     const Spacer(),
                     TextButton(onPressed: _close, child: const Text('انصراف')),
                     const SizedBox(width: 8),
+                    Builder(
+                      builder: (bctx) => OutlinedButton.icon(
+                        onPressed: () => showPrintTypeMenu(bctx, () => _save(close: false, settle: false)),
+                        icon: const Icon(Icons.tune_rounded, size: 18),
+                        label: const Text('تعیین نوع چاپ (F12)'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     OutlinedButton.icon(
                       onPressed: _print,
                       icon: const Icon(Icons.print_outlined, size: 18),
@@ -540,7 +589,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                       style: FilledButton.styleFrom(backgroundColor: _kindColor),
                       onPressed: () => _save(),
                       icon: const Icon(Icons.check_rounded, size: 18),
-                      label: Text(_proforma ? 'ذخیره پیش‌فاکتور (Ctrl+S)' : 'ذخیره فاکتور (Ctrl+S)'),
+                      label: Text(_proforma ? 'ذخیره پیش‌فاکتور (Ctrl+S)' : (_legacy ? 'ذخیره فاکتور (Ctrl+S)' : 'تایید و تسویه (F9)')),
                     ),
                   ],
                 ),
@@ -683,7 +732,15 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
               textDirection: TextDirection.ltr,
               textAlign: TextAlign.left,
               inputFormatters: [MoneyInputFormatter()],
-              decoration: dense,
+              decoration: p == null
+                  ? dense
+                  : dense.copyWith(
+                      prefixIcon: InkWell(
+                        onTap: () => _pickPrice(l, p),
+                        child: Tooltip(message: 'تعیین فی', child: Icon(Icons.price_change_outlined, size: 18, color: th.colorScheme.primary)),
+                      ),
+                      prefixIconConstraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    ),
             ),
           ),
           const SizedBox(width: 6),
@@ -767,7 +824,21 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
           row('مبلغ نهایی',
               Money(_total, showUnit: true, style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: _kindColor)),
               bold: true),
-          if (!_proforma) ...[
+          if (!_proforma && !_legacy) ...[
+            const Divider(height: 14),
+            if (_person != null)
+              row('مانده حساب ${store.person(_person)?.name ?? ''} (قبل از این فاکتور)',
+                  Money(store.personBalance(_person!, excludeInvoiceId: (_saved ?? widget.edit)?.id), colorBySign: true)),
+            if (_isEdit && store.settlementsOf(widget.edit!.id).isNotEmpty)
+              row('اسناد تسویه ثبت شده',
+                  Text('${store.settlementsOf(widget.edit!.id).length} سند', style: const TextStyle(fontWeight: FontWeight.w700))),
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text('نحوه ${_kind.moneyIn ? 'دریافت' : 'پرداخت'} (نقد، چک، بانک، تخفیف…) پس از «تایید و تسویه (F9)» تعیین می‌شود.',
+                  style: th.textTheme.bodySmall?.copyWith(color: th.hintColor)),
+            ),
+          ],
+          if (!_proforma && _legacy) ...[
           const Divider(height: 14),
           Row(
             children: [

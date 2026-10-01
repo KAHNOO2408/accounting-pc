@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/jalali.dart';
 import '../../data/store.dart';
 import '../dialogs/chequebook_dialogs.dart';
+import '../dialogs/closing_dialogs.dart';
 import '../dialogs/opening_dialog.dart';
 import '../dialogs/voucher_dialog.dart';
 import '../theme.dart';
@@ -113,7 +114,11 @@ class _VouchersPageState extends State<VouchersPage> {
                             itemBuilder: (context, i) {
                               final v = list[i];
                               return InkWell(
-                                onTap: () => v.kind == 'chequeMove' ? showChequeMoveDialog(context, edit: v) : showVoucherDialog(context, edit: v),
+                                onTap: () => switch (v.kind) {
+                                  'chequeMove' => showChequeMoveDialog(context, edit: v),
+                                  'closing' || 'reopen' || 'settle' => showYearEndVoucher(context, v),
+                                  _ => showVoucherDialog(context, edit: v),
+                                },
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
                                   child: Row(children: [
@@ -129,6 +134,8 @@ class _VouchersPageState extends State<VouchersPage> {
                                               'manual' => th.colorScheme.primary,
                                               'expense' => AppColors.expense,
                                               'chequeMove' => AppColors.discount,
+                                              'closing' => AppColors.expense,
+                                              'reopen' || 'settle' => AppColors.income,
                                               _ => AppColors.debt,
                                             }),
                                       ),
