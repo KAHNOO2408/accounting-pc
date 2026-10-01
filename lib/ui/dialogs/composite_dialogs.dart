@@ -172,6 +172,8 @@ List<VoucherLine> applyPayItems(AppStore s, String? personId, List<PayItem> item
           bank: i.bank,
           serial: i.serial,
           note: desc,
+          bankAccountId: i.method == PayMethod.chequeIssue ? i.accountId : null,
+          holderId: i.method == PayMethod.chequeReceive ? i.accountId : null,
         ));
       case PayMethod.returnReceivedCheque:
       case PayMethod.takeBackIssuedCheque:
@@ -498,10 +500,13 @@ class _MethodItemsDialogState extends State<_MethodItemsDialog> {
     final s = StoreScope.of(context);
     final th = Theme.of(context);
     final accounts = s.activeAccounts
-        .where((a) => m.needsCashAccount ? a.type == AccountType.cash : a.type != AccountType.cash)
+        .where((a) => (m.needsCashAccount || m == PayMethod.chequeReceive) ? a.type == AccountType.cash : a.type != AccountType.cash)
         .toList();
+    final freeLeaves = m == PayMethod.chequeIssue && _account != null ? s.freeSerials(_account!) : const <String>[];
     final cheques = _chequeChoices(s);
-    if (_account == null && accounts.isNotEmpty && (m.needsCashAccount || m.needsBankAccount)) _account = accounts.first.id;
+    if (_account == null && accounts.isNotEmpty && (m.needsCashAccount || m.needsBankAccount || m == PayMethod.chequeReceive)) {
+      _account = accounts.first.id;
+    }
     final total = _items.fold<int>(0, (a, i) => a + i.amount);
     return FormDialog(
       title: m.label,
@@ -555,6 +560,28 @@ class _MethodItemsDialogState extends State<_MethodItemsDialog> {
             ),
           ],
           if (m.newCheque) ...[
+            const SizedBox(height: 6),
+            FieldDropdown<String?>(
+              label: m == PayMethod.chequeIssue ? 'حساب بانکی (دسته چک)' : 'صندوق نگهدارنده چک',
+              value: _account,
+              items: [for (final a in accounts) DropdownMenuItem<String?>(value: a.id, child: Text(a.name))],
+              onChanged: (v) => setState(() {
+                _account = v;
+                if (m == PayMethod.chequeIssue) {
+                  _serial.clear();
+                  _bank.text = _bankName(s.account(v));
+                }
+              }),
+            ),
+            if (freeLeaves.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              FieldDropdown<String?>(
+                label: 'برگه چک از دسته چک',
+                value: freeLeaves.contains(_serial.text) ? _serial.text : null,
+                items: [for (final l in freeLeaves) DropdownMenuItem<String?>(value: l, child: Text(l, textDirection: TextDirection.ltr))],
+                onChanged: (v) => setState(() => _serial.text = v ?? ''),
+              ),
+            ],
             const SizedBox(height: 6),
             Row(children: [
               Expanded(child: DateField(label: 'سررسید', value: _due, onChanged: (d) => setState(() => _due = d))),
@@ -1198,3 +1225,5 @@ class _ExpenseDialogState extends State<_ExpenseDialog> with SingleTickerProvide
     );
   }
 }
+
+String _bankName(Account? a) => a == null ? '' : (a.bank.isNotEmpty ? a.bank : a.name);

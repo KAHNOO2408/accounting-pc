@@ -51,6 +51,7 @@ class AppStore extends ChangeNotifier {
   List<Loan> loans = [];
   List<StockAdjust> adjusts = [];
   List<Voucher> vouchers = [];
+  List<ChequeBook> chequeBooks = [];
   AppSettings settings = AppSettings();
   String? lastError;
 
@@ -117,6 +118,7 @@ class AppStore extends ChangeNotifier {
     loans = list('loans').map(Loan.fromJson).toList();
     adjusts = list('adjusts').map(StockAdjust.fromJson).toList();
     vouchers = list('vouchers').map(Voucher.fromJson).toList();
+    chequeBooks = list('chequeBooks').map(ChequeBook.fromJson).toList();
     final st = j['settings'];
     settings = st is Map<String, dynamic> ? AppSettings.fromJson(st) : AppSettings();
     _sortTxns();
@@ -136,6 +138,7 @@ class AppStore extends ChangeNotifier {
         'loans': loans.map((e) => e.toJson()).toList(),
         'adjusts': adjusts.map((e) => e.toJson()).toList(),
         'vouchers': vouchers.map((e) => e.toJson()).toList(),
+        'chequeBooks': chequeBooks.map((e) => e.toJson()).toList(),
         'settings': settings.toJson(),
       };
 
@@ -833,7 +836,109 @@ class AppStore extends ChangeNotifier {
   }
 
   void removeVoucher(String id) {
+    final v = vouchers.where((x) => x.id == id).firstOrNull;
+    if (v != null && v.kind == 'chequeMove') {
+      // put moved cheques back in the source box
+      final from = v.meta['from'] as String?;
+      for (final cid in (v.meta['cheques'] as List? ?? const [])) {
+        cheque('$cid')?.holderId = from;
+      }
+    }
     vouchers.removeWhere((v) => v.id == id);
+    _commit();
+  }
+
+  // ---------------------------------------------------------------- cheque boxes & books
+
+  /// Cash box holding a received cheque (defaults to the first cash account).
+  String? holderOf(Cheque c) {
+    if (c.holderId != null && account(c.holderId) != null) return c.holderId;
+    for (final a in accounts) {
+      if (a.type == AccountType.cash) return a.id;
+    }
+    return null;
+  }
+
+  /// Received cheques that are physically in [boxId].
+  List<Cheque> chequesInBox(String boxId) => cheques
+      .where((c) => c.direction == ChequeDirection.received && c.status == ChequeStatus.pending && holderOf(c) == boxId)
+      .toList()
+    ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+
+  /// Saves a "جا به جایی چک" document and moves the cheques.
+  Voucher moveCheques({
+    Voucher? edit,
+    required String fromId,
+    required String toId,
+    required List<String> chequeIds,
+    required DateTime date,
+    int? number,
+    String desc = '',
+  }) {
+    if (edit != null) removeVoucher(edit.id);
+    for (final id in chequeIds) {
+      cheque(id)?.holderId = toId;
+    }
+    final v = Voucher(
+      id: edit?.id ?? newId(),
+      number: number ?? nextVoucherNumber(),
+      fixedNumber: edit?.fixedNumber ?? nextFixedNumber(),
+      date: date,
+      desc: desc.isEmpty ? 'جا به جایی ${chequeIds.length} چک از ${account(fromId)?.name ?? ''} به ${account(toId)?.name ?? ''}' : desc,
+      kind: 'chequeMove',
+      meta: {'from': fromId, 'to': toId, 'cheques': chequeIds},
+    );
+    vouchers.add(v);
+    _commit();
+    return v;
+  }
+
+  List<ChequeLeaf> leavesOf(String accountId) {
+    final out = <ChequeLeaf>[];
+    for (final b in chequeBooks.where((b) => b.accountId == accountId)) {
+      for (final n in b.numbers) {
+        final serial = b.serialOf(n);
+        final c = cheques
+            .where((c) => c.direction == ChequeDirection.issued && c.serial == serial && (c.bankAccountId == null || c.bankAccountId == accountId))
+            .firstOrNull;
+        final st = c != null ? LeafState.used : (b.voided.contains(n) ? LeafState.voided : LeafState.free);
+        out.add(ChequeLeaf(b, n, st, c));
+      }
+    }
+    return out;
+  }
+
+  List<String> freeSerials(String accountId) =>
+      leavesOf(accountId).where((l) => l.state == LeafState.free).map((l) => l.serial).toList();
+
+  void saveChequeBook(ChequeBook b) {
+    final i = chequeBooks.indexWhere((x) => x.id == b.id);
+    if (i >= 0) {
+      chequeBooks[i] = b;
+    } else {
+      chequeBooks.add(b);
+    }
+    _commit();
+  }
+
+  /// Deletes a cheque book when none of its leaves has been used.
+  bool removeChequeBook(String id) {
+    final b = chequeBooks.where((x) => x.id == id).firstOrNull;
+    if (b == null) return false;
+    if (leavesOf(b.accountId).any((l) => l.book.id == id && l.state == LeafState.used)) return false;
+    chequeBooks.removeWhere((x) => x.id == id);
+    _commit();
+    return true;
+  }
+
+  void setLeafVoid(ChequeBook b, int number, bool voided, {String note = ''}) {
+    if (voided) {
+      b.voided.add(number);
+      if (note.isNotEmpty) b.notes['$number'] = note;
+    } else {
+      b.voided.remove(number);
+      b.notes.remove('$number');
+    }
     _commit();
   }
 

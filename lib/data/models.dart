@@ -205,13 +205,17 @@ class Voucher {
   String followDesc;
   List<VoucherLine> lines;
 
-  /// manual | composite (دریافت پرداخت مرکب) | expense (پرداخت هزینه‌های مرکب)
+  /// manual | composite (دریافت پرداخت مرکب) | expense (پرداخت هزینه‌های مرکب) | chequeMove (جا به جایی چک)
   String kind;
+
+  /// Extra data of special documents (e.g. cheque move: from, to, cheque ids).
+  Map<String, dynamic> meta;
   int createdAt;
 
   String get kindLabel => switch (kind) {
         'composite' => 'دریافت و پرداخت مرکب',
         'expense' => 'پرداخت هزینه مرکب',
+        'chequeMove' => 'جا به جایی چک',
         _ => 'سند دستی',
       };
 
@@ -227,8 +231,10 @@ class Voucher {
     this.followDesc = '',
     List<VoucherLine>? lines,
     this.kind = 'manual',
+    Map<String, dynamic>? meta,
     int? createdAt,
   })  : lines = lines ?? [],
+        meta = meta ?? {},
         createdAt = createdAt ?? DateTime.now().millisecondsSinceEpoch;
 
   int get totalDebit => lines.fold(0, (s, l) => s + l.debit);
@@ -247,6 +253,7 @@ class Voucher {
         'followDesc': followDesc,
         'lines': lines.map((l) => l.toJson()).toList(),
         'kind': kind,
+        'meta': meta,
         'createdAt': createdAt,
       };
 
@@ -264,6 +271,7 @@ class Voucher {
             ? (j['lines'] as List).whereType<Map<String, dynamic>>().map(VoucherLine.fromJson).toList()
             : <VoucherLine>[],
         kind: _s(j['kind']).isEmpty ? 'manual' : _s(j['kind']),
+        meta: j['meta'] is Map<String, dynamic> ? j['meta'] as Map<String, dynamic> : <String, dynamic>{},
         createdAt: _i(j['createdAt']),
       );
 }
@@ -791,6 +799,12 @@ class Cheque {
   String? txnId;
   String? depositAccountId;
   String? endorsedTo;
+
+  /// Cash box currently holding a received cheque.
+  String? holderId;
+
+  /// Our bank account an issued cheque is drawn on.
+  String? bankAccountId;
   String note;
 
   Cheque({
@@ -806,6 +820,8 @@ class Cheque {
     this.txnId,
     this.depositAccountId,
     this.endorsedTo,
+    this.holderId,
+    this.bankAccountId,
     this.note = '',
   });
 
@@ -813,6 +829,8 @@ class Cheque {
         'id': id,
         'depositAccountId': depositAccountId,
         'endorsedTo': endorsedTo,
+        'holderId': holderId,
+        'bankAccountId': bankAccountId,
         'direction': direction.name,
         'amount': amount,
         'dueDate': _d(dueDate),
@@ -838,6 +856,8 @@ class Cheque {
         txnId: _sn(j['txnId']),
         depositAccountId: _sn(j['depositAccountId']),
         endorsedTo: _sn(j['endorsedTo']),
+        holderId: _sn(j['holderId']),
+        bankAccountId: _sn(j['bankAccountId']),
         note: _s(j['note']),
       );
 }
@@ -922,4 +942,72 @@ class AppSettings {
         backgroundPreset: _i(j['backgroundPreset']),
         backgroundImage: _s(j['backgroundImage']),
       );
+}
+
+
+// ---------------------------------------------------------------------------
+
+/// A cheque book (دسته چک) of one of our bank accounts.
+class ChequeBook {
+  String id;
+  String accountId;
+  String prefix;
+  int start;
+  String suffix;
+  int count;
+  Set<int> voided;
+  Map<String, String> notes; // leaf number -> note
+  int createdAt;
+
+  ChequeBook({
+    required this.id,
+    required this.accountId,
+    this.prefix = '',
+    required this.start,
+    this.suffix = '',
+    required this.count,
+    Set<int>? voided,
+    Map<String, String>? notes,
+    int? createdAt,
+  })  : voided = voided ?? {},
+        notes = notes ?? {},
+        createdAt = createdAt ?? DateTime.now().millisecondsSinceEpoch;
+
+  String serialOf(int n) => '$prefix$n$suffix';
+  Iterable<int> get numbers => Iterable.generate(count, (i) => start + i);
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'accountId': accountId,
+        'prefix': prefix,
+        'start': start,
+        'suffix': suffix,
+        'count': count,
+        'voided': voided.toList(),
+        'notes': notes,
+        'createdAt': createdAt,
+      };
+
+  factory ChequeBook.fromJson(Map<String, dynamic> j) => ChequeBook(
+        id: _s(j['id']),
+        accountId: _s(j['accountId']),
+        prefix: _s(j['prefix']),
+        start: _i(j['start']),
+        suffix: _s(j['suffix']),
+        count: _i(j['count']),
+        voided: (j['voided'] is List) ? (j['voided'] as List).map((e) => _i(e)).toSet() : <int>{},
+        notes: (j['notes'] is Map) ? {for (final e in (j['notes'] as Map).entries) '${e.key}': '${e.value}'} : <String, String>{},
+        createdAt: _i(j['createdAt']),
+      );
+}
+
+enum LeafState { free, used, voided }
+
+class ChequeLeaf {
+  final ChequeBook book;
+  final int number;
+  final LeafState state;
+  final Cheque? cheque;
+  ChequeLeaf(this.book, this.number, this.state, this.cheque);
+  String get serial => book.serialOf(number);
 }

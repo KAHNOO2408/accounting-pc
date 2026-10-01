@@ -24,6 +24,7 @@ class _ChequeDialogState extends State<_ChequeDialog> {
   late DateTime _due;
   late DateTime _issue;
   String? _person;
+  String? _acc; // bank account (issued) or holding box (received)
   late final TextEditingController _amount;
   late final TextEditingController _bank;
   late final TextEditingController _serial;
@@ -39,6 +40,7 @@ class _ChequeDialogState extends State<_ChequeDialog> {
     _due = e?.dueDate ?? DateTime(now.year, now.month, now.day);
     _issue = e?.issueDate ?? DateTime(now.year, now.month, now.day);
     _person = e?.personId;
+    _acc = _dir == ChequeDirection.issued ? e?.bankAccountId : e?.holderId;
     _amount = TextEditingController(text: e == null ? '' : groupDigits(e.amount));
     _bank = TextEditingController(text: e?.bank ?? '');
     _serial = TextEditingController(text: e?.serial ?? '');
@@ -69,6 +71,8 @@ class _ChequeDialogState extends State<_ChequeDialog> {
       ..personId = _person
       ..bank = _bank.text.trim()
       ..serial = _serial.text.trim()
+      ..bankAccountId = _dir == ChequeDirection.issued ? _acc : null
+      ..holderId = _dir == ChequeDirection.received ? _acc : c.holderId
       ..note = _note.text.trim();
     StoreScope.read(context).upsertCheque(c);
     Navigator.pop(context);
@@ -121,6 +125,36 @@ class _ChequeDialogState extends State<_ChequeDialog> {
               ),
             ],
           ),
+          const SizedBox(height: 14),
+          Builder(builder: (context) {
+            final issued = _dir == ChequeDirection.issued;
+            final accs = store.activeAccounts.where((a) => issued ? a.type != AccountType.cash : a.type == AccountType.cash).toList();
+            final leaves = issued && _acc != null ? store.freeSerials(_acc!) : const <String>[];
+            final cur = _serial.text.trim();
+            return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              FieldDropdown<String?>(
+                label: issued ? 'حساب بانکی (دسته چک)' : 'صندوق نگهدارنده چک',
+                value: _acc,
+                items: [
+                  const DropdownMenuItem<String?>(value: null, child: Text('—')),
+                  for (final a in accs) DropdownMenuItem<String?>(value: a.id, child: Text(a.name)),
+                ],
+                onChanged: (v) => setState(() {
+                  _acc = v;
+                  if (issued && v != null && _bank.text.trim().isEmpty) _bank.text = _bankName(store.account(v));
+                }),
+              ),
+              if (leaves.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                FieldDropdown<String?>(
+                  label: 'برگه چک از دسته چک',
+                  value: leaves.contains(cur) ? cur : null,
+                  items: [for (final l in leaves) DropdownMenuItem<String?>(value: l, child: Text(l, textDirection: TextDirection.ltr))],
+                  onChanged: (v) => setState(() => _serial.text = v ?? ''),
+                ),
+              ],
+            ]);
+          }),
           const SizedBox(height: 14),
           Row(
             children: [
@@ -457,3 +491,5 @@ class _AverageDialogState extends State<_AverageDialog> {
     );
   }
 }
+
+String _bankName(Account? a) => a == null ? '' : (a.bank.isNotEmpty ? a.bank : a.name);

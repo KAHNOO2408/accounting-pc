@@ -7,6 +7,7 @@ import '../data/models.dart';
 import '../data/store.dart';
 import 'auth/auth_screens.dart';
 import 'dialogs/cheque_dialogs.dart';
+import 'dialogs/chequebook_dialogs.dart';
 import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
@@ -286,7 +287,7 @@ final List<_Tab> _tabs = [
       _Item('پس گرفتن چک واگذار شده', Icons.undo_rounded, _amber,
           run: _page(AppPage.cheques,
               dir: ChequeDirection.received, status: ChequeStatus.endorsed, hint: 'روی چک، منوی ⋮ ← «پس گرفتن»')),
-      const _Item('معرفی دسته چک', Icons.menu_book_outlined, _slate),
+      _Item('معرفی دسته چک', Icons.menu_book_outlined, _violet, run: (c, _) => showChequeBooksWindow(c)),
       _accTable,
     ]),
   ]),
@@ -300,7 +301,7 @@ final List<_Tab> _tabs = [
           run: (c, _) => showTxnDialog(c, type: TxnType.transfer, title: 'مبادلات داخلی')),
       _Item('دریافت پرداخت بین حساب‌ها', Icons.compare_arrows_rounded, _blue,
           run: (c, _) => showTxnDialog(c, type: TxnType.transfer, title: 'دریافت و پرداخت بین حساب‌ها')),
-      const _Item('جا به جایی چک', Icons.swap_horiz_rounded, _slate),
+      _Item('جا به جایی چک', Icons.swap_horiz_rounded, _cyan, run: (c, _) => showChequeMoveDialog(c)),
       _Item('راس‌گیری چک', Icons.calculate_outlined, _cyan, run: (c, _) => showChequeAverageDialog(c)),
       _accTable,
     ]),

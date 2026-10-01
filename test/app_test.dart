@@ -445,6 +445,47 @@ void main() {
     expect(j.fold<int>(0, (a, p) => a + p.debit), j.fold<int>(0, (a, p) => a + p.credit));
   });
 
+  test('cheque books and moving cheques between boxes', () {
+    final s = _tempStore();
+    final box1 = s.accounts.firstWhere((a) => a.type == AccountType.cash).id;
+    final box2 = Account(id: newId(), name: 'Box 2', type: AccountType.cash);
+    final bank = Account(id: newId(), name: 'Mellat', type: AccountType.bank);
+    s.upsertAccount(box2);
+    s.upsertAccount(bank);
+    final book = ChequeBook(id: newId(), accountId: bank.id, prefix: 'A', start: 100, count: 5);
+    s.saveChequeBook(book);
+    expect(s.leavesOf(bank.id).length, 5);
+    expect(s.freeSerials(bank.id).first, 'A100');
+
+    final d = DateTime(2026, 10, 1);
+    applyPayItems(s, null, [PayItem(PayMethod.chequeIssue, amount: 70, due: d, serial: 'A100', accountId: bank.id)], d, 'x');
+    expect(s.cheques.single.bankAccountId, bank.id);
+    s.setLeafVoid(book, 101, true, note: 'torn');
+    final states = s.leavesOf(bank.id).map((l) => l.state).toList();
+    expect(states.take(3), [LeafState.used, LeafState.voided, LeafState.free]);
+    expect(s.freeSerials(bank.id), ['A102', 'A103', 'A104']);
+    expect(s.removeChequeBook(book.id), isFalse);
+    s.setLeafVoid(book, 101, false);
+    expect(s.freeSerials(bank.id).length, 4);
+
+    final c1 = Cheque(id: newId(), direction: ChequeDirection.received, amount: 10, dueDate: d, issueDate: d);
+    final c2 = Cheque(id: newId(), direction: ChequeDirection.received, amount: 20, dueDate: d, issueDate: d);
+    s.upsertCheque(c1);
+    s.upsertCheque(c2);
+    expect(s.chequesInBox(box1).length, 2);
+    final v = s.moveCheques(fromId: box1, toId: box2.id, chequeIds: [c1.id], date: d);
+    expect(v.kind, 'chequeMove');
+    expect(s.chequesInBox(box1).map((c) => c.id), [c2.id]);
+    expect(s.chequesInBox(box2.id).map((c) => c.id), [c1.id]);
+    final again = AppStore.open(s.storage);
+    expect(again.chequesInBox(box2.id).length, 1);
+    expect(again.chequeBooks.single.count, 5);
+    s.removeVoucher(v.id);
+    expect(s.chequesInBox(box1).length, 2);
+    final j = buildJournal(s);
+    expect(j.fold<int>(0, (a, p) => a + p.debit), j.fold<int>(0, (a, p) => a + p.credit));
+  });
+
   testWidgets('all pages render', (tester) async {
     tester.view.physicalSize = const Size(1600, 1000);
     tester.view.devicePixelRatio = 1.0;
@@ -545,6 +586,26 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     await tester.tap(find.text('انصراف (F10)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('اسناد').first);
+    await tester.pumpAndSettle();
+
+    // cheque books window and cheque move dialog
+    await tester.tap(find.text('مالی').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('معرفی دسته چک').first);
+    await tester.pumpAndSettle();
+    expect(find.text('نام بانک'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('بازگشت (F10)').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('مالی ویژه').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('جا به جایی چک').first);
+    await tester.pumpAndSettle();
+    expect(find.text('صندوق دریافت کننده چک'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('انصراف (F10)').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('اسناد').first);
     await tester.pumpAndSettle();
