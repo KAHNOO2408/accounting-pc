@@ -186,7 +186,7 @@ class _AssetsTableState extends State<_AssetsTable> {
             const SizedBox(width: 8),
             OutlinedButton.icon(
               onPressed: _delete,
-              icon: Icon(Icons.close_rounded, size: 18, color: th.colorScheme.error),
+              icon: Icon(Icons.delete_outline_rounded, size: 18, color: th.colorScheme.error),
               label: const Text('حذف'),
             ),
             const Spacer(),
