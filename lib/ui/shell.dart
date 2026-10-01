@@ -806,7 +806,9 @@ class _RibbonGroup extends StatelessWidget {
         border: Border.all(color: brand.accent.withValues(alpha: brand.dark ? 0.25 : 0.16)),
       ),
       clipBehavior: Clip.antiAlias,
-      child: Column(
+      child: IntrinsicWidth(
+        child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 4, 4, 2),
@@ -819,7 +821,6 @@ class _RibbonGroup extends StatelessWidget {
           const Spacer(),
           if (group.title.isNotEmpty)
             Container(
-              width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 2),
               decoration: BoxDecoration(
                 gradient: LinearGradient(colors: [
@@ -838,6 +839,7 @@ class _RibbonGroup extends StatelessWidget {
               ),
             ),
         ],
+      ),
       ),
     );
   }
