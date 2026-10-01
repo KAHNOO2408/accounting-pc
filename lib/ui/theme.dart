@@ -44,7 +44,7 @@ class Brand {
         end: Alignment.bottomCenter,
         colors: dark
             ? [const Color(0xFF1B2230), const Color(0xFF141A24)]
-            : [tintOf(Colors.white, accent, 0.10), tintOf(Colors.white, partner, 0.06)],
+            : [tintOf(Colors.white, accent, 0.17), tintOf(Colors.white, partner, 0.13)],
       );
 
   LinearGradient get header => LinearGradient(
