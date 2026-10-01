@@ -9,6 +9,7 @@ import 'package:taraz/data/models.dart';
 import 'package:taraz/data/storage.dart';
 import 'package:taraz/data/store.dart';
 import 'package:taraz/main.dart';
+import 'package:taraz/ui/dialogs/composite_dialogs.dart';
 import 'package:taraz/ui/shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -403,6 +404,46 @@ void main() {
     expect(period.first.before, 5000);
   });
 
+  test('composite receive/pay and composite expense', () {
+    final s = _tempStore();
+    final cash = s.accounts.first.id;
+    final bank = Account(id: newId(), name: 'Bank', type: AccountType.bank);
+    s.upsertAccount(bank);
+    final ali = Person(id: newId(), name: 'Ali', opening: 1000);
+    final reza = Person(id: newId(), name: 'Reza');
+    s.upsertPerson(ali);
+    s.upsertPerson(reza);
+    final d = DateTime(2026, 10, 1);
+
+    final lines = applyPayItems(s, ali.id, [
+      PayItem(PayMethod.cashIn, amount: 300, accountId: cash),
+      PayItem(PayMethod.bankIn, amount: 200, accountId: bank.id),
+      PayItem(PayMethod.saleDiscount, amount: 50),
+      PayItem(PayMethod.toOtherPerson, amount: 100, otherPersonId: reza.id),
+      PayItem(PayMethod.chequeReceive, amount: 250, due: d, serial: '77'),
+    ], d, 'test');
+    s.saveVoucher(Voucher(id: newId(), number: 1, fixedNumber: 1, date: d, lines: lines, kind: 'composite'));
+    expect(lines.fold<int>(0, (a, l) => a + l.debit), lines.fold<int>(0, (a, l) => a + l.credit));
+    expect(s.balance(cash), 300);
+    expect(s.balance(bank.id), 200);
+    expect(s.personBalance(ali.id), 1000 - 650);
+    expect(s.personBalance(reza.id), 100);
+    expect(s.cheques.where((c) => c.personId == ali.id && c.amount == 250).length, 1);
+
+    final cat = s.categoriesOf(CategoryKind.expense).first;
+    final exp = [
+      VoucherLine(moeen: mExpense, tafsiliId: cat.id, debit: 400),
+      VoucherLine(moeen: mDebtorsTrade, tafsiliId: reza.id, credit: 400),
+      ...applyPayItems(s, reza.id, [PayItem(PayMethod.cashOut, amount: 400, accountId: cash)], d, 'exp'),
+    ];
+    s.saveVoucher(Voucher(id: newId(), number: 2, fixedNumber: 2, date: d, lines: exp, kind: 'expense'));
+    expect(s.balance(cash), -100);
+    expect(s.personBalance(reza.id), 100);
+    expect(s.profit(d, d).expenses, 400);
+    final j = buildJournal(s);
+    expect(j.fold<int>(0, (a, p) => a + p.debit), j.fold<int>(0, (a, p) => a + p.credit));
+  });
+
   testWidgets('all pages render', (tester) async {
     tester.view.physicalSize = const Size(1600, 1000);
     tester.view.devicePixelRatio = 1.0;
@@ -481,6 +522,28 @@ void main() {
     await tester.tap(find.byIcon(Icons.close_rounded).last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('بازگشت (F10)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('اسناد').first);
+    await tester.pumpAndSettle();
+
+    // composite receive/pay and composite expense forms open
+    await tester.tap(find.text('مالی ویژه').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('دریافت پرداخت مرکب').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('نحوه دریافت و پرداخت'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('لطفاً شخص را تعیین کنید'), findsOneWidget);
+    await tester.tap(find.text('انصراف (F10)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('هزینه و درآمد').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('پرداخت هزینه های مرکب').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('کالا ها'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('انصراف (F10)'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('اسناد').first);
     await tester.pumpAndSettle();

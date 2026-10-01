@@ -204,7 +204,16 @@ class Voucher {
   DateTime? followDate;
   String followDesc;
   List<VoucherLine> lines;
+
+  /// manual | composite (دریافت پرداخت مرکب) | expense (پرداخت هزینه‌های مرکب)
+  String kind;
   int createdAt;
+
+  String get kindLabel => switch (kind) {
+        'composite' => 'دریافت و پرداخت مرکب',
+        'expense' => 'پرداخت هزینه مرکب',
+        _ => 'سند دستی',
+      };
 
   Voucher({
     required this.id,
@@ -217,6 +226,7 @@ class Voucher {
     this.followDate,
     this.followDesc = '',
     List<VoucherLine>? lines,
+    this.kind = 'manual',
     int? createdAt,
   })  : lines = lines ?? [],
         createdAt = createdAt ?? DateTime.now().millisecondsSinceEpoch;
@@ -236,6 +246,7 @@ class Voucher {
         'followDate': followDate == null ? null : _d(followDate!),
         'followDesc': followDesc,
         'lines': lines.map((l) => l.toJson()).toList(),
+        'kind': kind,
         'createdAt': createdAt,
       };
 
@@ -252,6 +263,7 @@ class Voucher {
         lines: (j['lines'] is List)
             ? (j['lines'] as List).whereType<Map<String, dynamic>>().map(VoucherLine.fromJson).toList()
             : <VoucherLine>[],
+        kind: _s(j['kind']).isEmpty ? 'manual' : _s(j['kind']),
         createdAt: _i(j['createdAt']),
       );
 }

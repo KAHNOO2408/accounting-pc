@@ -7,6 +7,7 @@ import '../data/models.dart';
 import '../data/store.dart';
 import 'auth/auth_screens.dart';
 import 'dialogs/cheque_dialogs.dart';
+import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
@@ -291,7 +292,8 @@ final List<_Tab> _tabs = [
   ]),
   _Tab('مالی ویژه', [
     _Group('ادغام', [
-      const _Item('دریافت پرداخت مرکب', Icons.call_split_rounded, _slate, shortcut: 'Shift+F5'),
+      _Item('دریافت پرداخت مرکب', Icons.call_split_rounded, _blue,
+          shortcut: 'Shift+F5', activator: _k(LogicalKeyboardKey.f5, shift: true), run: (c, _) => showCompositeDialog(c)),
       _Item('مبادلات داخلی', Icons.sync_alt_rounded, _blue,
           shortcut: 'Shift+F6',
           activator: _k(LogicalKeyboardKey.f6, shift: true),
@@ -314,7 +316,8 @@ final List<_Tab> _tabs = [
           run: (c, _) => showTxnDialog(c, type: TxnType.expense, title: 'برگشت درآمد')),
     ]),
     _Group('', [
-      const _Item('پرداخت هزینه های مرکب', Icons.playlist_add_rounded, _slate, shortcut: 'Shift+F7'),
+      _Item('پرداخت هزینه های مرکب', Icons.playlist_add_rounded, _red,
+          shortcut: 'Shift+F7', activator: _k(LogicalKeyboardKey.f7, shift: true), run: (c, _) => showCompositeExpenseDialog(c)),
       _Item('برگشت هزینه', Icons.redo_rounded, _amber,
           shortcut: 'Alt+F10',
           run: (c, _) => showTxnDialog(c, type: TxnType.income, title: 'برگشت هزینه')),

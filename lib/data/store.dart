@@ -708,6 +708,12 @@ class AppStore extends ChangeNotifier {
         }
       }
     }
+    // costs charged to the product by vouchers (e.g. freight in a composite expense)
+    for (final v in vouchers) {
+      for (final l in v.lines) {
+        if (l.moeen == mStock && l.tafsiliId == productId) cost += l.debit - l.credit;
+      }
+    }
     if (qty <= 0) return product(productId)?.buyPrice ?? 0;
     return (cost / qty).round();
   }

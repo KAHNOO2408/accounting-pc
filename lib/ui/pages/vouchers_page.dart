@@ -79,6 +79,7 @@ class _VouchersPageState extends State<VouchersPage> {
                         SizedBox(width: 90, child: Text('شماره سند')),
                         SizedBox(width: 90, child: Text('شماره ثابت')),
                         SizedBox(width: 110, child: Text('تاریخ')),
+                        SizedBox(width: 170, child: Text('نوع سند')),
                         Expanded(child: Text('شرح سند')),
                         SizedBox(width: 70, child: Text('ردیف‌ها', textAlign: TextAlign.center)),
                         SizedBox(width: 150, child: Text('جمع بدهکار', textAlign: TextAlign.left)),
@@ -96,6 +97,7 @@ class _VouchersPageState extends State<VouchersPage> {
                           const SizedBox(width: 90, child: Text('افتتاحیه', style: TextStyle(fontWeight: FontWeight.w700))),
                           const SizedBox(width: 90, child: Text('—')),
                           SizedBox(width: 110, child: Text(jFormat(od))),
+                          const SizedBox(width: 170),
                           const Expanded(child: Text('سند افتتاحیه')),
                         ]),
                       ),
@@ -117,6 +119,13 @@ class _VouchersPageState extends State<VouchersPage> {
                                     SizedBox(width: 90, child: Text('${v.number}', style: const TextStyle(fontWeight: FontWeight.w700))),
                                     SizedBox(width: 90, child: Text('${v.fixedNumber}')),
                                     SizedBox(width: 110, child: Text(jFormat(v.date))),
+                                    SizedBox(
+                                      width: 170,
+                                      child: Align(
+                                        alignment: AlignmentDirectional.centerStart,
+                                        child: Pill(v.kindLabel, color: v.kind == 'manual' ? th.colorScheme.primary : (v.kind == 'expense' ? AppColors.expense : AppColors.debt)),
+                                      ),
+                                    ),
                                     Expanded(
                                       child: Text(
                                         v.desc.isEmpty ? (v.lines.isEmpty ? '' : v.lines.first.desc) : v.desc,
