@@ -48,6 +48,17 @@ jobs:
             exit 1
           }
 
+      - name: Screenshots
+        continue-on-error: true
+        run: flutter test test/screenshot_test.dart
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: screenshots/
+          if-no-files-found: ignore
+
       - name: Build
         shell: pwsh
         run: |
