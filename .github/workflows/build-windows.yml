@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
 
@@ -23,6 +23,8 @@ jobs:
           if (-not (Test-Path windows)) {
             flutter create --platforms=windows --project-name taraz --org ir.taraz .
           }
+          # template test that does not apply to this app
+          Remove-Item test/widget_test.dart -ErrorAction SilentlyContinue
 
       - name: Window title, size and icon
         shell: pwsh
