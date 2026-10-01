@@ -309,6 +309,7 @@ class _PayMethodsDialogState extends State<_PayMethodsDialog> {
     return CallbackShortcuts(
       bindings: keys,
       child: Dialog(
+        clipBehavior: Clip.antiAlias,
         insetPadding: const EdgeInsets.all(20),
         child: SizedBox(
           width: 1100,
@@ -316,12 +317,12 @@ class _PayMethodsDialogState extends State<_PayMethodsDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 12, 8),
+              HeaderBand(
+                padding: const EdgeInsets.fromLTRB(20, 14, 12, 12),
                 child: Row(children: [
-                  Text('عملیات مالی — نحوه دریافت و پرداخت', style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+                  Text('عملیات مالی — نحوه دریافت و پرداخت', style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.white)),
                   const SizedBox(width: 12),
-                  if (widget.personId != null) Pill(store.person(widget.personId)?.name ?? '', color: th.colorScheme.primary),
+                  if (widget.personId != null) Pill(store.person(widget.personId)?.name ?? '', color: Colors.white),
                   const Spacer(),
                   IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded)),
                 ]),
@@ -1069,6 +1070,7 @@ class _ExpenseDialogState extends State<_ExpenseDialog> with SingleTickerProvide
         const SingleActivator(LogicalKeyboardKey.f2): _ops,
       },
       child: Dialog(
+        clipBehavior: Clip.antiAlias,
         insetPadding: const EdgeInsets.all(20),
         child: SizedBox(
           width: size.width > 1180 ? 1140 : size.width - 40,
@@ -1076,10 +1078,10 @@ class _ExpenseDialogState extends State<_ExpenseDialog> with SingleTickerProvide
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 12, 8),
+              HeaderBand(
+                padding: const EdgeInsets.fromLTRB(20, 14, 12, 12),
                 child: Row(children: [
-                  Text('پرداخت هزینه های مرکب', style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+                  Text('پرداخت هزینه های مرکب', style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.white)),
                   const Spacer(),
                   IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded)),
                 ]),

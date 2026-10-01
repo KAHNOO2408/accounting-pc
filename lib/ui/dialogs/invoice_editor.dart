@@ -340,7 +340,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
                 decoration: BoxDecoration(
-                  color: _kindColor.withValues(alpha: 0.07),
+                  gradient: LinearGradient(colors: [_kindColor, Color.lerp(_kindColor, Brand.of(context).partner, 0.55)!]),
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                 ),
                 child: Row(
@@ -348,18 +348,18 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                     Container(
                       width: 42,
                       height: 42,
-                      decoration: BoxDecoration(color: _kindColor, borderRadius: BorderRadius.circular(12)),
+                      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.22), borderRadius: BorderRadius.circular(12)),
                       child: Icon(txnIcon(_kind.txnType), color: Colors.white),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(
                         '${_isEdit ? 'ویرایش ' : ''}$_title',
-                        style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                        style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.white),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    IconButton(tooltip: 'بستن (Esc)', onPressed: _close, icon: const Icon(Icons.close_rounded)),
+                    IconButton(tooltip: 'بستن (Esc)', onPressed: _close, icon: const Icon(Icons.close_rounded, color: Colors.white)),
                   ],
                 ),
               ),

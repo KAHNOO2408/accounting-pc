@@ -382,6 +382,7 @@ class TrialBalanceView extends StatelessWidget {
         const SingleActivator(LogicalKeyboardKey.f10): () => Navigator.pop(context),
       },
       child: Dialog(
+        clipBehavior: Clip.antiAlias,
         insetPadding: const EdgeInsets.all(16),
         child: SizedBox(
           width: size.width - 32,
@@ -389,18 +390,18 @@ class TrialBalanceView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 12, 10),
+              HeaderBand(
+                padding: const EdgeInsets.fromLTRB(20, 14, 12, 12),
                 child: Row(children: [
                   Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('تراز آزمایشی — $_levelLabel', style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-                    Text(_rangeText(filter), style: th.textTheme.bodySmall?.copyWith(color: th.hintColor)),
+                    Text('تراز آزمایشی — $_levelLabel', style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.white)),
+                    Text(_rangeText(filter), style: th.textTheme.bodySmall?.copyWith(color: Colors.white70)),
                   ]),
                   const Spacer(),
                   if (bDr != bCr)
-                    Pill('عدم تراز: ${groupDigits((bDr - bCr).abs())}', color: th.colorScheme.error)
+                    Pill('عدم تراز: ${groupDigits((bDr - bCr).abs())}', color: Colors.white)
                   else
-                    const Pill('تراز است', color: AppColors.income, icon: Icons.check_rounded),
+                    const Pill('تراز است', color: Colors.white, icon: Icons.check_rounded),
                   const SizedBox(width: 12),
                   OutlinedButton.icon(onPressed: doPrint, icon: const Icon(Icons.print_outlined, size: 18), label: const Text('چاپ (Ctrl+P)')),
                   const SizedBox(width: 8),
@@ -771,6 +772,7 @@ class GeneralLedgerView extends StatelessWidget {
         const SingleActivator(LogicalKeyboardKey.f10): () => Navigator.pop(context),
       },
       child: Dialog(
+        clipBehavior: Clip.antiAlias,
         insetPadding: const EdgeInsets.all(16),
         child: SizedBox(
           width: size.width - 32,
@@ -778,12 +780,12 @@ class GeneralLedgerView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 12, 10),
+              HeaderBand(
+                padding: const EdgeInsets.fromLTRB(20, 14, 12, 12),
                 child: Row(children: [
                   Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('$heading${aggregate ? ' (تجمیعی)' : ''}', style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-                    Text('${_rangeText(filter)}  ·  ${secs.length} حساب', style: th.textTheme.bodySmall?.copyWith(color: th.hintColor)),
+                    Text('$heading${aggregate ? ' (تجمیعی)' : ''}', style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.white)),
+                    Text('${_rangeText(filter)}  ·  ${secs.length} حساب', style: th.textTheme.bodySmall?.copyWith(color: Colors.white70)),
                   ]),
                   const Spacer(),
                   OutlinedButton.icon(

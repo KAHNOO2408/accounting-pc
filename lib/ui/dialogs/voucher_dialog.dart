@@ -208,6 +208,7 @@ class _VoucherDialogState extends State<VoucherDialog> {
         const SingleActivator(LogicalKeyboardKey.escape): _close,
       },
       child: Dialog(
+        clipBehavior: Clip.antiAlias,
         insetPadding: const EdgeInsets.all(20),
         child: SizedBox(
           width: size.width > 1240 ? 1200 : size.width - 40,
@@ -215,11 +216,11 @@ class _VoucherDialogState extends State<VoucherDialog> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 12, 10),
+              HeaderBand(
+                padding: const EdgeInsets.fromLTRB(20, 14, 12, 12),
                 child: Row(children: [
                   Text(_isEdit ? 'ویرایش سند حسابداری' : 'ثبت سند',
-                      style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+                      style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.white)),
                   const Spacer(),
                   IconButton(onPressed: _close, icon: const Icon(Icons.close_rounded)),
                 ]),

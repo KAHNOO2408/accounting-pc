@@ -861,6 +861,10 @@ class AppSettings {
   DateTime? openingDate;
   Map<String, int> openingOther;
 
+  /// Start screen: preset gradient index and optional picture file.
+  int backgroundPreset;
+  String backgroundImage;
+
   AppSettings({
     this.themeMode = 'light',
     this.currency = 'تومان',
@@ -875,6 +879,8 @@ class AppSettings {
     this.businessAddress = '',
     this.openingDate,
     Map<String, int>? openingOther,
+    this.backgroundPreset = 0,
+    this.backgroundImage = '',
   }) : openingOther = openingOther ?? {};
 
   bool get hasPassword => passwordHash.isNotEmpty;
@@ -893,6 +899,8 @@ class AppSettings {
         'businessAddress': businessAddress,
         'openingDate': openingDate == null ? null : _d(openingDate!),
         'openingOther': openingOther,
+        'backgroundPreset': backgroundPreset,
+        'backgroundImage': backgroundImage,
       };
 
   factory AppSettings.fromJson(Map<String, dynamic> j) => AppSettings(
@@ -911,5 +919,7 @@ class AppSettings {
         openingOther: (j['openingOther'] is Map)
             ? {for (final e in (j['openingOther'] as Map).entries) '${e.key}': _i(e.value)}
             : <String, int>{},
+        backgroundPreset: _i(j['backgroundPreset']),
+        backgroundImage: _s(j['backgroundImage']),
       );
 }

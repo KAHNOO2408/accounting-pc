@@ -99,7 +99,7 @@ const _red = AppColors.expense;
 const _violet = AppColors.debt;
 const _amber = AppColors.loan;
 const _cyan = AppColors.discount;
-const _slate = Color(0xFF64748B);
+const _slate = Color(0xFF6366F1);
 
 SingleActivator _k(LogicalKeyboardKey k, {bool ctrl = false, bool alt = false, bool shift = false}) =>
     SingleActivator(k, control: ctrl, alt: alt, shift: shift);
@@ -368,7 +368,7 @@ final List<_Tab> _tabs = [
       const _Item('واحدهای شمارش', Icons.straighten_rounded, _slate),
       const _Item('لیست ارزها', Icons.attach_money_rounded, _slate),
       const _Item('لیست انبارها', Icons.warehouse_outlined, _slate),
-      const _Item('تصویر پس زمینه', Icons.wallpaper_rounded, _slate),
+      _Item('تصویر پس زمینه', Icons.wallpaper_rounded, _cyan, run: (c, _) => showBackgroundDialog(c)),
       const _Item('ارسال پیام', Icons.sms_outlined, _slate, shortcut: 'Ctrl+F11'),
     ]),
     _Group('کاربران', [
@@ -550,15 +550,17 @@ class _ShellState extends State<Shell> {
                     actions: [TextButton(onPressed: () => setState(() => store.lastError = null), child: const Text('باشه'))],
                   ),
                 Expanded(
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 1680),
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 160),
-                        child: KeyedSubtree(key: ValueKey(_page), child: _body()),
-                      ),
-                    ),
-                  ),
+                  child: _page == AppPage.home
+                      ? const HomePage()
+                      : Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 1680),
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 160),
+                              child: KeyedSubtree(key: ValueKey(_page), child: _body()),
+                            ),
+                          ),
+                        ),
                 ),
               ],
             ),
@@ -596,82 +598,142 @@ class _TitleBar extends StatelessWidget {
     final th = Theme.of(context);
     final dark = th.brightness == Brightness.dark;
     final name = store.settings.ownerName.trim();
-    final accent = th.colorScheme.primary;
+    final brand = Brand.of(context);
+    const fg = Colors.white;
 
     return Container(
-      height: 52,
-      color: th.colorScheme.surface,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: 56,
+      decoration: BoxDecoration(gradient: brand.chrome),
+      padding: const EdgeInsetsDirectional.only(start: 14, end: 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: onHome,
-            child: Padding(
-              padding: const EdgeInsets.all(4),
-              child: Row(children: [
-                const TarazLogo(size: 32),
-                const SizedBox(width: 8),
-                Text('تراز', style: th.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
-              ]),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 9),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: onHome,
+              child: Padding(
+                padding: const EdgeInsets.all(3),
+                child: Row(children: [
+                  const TarazLogo(size: 32, onDark: true),
+                  const SizedBox(width: 8),
+                  Text('تراز', style: th.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800, color: fg)),
+                ]),
+              ),
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 16),
           Expanded(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  for (var i = 0; i < _tabs.length; i++)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: Material(
-                        color: i == tab && ribbonOpen ? accent.withValues(alpha: 0.12) : Colors.transparent,
-                        borderRadius: BorderRadius.circular(9),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(9),
-                          onTap: () => onTab(i),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            child: Text(
-                              _tabs[i].title,
-                              style: TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: i == tab ? FontWeight.w700 : FontWeight.w500,
-                                color: i == tab ? accent : th.colorScheme.onSurface.withValues(alpha: 0.75),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                  for (var i = 0; i < _tabs.length; i++) _TabChip(
+                    title: _tabs[i].title,
+                    selected: i == tab,
+                    open: ribbonOpen,
+                    onTap: () => onTab(i),
+                  ),
                 ],
               ),
             ),
           ),
-          IconButton(tooltip: 'جستجو (Ctrl+F)', onPressed: onSearch, icon: const Icon(Icons.search_rounded, size: 21)),
-          IconButton(
-            tooltip: dark ? 'حالت روشن' : 'حالت تیره',
-            onPressed: () => store.updateSettings((s) => s.themeMode = dark ? 'light' : 'dark'),
-            icon: Icon(dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined, size: 21),
-          ),
-          if (onLock != null)
-            IconButton(tooltip: 'قفل برنامه (Ctrl+L)', onPressed: onLock, icon: const Icon(Icons.lock_outline_rounded, size: 21)),
-          const SizedBox(width: 4),
-          Tooltip(
-            message: name.isEmpty ? 'تنظیمات' : '$name — ${Jalali.now().formatLong()}',
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              onTap: onSettings,
-              child: CircleAvatar(
-                radius: 16,
-                backgroundColor: accent.withValues(alpha: 0.12),
-                child: Text(name.isEmpty ? '؟' : name.characters.first,
-                    style: TextStyle(color: accent, fontWeight: FontWeight.w700)),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(children: [
+              IconButton(
+                tooltip: 'جستجو (Ctrl+F)',
+                onPressed: onSearch,
+                icon: const Icon(Icons.search_rounded, size: 21, color: fg),
               ),
-            ),
+              IconButton(
+                tooltip: dark ? 'حالت روشن' : 'حالت تیره',
+                onPressed: () => store.updateSettings((s) => s.themeMode = dark ? 'light' : 'dark'),
+                icon: Icon(dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined, size: 21, color: fg),
+              ),
+              if (onLock != null)
+                IconButton(
+                  tooltip: 'قفل برنامه (Ctrl+L)',
+                  onPressed: onLock,
+                  icon: const Icon(Icons.lock_outline_rounded, size: 21, color: fg),
+                ),
+              const SizedBox(width: 4),
+              Tooltip(
+                message: name.isEmpty ? 'تنظیمات' : '$name — ${Jalali.now().formatLong()}',
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: onSettings,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white54, width: 1.5)),
+                    child: CircleAvatar(
+                      radius: 15,
+                      backgroundColor: Colors.white.withValues(alpha: 0.18),
+                      child: Text(name.isEmpty ? '؟' : name.characters.first,
+                          style: const TextStyle(color: fg, fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                ),
+              ),
+            ]),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Tab header; the selected one is "attached" to the ribbon below it.
+class _TabChip extends StatefulWidget {
+  final String title;
+  final bool selected;
+  final bool open;
+  final VoidCallback onTap;
+  const _TabChip({required this.title, required this.selected, required this.open, required this.onTap});
+
+  @override
+  State<_TabChip> createState() => _TabChipState();
+}
+
+class _TabChipState extends State<_TabChip> {
+  bool _hover = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final brand = Brand.of(context);
+    final attached = widget.selected && widget.open;
+    final top = brand.ribbon.colors.first;
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 140),
+          padding: EdgeInsets.fromLTRB(14, 9, 14, attached ? 12 : 9),
+          decoration: BoxDecoration(
+            color: attached
+                ? top
+                : (widget.selected
+                    ? Colors.white.withValues(alpha: 0.22)
+                    : (_hover ? Colors.white.withValues(alpha: 0.14) : Colors.transparent)),
+            borderRadius: attached
+                ? const BorderRadius.vertical(top: Radius.circular(10))
+                : BorderRadius.circular(9),
+          ),
+          margin: attached ? const EdgeInsets.symmetric(horizontal: 2) : const EdgeInsets.fromLTRB(2, 0, 2, 8),
+          child: Text(
+            widget.title,
+            style: TextStyle(
+              fontSize: 13.5,
+              fontWeight: widget.selected ? FontWeight.w800 : FontWeight.w500,
+              color: attached ? brand.accent : Colors.white.withValues(alpha: widget.selected ? 1 : 0.86),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -688,18 +750,15 @@ class _Ribbon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final th = Theme.of(context);
-    final dark = th.brightness == Brightness.dark;
+    final brand = Brand.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: dark ? const Color(0xFF111820) : const Color(0xFFF8F9FC),
-        border: Border(
-          top: BorderSide(color: th.colorScheme.outlineVariant),
-          bottom: BorderSide(color: th.colorScheme.outlineVariant),
-        ),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: dark ? 0.2 : 0.04), blurRadius: 10, offset: const Offset(0, 3))],
+        gradient: brand.ribbon,
+        boxShadow: [
+          BoxShadow(color: brand.accent.withValues(alpha: brand.dark ? 0.25 : 0.16), blurRadius: 14, offset: const Offset(0, 4)),
+        ],
       ),
-      padding: const EdgeInsets.fromLTRB(10, 6, 6, 4),
+      padding: const EdgeInsets.fromLTRB(10, 8, 6, 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -711,11 +770,7 @@ class _Ribbon extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     for (var g = 0; g < tab.groups.length; g++) ...[
-                      if (g > 0)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                          child: VerticalDivider(width: 1, color: th.colorScheme.outlineVariant),
-                        ),
+                      if (g > 0) const SizedBox(width: 8),
                       _RibbonGroup(group: tab.groups[g], onItem: onItem),
                     ],
                   ],
@@ -727,7 +782,7 @@ class _Ribbon extends StatelessWidget {
             tooltip: 'جمع کردن نوار (یا دوباره روی تب بزنید)',
             visualDensity: VisualDensity.compact,
             onPressed: onCollapse,
-            icon: const Icon(Icons.keyboard_arrow_up_rounded),
+            icon: Icon(Icons.keyboard_arrow_up_rounded, color: brand.accent),
           ),
         ],
       ),
@@ -742,18 +797,48 @@ class _RibbonGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brand = Brand.of(context);
     final th = Theme.of(context);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [for (final i in group.items) _RibbonButton(item: i, onTap: () => onItem(i))],
-        ),
-        const SizedBox(height: 2),
-        Text(group.title, style: th.textTheme.labelSmall?.copyWith(color: th.hintColor, fontSize: 10.5)),
-      ],
+    return Container(
+      decoration: BoxDecoration(
+        color: brand.dark ? Colors.white.withValues(alpha: 0.04) : Colors.white.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: brand.accent.withValues(alpha: brand.dark ? 0.25 : 0.16)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 4, 4, 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [for (final i in group.items) _RibbonButton(item: i, onTap: () => onItem(i))],
+            ),
+          ),
+          const Spacer(),
+          if (group.title.isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [
+                  brand.accent.withValues(alpha: brand.dark ? 0.30 : 0.12),
+                  brand.partner.withValues(alpha: brand.dark ? 0.30 : 0.12),
+                ]),
+              ),
+              child: Text(
+                group.title,
+                textAlign: TextAlign.center,
+                style: th.textTheme.labelSmall?.copyWith(
+                  color: brand.dark ? Colors.white70 : brand.deep,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -773,8 +858,10 @@ class _RibbonButtonState extends State<_RibbonButton> {
   @override
   Widget build(BuildContext context) {
     final th = Theme.of(context);
+    final brand = Brand.of(context);
     final i = widget.item;
-    final c = i.soon ? th.hintColor : i.color;
+    final c = i.soon ? const Color(0xFF94A3B8) : i.color;
+    final light = Color.lerp(c, Colors.white, 0.35)!;
     return Tooltip(
       message: i.soon ? '${i.label} — به‌زودی' : (i.shortcut == null ? i.label : '${i.label}  (${i.shortcut})'),
       waitDuration: const Duration(milliseconds: 500),
@@ -786,11 +873,12 @@ class _RibbonButtonState extends State<_RibbonButton> {
           onTap: widget.onTap,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 120),
-            width: 82,
+            width: 84,
             padding: const EdgeInsets.fromLTRB(4, 6, 4, 4),
             decoration: BoxDecoration(
-              color: _hover ? c.withValues(alpha: 0.08) : Colors.transparent,
+              color: _hover ? c.withValues(alpha: brand.dark ? 0.18 : 0.10) : Colors.transparent,
               borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: _hover ? c.withValues(alpha: 0.35) : Colors.transparent),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -798,28 +886,37 @@ class _RibbonButtonState extends State<_RibbonButton> {
                 Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Container(
-                      width: 34,
-                      height: 34,
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 120),
+                      width: 38,
+                      height: 38,
+                      transform: Matrix4.translationValues(0, _hover ? -1.5 : 0, 0),
                       decoration: BoxDecoration(
-                        color: c.withValues(alpha: i.soon ? 0.08 : 0.14),
-                        borderRadius: BorderRadius.circular(10),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: i.soon ? [const Color(0xFFCBD5E1), const Color(0xFF94A3B8)] : [light, c],
+                        ),
+                        borderRadius: BorderRadius.circular(11),
+                        boxShadow: i.soon
+                            ? null
+                            : [BoxShadow(color: c.withValues(alpha: _hover ? 0.45 : 0.30), blurRadius: _hover ? 10 : 6, offset: const Offset(0, 3))],
                       ),
-                      child: Icon(i.icon, size: 19, color: c.withValues(alpha: i.soon ? 0.6 : 1)),
+                      child: Icon(i.icon, size: 20, color: Colors.white),
                     ),
                     if (i.soon)
                       Positioned(
-                        top: -3,
-                        left: -6,
+                        top: -4,
+                        left: -8,
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
-                          decoration: BoxDecoration(color: th.colorScheme.outlineVariant, borderRadius: BorderRadius.circular(4)),
-                          child: Text('به‌زودی', style: TextStyle(fontSize: 7.5, color: th.colorScheme.onSurface)),
+                          decoration: BoxDecoration(color: const Color(0xFF64748B), borderRadius: BorderRadius.circular(4)),
+                          child: const Text('به‌زودی', style: TextStyle(fontSize: 7.5, color: Colors.white)),
                         ),
                       ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 5),
                 Text(
                   i.label,
                   textAlign: TextAlign.center,
@@ -829,13 +926,13 @@ class _RibbonButtonState extends State<_RibbonButton> {
                     fontSize: 11,
                     height: 1.25,
                     color: i.soon ? th.hintColor : th.colorScheme.onSurface,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 if (i.shortcut != null)
                   Text(i.shortcut!,
                       textDirection: TextDirection.ltr,
-                      style: TextStyle(fontSize: 9, color: i.soon ? th.hintColor : AppColors.expense.withValues(alpha: 0.85))),
+                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: i.soon ? th.hintColor : const Color(0xFFDC2626))),
               ],
             ),
           ),

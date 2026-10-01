@@ -98,15 +98,27 @@ class PageHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final th = Theme.of(context);
+    final brand = Brand.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(28, 24, 28, 16),
+      padding: const EdgeInsets.fromLTRB(28, 22, 28, 16),
       child: Row(
         children: [
+          Container(
+            width: 6,
+            height: subtitle == null ? 30 : 46,
+            margin: const EdgeInsetsDirectional.only(end: 14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [brand.accent, brand.partner]),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: th.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+                Text(title,
+                    style: th.textTheme.headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.w800, color: brand.dark ? Colors.white : brand.deep)),
                 if (subtitle != null) ...[
                   const SizedBox(height: 4),
                   Text(subtitle!, style: th.textTheme.bodyMedium?.copyWith(color: th.hintColor)),
@@ -490,28 +502,39 @@ class FormDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final th = Theme.of(context);
+    final brand = Brand.of(context);
     return Dialog(
       insetPadding: const EdgeInsets.all(24),
+      clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: width, maxHeight: MediaQuery.of(context).size.height * 0.9),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 16, 12),
+            Container(
+              decoration: BoxDecoration(gradient: brand.header),
+              padding: const EdgeInsets.fromLTRB(22, 14, 12, 14),
               child: Row(
                 children: [
-                  Expanded(child: Text(title, style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700))),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    margin: const EdgeInsetsDirectional.only(end: 10),
+                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                  ),
+                  Expanded(
+                    child: Text(title,
+                        style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.white)),
+                  ),
                   IconButton(
                     tooltip: 'بستن (Esc)',
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded),
+                    icon: const Icon(Icons.close_rounded, color: Colors.white),
                   ),
                 ],
               ),
             ),
-            const Divider(),
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
@@ -580,6 +603,40 @@ class ColorPickerRow extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Coloured header strip for large dialogs; text, icons and outlined buttons turn white.
+class HeaderBand extends StatelessWidget {
+  final EdgeInsetsGeometry padding;
+  final Widget child;
+  const HeaderBand({super.key, required this.padding, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final th = Theme.of(context);
+    final brand = Brand.of(context);
+    return Container(
+      decoration: BoxDecoration(gradient: brand.header),
+      padding: padding,
+      child: Theme(
+        data: th.copyWith(
+          textTheme: th.textTheme.apply(bodyColor: Colors.white, displayColor: Colors.white),
+          hintColor: Colors.white70,
+          iconTheme: const IconThemeData(color: Colors.white),
+          iconButtonTheme: IconButtonThemeData(style: IconButton.styleFrom(foregroundColor: Colors.white)),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Colors.white54),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+        ),
+        child: DefaultTextStyle.merge(style: const TextStyle(color: Colors.white), child: child),
+      ),
     );
   }
 }

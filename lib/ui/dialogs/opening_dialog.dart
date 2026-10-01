@@ -263,6 +263,7 @@ class OpeningState extends State<OpeningDialog> {
         const SingleActivator(LogicalKeyboardKey.f1): _preview,
       },
       child: Dialog(
+        clipBehavior: Clip.antiAlias,
         insetPadding: const EdgeInsets.all(20),
         child: SizedBox(
           width: size.width > 1100 ? 1060 : size.width - 40,
@@ -270,10 +271,10 @@ class OpeningState extends State<OpeningDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 12, 10),
+              HeaderBand(
+                padding: const EdgeInsets.fromLTRB(20, 14, 12, 12),
                 child: Row(children: [
-                  Text('سند افتتاحیه', style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+                  Text('سند افتتاحیه', style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.white)),
                   const Spacer(),
                   IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded)),
                 ]),
