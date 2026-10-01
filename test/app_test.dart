@@ -597,6 +597,67 @@ void main() {
     expect(again.product(prod.id)!.sellPrice2, 700);
   });
 
+  test('warehouses, transfers and fixed assets', () {
+    final s = _tempStore();
+    final cash = s.accounts.firstWhere((a) => a.type == AccountType.cash).id;
+    final d = DateTime(2026, 10, 1);
+    expect(s.warehouses.length, 1);
+    final main = s.mainWarehouseId;
+    final w2 = Warehouse(id: newId(), code: s.nextWarehouseCode(), name: 'مرجوعی');
+    s.saveWarehouse(w2);
+    final prod = Product(id: newId(), name: 'Cable', buyPrice: 10, openingQty: 10);
+    s.upsertProduct(prod);
+    s.saveTransfer(WarehouseTransfer(id: newId(), number: 1, date: d, fromId: main, lines: [
+      TransferLine(productId: prod.id, toId: w2.id, qty: 4),
+    ]));
+    expect(s.stock(prod.id), 10);
+    expect(s.stock(prod.id, warehouseId: main), 6);
+    expect(s.stock(prod.id, warehouseId: w2.id), 4);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: d,
+        lines: [InvoiceLine(productId: prod.id, qty: 1, unitPrice: 20, warehouseId: w2.id)]));
+    s.addAdjusts([StockAdjust(id: newId(), date: d, productId: prod.id, qty: -1, reason: AdjustReason.waste, warehouseId: w2.id)]);
+    expect(s.stock(prod.id, warehouseId: w2.id), 2);
+    expect(s.stock(prod.id), 8);
+    expect(s.removeWarehouse(w2.id), isFalse);
+    expect(s.removeWarehouse(main), isFalse);
+    final again = AppStore.open(s.storage);
+    expect(again.warehouses.length, 2);
+    expect(again.stock(prod.id, warehouseId: w2.id), 2);
+
+    // assets
+    final ali = Person(id: newId(), name: 'Ali');
+    s.upsertPerson(ali);
+    final buy = s.buyAssets(
+      date: d,
+      personId: ali.id,
+      items: [Asset(id: newId(), code: 0, name: 'Laptop', cost: 1000), Asset(id: newId(), code: 0, name: 'Desk', cost: 300)],
+      payLines: applyPayItems(s, ali.id, [PayItem(PayMethod.cashOut, amount: 500, accountId: cash)], d, 'x'),
+    );
+    expect(buy.totalDebit, buy.totalCredit);
+    expect(s.assets.length, 2);
+    expect(s.assets.map((a) => a.code).toSet().length, 2);
+    expect(s.personBalance(ali.id), -800);
+    final laptop = s.assets.firstWhere((a) => a.name == 'Laptop');
+    laptop.depreciation = 200;
+    s.saveAsset(laptop);
+    expect(s.vouchers.where((v) => v.kind == 'depreciation').length, 1);
+    final sell = s.sellAssets(date: d, sales: [(laptop, 900)],
+        payLines: applyPayItems(s, null, [PayItem(PayMethod.cashIn, amount: 900, accountId: cash)], d, 'y'));
+    expect(sell.totalDebit, sell.totalCredit);
+    expect(laptop.sold, isTrue);
+    final pr = s.profit(DateTime(2000), DateTime(2100));
+    expect(pr.otherIncome, 100);
+    expect(pr.expenses, 200);
+    final j = buildJournal(s);
+    expect(j.fold<int>(0, (a, p) => a + p.debit), j.fold<int>(0, (a, p) => a + p.credit));
+    s.removeVoucher(sell.id);
+    expect(laptop.sold, isFalse);
+    expect(s.removeAsset(laptop.id), isFalse);
+    s.removeVoucher(buy.id);
+    expect(s.assets, isEmpty);
+    expect(s.vouchers.where((v) => v.kind == 'depreciation'), isEmpty);
+  });
+
   testWidgets('all pages render', (tester) async {
     tester.view.physicalSize = const Size(1600, 1000);
     tester.view.devicePixelRatio = 1.0;
@@ -715,6 +776,45 @@ void main() {
     await tester.tap(find.text('جا به جایی چک').first);
     await tester.pumpAndSettle();
     expect(find.text('صندوق دریافت کننده چک'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('انصراف (F10)').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('اسناد').first);
+    await tester.pumpAndSettle();
+
+    // warehouses list → new warehouse, transfer window, assets
+    await tester.tap(find.text('متفرقه').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('لیست انبارها').first);
+    await tester.pumpAndSettle();
+    expect(find.text('لیست انبار های سیستم'), findsOneWidget);
+    await tester.tap(find.text('معرفی انبار'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'نام انبار'), 'انبار مرجوعی');
+    await tester.tap(find.text('تایید (F9)').last);
+    await tester.pumpAndSettle();
+    expect(s.warehouses.length, 2);
+    await tester.tap(find.text('بازگشت (F10)').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('عملیات کالا').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('انتقال بین انبارها').first);
+    await tester.pumpAndSettle();
+    expect(find.text('انتقال بین انبار'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('انصراف (F10)').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('خرید و فروش').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('جدول اموال').first);
+    await tester.pumpAndSettle();
+    expect(find.text('همه موارد'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.byIcon(Icons.close_rounded).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('خرید اموال و تجهیزات').first);
+    await tester.pumpAndSettle();
+    expect(find.text('تایید و تسویه (F9)'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.tap(find.text('انصراف (F10)').last);
     await tester.pumpAndSettle();

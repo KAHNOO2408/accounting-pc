@@ -217,6 +217,9 @@ class Voucher {
         'composite' => 'دریافت و پرداخت مرکب',
         'expense' => 'پرداخت هزینه مرکب',
         'chequeMove' => 'جا به جایی چک',
+        'assetBuy' => 'خرید اموال و تجهیزات',
+        'assetSell' => 'فروش اموال و تجهیزات',
+        'depreciation' => 'استهلاک اموال',
         'closing' => 'سند اختتامیه',
         'reopen' => 'افتتاحیه (انتقال تراز)',
         'settle' => 'تسویه فاکتور',
@@ -579,7 +582,10 @@ class InvoiceLine {
   int unitPrice;
   int discount;
 
-  InvoiceLine({this.productId, this.title = '', this.qty = 1, this.unitPrice = 0, this.discount = 0});
+  /// Warehouse of the row (null = main warehouse).
+  String? warehouseId;
+
+  InvoiceLine({this.productId, this.title = '', this.qty = 1, this.unitPrice = 0, this.discount = 0, this.warehouseId});
 
   int get total => (qty * unitPrice).round() - discount;
 
@@ -589,9 +595,11 @@ class InvoiceLine {
         'qty': qty,
         'unitPrice': unitPrice,
         'discount': discount,
+        if (warehouseId != null) 'warehouseId': warehouseId,
       };
 
   factory InvoiceLine.fromJson(Map<String, dynamic> j) => InvoiceLine(
+        warehouseId: _sn(j['warehouseId']),
         productId: _sn(j['productId']),
         title: _s(j['title']),
         qty: _dbl(j['qty'], 1),
@@ -698,7 +706,11 @@ class StockAdjust {
   String note;
   int createdAt;
 
+  /// Warehouse (null = main warehouse).
+  String? warehouseId;
+
   StockAdjust({
+    this.warehouseId,
     required this.id,
     required this.date,
     required this.productId,
@@ -718,9 +730,11 @@ class StockAdjust {
         'groupId': groupId,
         'note': note,
         'createdAt': createdAt,
+        if (warehouseId != null) 'warehouseId': warehouseId,
       };
 
   factory StockAdjust.fromJson(Map<String, dynamic> j) => StockAdjust(
+        warehouseId: _sn(j['warehouseId']),
         id: _s(j['id']),
         date: _p(j['date']),
         productId: _s(j['productId']),
@@ -1032,14 +1046,13 @@ class ChequeLeaf {
 // ---------------------------------------------------------------------------
 
 /// Kinds of printouts chosen from «تعیین نوع چاپ».
-enum PrintDocType { invoice, warehouse, barcode, consign }
+enum PrintDocType { invoice, warehouse, barcode }
 
 extension PrintDocTypeX on PrintDocType {
   String get label => switch (this) {
         PrintDocType.invoice => 'چاپ فاکتور',
         PrintDocType.warehouse => 'چاپ حواله انبار',
         PrintDocType.barcode => 'چاپ بارکد',
-        PrintDocType.consign => 'امانی',
       };
 }
 
@@ -1131,5 +1144,160 @@ class PrintTemplate {
         columns: j['columns'] is List ? [for (final c in j['columns'] as List) '$c'] : null,
         fontSize: j['fontSize'] == null ? 12 : _i(j['fontSize']),
         labelCols: j['labelCols'] == null ? 3 : _i(j['labelCols']),
+      );
+}
+
+// ---------------------------------------------------------------------------
+
+/// انبار
+class Warehouse {
+  String id;
+  int code; // شناسه
+  String name;
+  String keeper; // انباردار
+  String specs; // مشخصات
+  String note; // ملاحظات
+
+  Warehouse({required this.id, required this.code, required this.name, this.keeper = '', this.specs = '', this.note = ''});
+
+  Map<String, dynamic> toJson() => {'id': id, 'code': code, 'name': name, 'keeper': keeper, 'specs': specs, 'note': note};
+
+  factory Warehouse.fromJson(Map<String, dynamic> j) => Warehouse(
+        id: _s(j['id']),
+        code: _i(j['code']),
+        name: _s(j['name']),
+        keeper: _s(j['keeper']),
+        specs: _s(j['specs']),
+        note: _s(j['note']),
+      );
+}
+
+class TransferLine {
+  String productId;
+  String toId; // انبار وارده
+  double qty;
+  String note;
+
+  TransferLine({required this.productId, required this.toId, required this.qty, this.note = ''});
+
+  Map<String, dynamic> toJson() => {'productId': productId, 'toId': toId, 'qty': qty, 'note': note};
+
+  factory TransferLine.fromJson(Map<String, dynamic> j) =>
+      TransferLine(productId: _s(j['productId']), toId: _s(j['toId']), qty: _dbl(j['qty']), note: _s(j['note']));
+}
+
+/// انتقال بین انبارها
+class WarehouseTransfer {
+  String id;
+  int number;
+  int receiptNo; // شماره رسید انبار
+  DateTime date;
+  String fromId; // انبار صادره
+  String note;
+  List<TransferLine> lines;
+  int createdAt;
+
+  WarehouseTransfer({
+    required this.id,
+    required this.number,
+    this.receiptNo = 0,
+    required this.date,
+    required this.fromId,
+    this.note = '',
+    List<TransferLine>? lines,
+    int? createdAt,
+  })  : lines = lines ?? [],
+        createdAt = createdAt ?? DateTime.now().millisecondsSinceEpoch;
+
+  double get totalQty => lines.fold(0.0, (s, l) => s + l.qty);
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'number': number,
+        'receiptNo': receiptNo,
+        'date': _d(date),
+        'fromId': fromId,
+        'note': note,
+        'lines': lines.map((l) => l.toJson()).toList(),
+        'createdAt': createdAt,
+      };
+
+  factory WarehouseTransfer.fromJson(Map<String, dynamic> j) => WarehouseTransfer(
+        id: _s(j['id']),
+        number: _i(j['number']),
+        receiptNo: _i(j['receiptNo']),
+        date: _p(j['date']),
+        fromId: _s(j['fromId']),
+        note: _s(j['note']),
+        lines: (j['lines'] is List ? j['lines'] as List : const []).whereType<Map<String, dynamic>>().map(TransferLine.fromJson).toList(),
+        createdAt: _i(j['createdAt']),
+      );
+}
+
+/// اموال و تجهیزات
+class Asset {
+  String id;
+  int code; // شناسه
+  String name;
+  String location; // محل
+  String assetNo; // شماره اموال
+  String receiver; // تحویل گیرنده
+  int cost; // بهای تمام شده
+  int depreciation; // استهلاک انباشته
+  DateTime? purchaseDate;
+  String note;
+  String? buyVoucherId;
+  String? sellVoucherId;
+  int salePrice;
+
+  Asset({
+    required this.id,
+    required this.code,
+    required this.name,
+    this.location = '',
+    this.assetNo = '',
+    this.receiver = '',
+    this.cost = 0,
+    this.depreciation = 0,
+    this.purchaseDate,
+    this.note = '',
+    this.buyVoucherId,
+    this.sellVoucherId,
+    this.salePrice = 0,
+  });
+
+  bool get sold => sellVoucherId != null;
+  int get bookValue => cost - depreciation;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'code': code,
+        'name': name,
+        'location': location,
+        'assetNo': assetNo,
+        'receiver': receiver,
+        'cost': cost,
+        'depreciation': depreciation,
+        'purchaseDate': purchaseDate == null ? null : _d(purchaseDate!),
+        'note': note,
+        'buyVoucherId': buyVoucherId,
+        'sellVoucherId': sellVoucherId,
+        'salePrice': salePrice,
+      };
+
+  factory Asset.fromJson(Map<String, dynamic> j) => Asset(
+        id: _s(j['id']),
+        code: _i(j['code']),
+        name: _s(j['name']),
+        location: _s(j['location']),
+        assetNo: _s(j['assetNo']),
+        receiver: _s(j['receiver']),
+        cost: _i(j['cost']),
+        depreciation: _i(j['depreciation']),
+        purchaseDate: j['purchaseDate'] == null ? null : _p(j['purchaseDate']),
+        note: _s(j['note']),
+        buyVoucherId: _sn(j['buyVoucherId']),
+        sellVoucherId: _sn(j['sellVoucherId']),
+        salePrice: _i(j['salePrice']),
       );
 }

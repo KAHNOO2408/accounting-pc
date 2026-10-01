@@ -9,6 +9,8 @@ import 'auth/auth_screens.dart';
 import 'dialogs/cheque_dialogs.dart';
 import 'dialogs/chequebook_dialogs.dart';
 import 'dialogs/closing_dialogs.dart';
+import 'dialogs/asset_dialogs.dart';
+import 'dialogs/warehouse_dialogs.dart';
 import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
@@ -163,14 +165,14 @@ final List<_Tab> _tabs = [
       _Item('کاردکس کالا', Icons.inventory_outlined, _amber,
           shortcut: 'Ctrl+3', activator: _k(LogicalKeyboardKey.digit3, ctrl: true), run: _page(AppPage.products)),
       _Item('جدول کالا', Icons.grid_on_rounded, _amber, run: _page(AppPage.products)),
-      const _Item('جدول اموال', Icons.chair_outlined, _slate),
+      _Item('جدول اموال', Icons.chair_outlined, _violet, run: (c, _) => showAssetsTable(c)),
     ]),
     _Group('فروش', [
       _Item('فاکتور فروش', Icons.sell_outlined, _green,
           shortcut: 'F6',
           activator: _k(LogicalKeyboardKey.f6),
           run: (c, _) => showInvoiceEditor(c, kind: InvoiceKind.sale)),
-      const _Item('فروش اموال و تجهیزات', Icons.chair_alt_outlined, _slate),
+      _Item('فروش اموال و تجهیزات', Icons.chair_alt_outlined, _green, run: (c, _) => showAssetSellDialog(c)),
       _Item('چاپ فاکتور و حواله', Icons.print_outlined, _blue,
           run: _page(AppPage.invoices, hint: 'فاکتور را باز کنید و «چاپ» (Ctrl+P) را بزنید')),
     ]),
@@ -179,7 +181,7 @@ final List<_Tab> _tabs = [
           shortcut: 'F5',
           activator: _k(LogicalKeyboardKey.f5),
           run: (c, _) => showInvoiceEditor(c, kind: InvoiceKind.purchase)),
-      const _Item('خرید اموال و تجهیزات', Icons.chair_alt_outlined, _slate),
+      _Item('خرید اموال و تجهیزات', Icons.chair_alt_outlined, _red, run: (c, _) => showAssetBuyDialog(c)),
     ]),
     _Group('برگشت', [
       _Item('برگشت از فروش طی دوره جاری', Icons.assignment_return_outlined, _amber,
@@ -201,7 +203,8 @@ final List<_Tab> _tabs = [
           shortcut: 'Ctrl+9', activator: _k(LogicalKeyboardKey.digit9, ctrl: true), run: _page(AppPage.stockCount)),
       _Item('انتقال بین کاردکس‌ها', Icons.compare_arrows_rounded, _amber,
           shortcut: 'Ctrl+8', activator: _k(LogicalKeyboardKey.digit8, ctrl: true), run: (c, _) => showConvertDialog(c)),
-      const _Item('انتقال بین انبارها', Icons.warehouse_outlined, _slate, shortcut: 'Ctrl+4'),
+      _Item('انتقال بین انبارها', Icons.warehouse_outlined, _cyan,
+          shortcut: 'Ctrl+4', activator: _k(LogicalKeyboardKey.digit4, ctrl: true), run: (c, _) => showTransferDialog(c)),
       _Item('ضایعات یا مصرف کالا', Icons.delete_sweep_outlined, _red,
           shortcut: 'Ctrl+7', activator: _k(LogicalKeyboardKey.digit7, ctrl: true), run: (c, _) => showWasteDialog(c)),
       _Item('تبدیل کالا', Icons.autorenew_rounded, _amber, run: (c, _) => showConvertDialog(c)),
@@ -369,7 +372,7 @@ final List<_Tab> _tabs = [
       const _Item('تخفیف عمومی', Icons.percent_rounded, _slate),
       const _Item('واحدهای شمارش', Icons.straighten_rounded, _slate),
       const _Item('لیست ارزها', Icons.attach_money_rounded, _slate),
-      const _Item('لیست انبارها', Icons.warehouse_outlined, _slate),
+      _Item('لیست انبارها', Icons.warehouse_outlined, _amber, run: (c, _) => showWarehousesWindow(c)),
       _Item('تصویر پس زمینه', Icons.wallpaper_rounded, _cyan, run: (c, _) => showBackgroundDialog(c)),
       const _Item('ارسال پیام', Icons.sms_outlined, _slate, shortcut: 'Ctrl+F11'),
     ]),

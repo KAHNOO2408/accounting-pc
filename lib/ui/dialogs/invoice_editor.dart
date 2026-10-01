@@ -38,6 +38,7 @@ Future<void> showInvoiceEditor(BuildContext context,
 
 class _Line {
   String? productId;
+  String? warehouseId;
   final title = TextEditingController();
   final qty = TextEditingController(text: '1');
   final price = TextEditingController();
@@ -49,6 +50,7 @@ class _Line {
   factory _Line.from(InvoiceLine l) {
     final x = _Line();
     x.productId = l.productId;
+    x.warehouseId = l.warehouseId;
     x.title.text = l.title;
     x.qty.text = fmtQty(l.qty);
     x.price.text = l.unitPrice == 0 ? '' : groupDigits(l.unitPrice);
@@ -63,7 +65,7 @@ class _Line {
   bool get isEmpty => title.text.trim().isEmpty && productId == null && p == 0;
 
   InvoiceLine toLine() =>
-      InvoiceLine(productId: productId, title: title.text.trim(), qty: q, unitPrice: p, discount: d);
+      InvoiceLine(productId: productId, title: title.text.trim(), qty: q, unitPrice: p, discount: d, warehouseId: warehouseId);
 
   void dispose() {
     title.dispose();
@@ -608,6 +610,9 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   static const _wDisc = 120.0;
   static const _wTotal = 140.0;
   static const _wDel = 44.0;
+  static const _wWh = 130.0;
+
+  bool get _multiWh => StoreScope.read(context).warehouses.length > 1;
 
   Widget _linesHeader(ThemeData th) {
     return Container(
@@ -615,16 +620,17 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: DefaultTextStyle(
         style: th.textTheme.labelMedium!.copyWith(color: th.hintColor, fontWeight: FontWeight.w600),
-        child: const Row(
+        child: Row(
           children: [
-            SizedBox(width: _wIdx, child: Text('#', textAlign: TextAlign.center)),
-            Expanded(child: Text('کالا / خدمت')),
-            SizedBox(width: _wQty, child: Text('تعداد', textAlign: TextAlign.center)),
-            SizedBox(width: _wUnit, child: Text('واحد', textAlign: TextAlign.center)),
-            SizedBox(width: _wPrice, child: Text('فی (قیمت واحد)', textAlign: TextAlign.center)),
-            SizedBox(width: _wDisc, child: Text('تخفیف ردیف', textAlign: TextAlign.center)),
-            SizedBox(width: _wTotal, child: Text('مبلغ کل', textAlign: TextAlign.left)),
-            SizedBox(width: _wDel),
+            const SizedBox(width: _wIdx, child: Text('#', textAlign: TextAlign.center)),
+            const Expanded(child: Text('کالا / خدمت')),
+            if (_multiWh) const SizedBox(width: _wWh, child: Text('انبار', textAlign: TextAlign.center)),
+            const SizedBox(width: _wQty, child: Text('تعداد', textAlign: TextAlign.center)),
+            const SizedBox(width: _wUnit, child: Text('واحد', textAlign: TextAlign.center)),
+            const SizedBox(width: _wPrice, child: Text('فی (قیمت واحد)', textAlign: TextAlign.center)),
+            const SizedBox(width: _wDisc, child: Text('تخفیف ردیف', textAlign: TextAlign.center)),
+            const SizedBox(width: _wTotal, child: Text('مبلغ کل', textAlign: TextAlign.left)),
+            const SizedBox(width: _wDel),
           ],
         ),
       ),
@@ -638,7 +644,8 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     String? stockInfo;
     var stockWarn = false;
     if (p != null) {
-      final st = store.stock(p.id, excludeInvoiceId: widget.edit?.id);
+      final st = store.stock(p.id,
+          excludeInvoiceId: widget.edit?.id, warehouseId: store.warehouses.length > 1 ? store.whId(l.warehouseId) : null);
       stockInfo = 'موجودی: ${fmtQty(st)} ${p.unit}';
       if (_kind.stockSign < 0 && l.q > st) stockWarn = true;
     }
@@ -709,6 +716,24 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
             ),
           ),
           const SizedBox(width: 6),
+          if (_multiWh)
+            SizedBox(
+              width: _wWh,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child: DropdownButtonFormField<String>(
+                  value: store.whId(l.warehouseId),
+                  isExpanded: true,
+                  isDense: true,
+                  decoration: dense,
+                  items: [
+                    for (final w in store.warehouses)
+                      DropdownMenuItem(value: w.id, child: Text(w.name, overflow: TextOverflow.ellipsis, style: th.textTheme.bodySmall)),
+                  ],
+                  onChanged: (v) => setState(() => l.warehouseId = v),
+                ),
+              ),
+            ),
           SizedBox(
             width: _wQty,
             child: TextField(

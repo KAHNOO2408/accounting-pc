@@ -278,14 +278,19 @@ class _YearEndView extends StatelessWidget {
       return '${m?.name ?? l.moeen}${t.isEmpty ? '' : ' — $t'}';
     }
 
-    final blocked = v.kind == 'closing' && v.meta['reopen'] != null;
+    final String? blocked = switch (v.kind) {
+      'closing' when v.meta['reopen'] != null => 'ابتدا سند افتتاحیه انتقالی این اختتامیه را حذف کنید',
+      'depreciation' => 'استهلاک را از «جدول اموال» ویرایش کنید',
+      'assetBuy' when s.assets.any((a) => a.buyVoucherId == v.id && a.sold) => 'ابتدا سند فروش این اموال را حذف کنید',
+      _ => null,
+    };
     return FormDialog(
       title: '${v.kindLabel} شماره ${v.number} — ${jFormat(v.date)}',
       width: 820,
       leading: TextButton.icon(
         onPressed: () async {
-          if (blocked) {
-            toast(context, 'ابتدا سند افتتاحیه انتقالی این اختتامیه را حذف کنید', error: true);
+          if (blocked != null) {
+            toast(context, blocked, error: true);
             return;
           }
           final ok = await confirm(context, 'حذف سند', 'سند ${v.number} حذف شود؟');

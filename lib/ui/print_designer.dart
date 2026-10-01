@@ -40,7 +40,6 @@ class PrintDoc {
 
 String defaultPrintTitle(Invoice inv, PrintDocType t) => switch (t) {
       PrintDocType.warehouse => inv.kind.stockSign > 0 ? 'رسید انبار' : 'حواله انبار',
-      PrintDocType.consign => 'فاکتور امانی',
       PrintDocType.barcode => 'برچسب بارکد',
       PrintDocType.invoice => inv.proforma ? 'پیش‌فاکتور فروش' : inv.kind.label,
     };
@@ -127,7 +126,6 @@ PrintDoc buildPrintDoc(AppStore s, Invoice inv, PrintTemplate t) {
     if (t.showWords) d.words = '${amountInWords(inv.total)} $cur';
   }
   if (t.showNote) d.note = inv.note;
-  if (t.type == PrintDocType.consign && d.note.isEmpty) d.note = 'کالاهای فوق به صورت امانی تحویل گردید.';
   d.footer = t.footer;
   if (t.showSignatures) {
     d.signatures = t.type == PrintDocType.warehouse ? ['امضاء تحویل دهنده', 'امضاء تحویل گیرنده'] : ['مهر و امضاء فروشنده', 'امضاء خریدار'];
@@ -482,7 +480,6 @@ Future<void> showPrintTypeMenu(BuildContext anchor, Future<Invoice?> Function() 
                 PrintDocType.invoice => Icons.receipt_long_outlined,
                 PrintDocType.warehouse => Icons.inventory_2_outlined,
                 PrintDocType.barcode => Icons.qr_code_2_rounded,
-                PrintDocType.consign => Icons.handshake_outlined,
               },
               size: 18,
             ),

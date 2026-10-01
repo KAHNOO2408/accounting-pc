@@ -24,6 +24,7 @@ class _WasteDialog extends StatefulWidget {
 class _WasteDialogState extends State<_WasteDialog> {
   late AdjustReason _reason = widget.reason;
   String? _product;
+  String? _wh;
   final _qty = TextEditingController(text: '1');
   final _note = TextEditingController();
   DateTime _date = dateOnly(DateTime.now());
@@ -47,7 +48,7 @@ class _WasteDialogState extends State<_WasteDialog> {
       return;
     }
     StoreScope.read(context).addAdjusts([
-      StockAdjust(id: newId(), date: _date, productId: _product!, qty: -q, reason: _reason, note: _note.text.trim()),
+      StockAdjust(id: newId(), date: _date, productId: _product!, qty: -q, reason: _reason, note: _note.text.trim(), warehouseId: _wh),
     ]);
     Navigator.pop(context);
     toast(context, '${_reason.label} ثبت شد');
@@ -77,6 +78,15 @@ class _WasteDialogState extends State<_WasteDialog> {
             selected: {_reason},
             onSelectionChanged: (s) => setState(() => _reason = s.first),
           ),
+          if (store.warehouses.length > 1) ...[
+            const SizedBox(height: 16),
+            FieldDropdown<String>(
+              label: 'انبار',
+              value: store.whId(_wh),
+              items: [for (final w in store.warehouses) DropdownMenuItem(value: w.id, child: Text(w.name))],
+              onChanged: (v) => setState(() => _wh = v),
+            ),
+          ],
           const SizedBox(height: 16),
           FieldDropdown<String?>(
             label: 'کالا',
@@ -87,7 +97,8 @@ class _WasteDialogState extends State<_WasteDialog> {
                   value: x.id,
                   child: Row(children: [
                     Expanded(child: Text(x.name, overflow: TextOverflow.ellipsis)),
-                    Text('موجودی ${fmtQty(store.stock(x.id))}', style: th.textTheme.labelSmall),
+                    Text('موجودی ${fmtQty(store.stock(x.id, warehouseId: store.warehouses.length > 1 ? store.whId(_wh) : null))}',
+                        style: th.textTheme.labelSmall),
                   ]),
                 ),
             ],

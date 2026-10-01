@@ -62,6 +62,10 @@ const mCogs = '50103';
 const mSaleDiscount = '50104';
 const mStockLoss = '50105';
 const mLoanCost = '50106';
+const mDepreciation = '50107';
+const mAccDepreciation = '20302';
+const mOtherIncome = '40102';
+const mOtherExpense = '50102';
 const mLoans = '20601';
 const mOtherLiab = '20603';
 
@@ -108,7 +112,7 @@ const List<Kol> chart = [
   ]),
   Kol('203', 'حسابهای کاهنده دارایی', Side.liability, [
     Moeen('20301', 'ذخیره مطالبات مشکوک الوصول'),
-    Moeen('20302', 'استهلاک انباشته اموال و ماشین آلات'),
+    Moeen(mAccDepreciation, 'استهلاک انباشته اموال و ماشین آلات'),
   ]),
   Kol('204', 'ذخایر', Side.liability, [
     Moeen('20401', 'ذخیره مزایای پایان خدمت'),
@@ -132,18 +136,19 @@ const List<Kol> chart = [
   ]),
   Kol('401', 'درآمدها', Side.income, [
     Moeen(mIncome, 'درآمدهای عملیاتی', TafsiliKind.incomeCat),
-    Moeen('40102', 'سایر درآمدها'),
+    Moeen(mOtherIncome, 'سایر درآمدها'),
     Moeen(mSales, 'فروش کالا', TafsiliKind.product),
     Moeen(mSalesReturn, 'برگشت از فروش', TafsiliKind.product),
     Moeen(mPurchaseDiscount, 'تخفیفات خرید'),
   ]),
   Kol('501', 'هزینه ها', Side.expense, [
     Moeen(mExpense, 'هزینه های عمومی', TafsiliKind.expenseCat),
-    Moeen('50102', 'سایر هزینه ها'),
+    Moeen(mOtherExpense, 'سایر هزینه ها'),
     Moeen(mCogs, 'بهای تمام شده کالای فروش رفته', TafsiliKind.product),
     Moeen(mSaleDiscount, 'تخفیفات فروش'),
     Moeen(mStockLoss, 'ضایعات و کسری انبار', TafsiliKind.product),
     Moeen(mLoanCost, 'هزینه تسهیلات'),
+    Moeen(mDepreciation, 'هزینه استهلاک'),
   ]),
 ];
 

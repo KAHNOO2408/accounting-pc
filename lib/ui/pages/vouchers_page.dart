@@ -116,7 +116,7 @@ class _VouchersPageState extends State<VouchersPage> {
                               return InkWell(
                                 onTap: () => switch (v.kind) {
                                   'chequeMove' => showChequeMoveDialog(context, edit: v),
-                                  'closing' || 'reopen' || 'settle' => showYearEndVoucher(context, v),
+                                  'closing' || 'reopen' || 'settle' || 'assetBuy' || 'assetSell' || 'depreciation' => showYearEndVoucher(context, v),
                                   _ => showVoucherDialog(context, edit: v),
                                 },
                                 child: Padding(
@@ -135,7 +135,8 @@ class _VouchersPageState extends State<VouchersPage> {
                                               'expense' => AppColors.expense,
                                               'chequeMove' => AppColors.discount,
                                               'closing' => AppColors.expense,
-                                              'reopen' || 'settle' => AppColors.income,
+                                              'reopen' || 'settle' || 'assetSell' => AppColors.income,
+                                              'assetBuy' || 'depreciation' => AppColors.loan,
                                               _ => AppColors.debt,
                                             }),
                                       ),

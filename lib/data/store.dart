@@ -53,6 +53,9 @@ class AppStore extends ChangeNotifier {
   List<Voucher> vouchers = [];
   List<ChequeBook> chequeBooks = [];
   List<PrintTemplate> printTemplates = [];
+  List<Warehouse> warehouses = [];
+  List<WarehouseTransfer> transfers = [];
+  List<Asset> assets = [];
 
   /// Default template id per print type.
   Map<String, String> defaultTemplates = {};
@@ -124,6 +127,10 @@ class AppStore extends ChangeNotifier {
     vouchers = list('vouchers').map(Voucher.fromJson).toList();
     chequeBooks = list('chequeBooks').map(ChequeBook.fromJson).toList();
     printTemplates = list('printTemplates').map(PrintTemplate.fromJson).toList();
+    warehouses = list('warehouses').map(Warehouse.fromJson).toList();
+    if (warehouses.isEmpty) warehouses.add(Warehouse(id: 'main', code: 1, name: 'انبار ۱', keeper: 'انباردار'));
+    transfers = list('transfers').map(WarehouseTransfer.fromJson).toList();
+    assets = list('assets').map(Asset.fromJson).toList();
     final dt = j['defaultTemplates'];
     defaultTemplates = dt is Map ? {for (final e in dt.entries) '${e.key}': '${e.value}'} : {};
     final st = j['settings'];
@@ -147,6 +154,9 @@ class AppStore extends ChangeNotifier {
         'vouchers': vouchers.map((e) => e.toJson()).toList(),
         'chequeBooks': chequeBooks.map((e) => e.toJson()).toList(),
         'printTemplates': printTemplates.map((e) => e.toJson()).toList(),
+        'warehouses': warehouses.map((e) => e.toJson()).toList(),
+        'transfers': transfers.map((e) => e.toJson()).toList(),
+        'assets': assets.map((e) => e.toJson()).toList(),
         'defaultTemplates': defaultTemplates,
         'settings': settings.toJson(),
       };
@@ -689,18 +699,214 @@ class AppStore extends ChangeNotifier {
   }
 
   /// Current stock of a product (optionally excluding one invoice being edited).
-  double stock(String productId, {String? excludeInvoiceId}) {
-    var q = product(productId)?.openingQty ?? 0;
+  /// Stock of a product; with [warehouseId] only that warehouse is counted.
+  double stock(String productId, {String? excludeInvoiceId, String? warehouseId, String? excludeTransferId}) {
+    final w = warehouseId;
+    bool inW(String? id) => w == null || whId(id) == w;
+    var q = inW(null) ? (product(productId)?.openingQty ?? 0) : 0.0;
     for (final a in adjusts) {
-      if (a.productId == productId) q += a.qty;
+      if (a.productId == productId && inW(a.warehouseId)) q += a.qty;
     }
     for (final inv in realInvoices) {
       if (inv.id == excludeInvoiceId) continue;
       for (final l in inv.lines) {
-        if (l.productId == productId) q += inv.kind.stockSign * l.qty;
+        if (l.productId == productId && inW(l.warehouseId)) q += inv.kind.stockSign * l.qty;
+      }
+    }
+    if (w != null) {
+      for (final t in transfers) {
+        if (t.id == excludeTransferId) continue;
+        for (final l in t.lines) {
+          if (l.productId != productId) continue;
+          if (whId(t.fromId) == w) q -= l.qty;
+          if (whId(l.toId) == w) q += l.qty;
+        }
       }
     }
     return q;
+  }
+
+  // ---------------------------------------------------------------- warehouses
+
+  String get mainWarehouseId => warehouses.first.id;
+
+  /// Effective warehouse id (unknown/null → main warehouse).
+  String whId(String? id) => id != null && warehouses.any((w) => w.id == id) ? id : mainWarehouseId;
+
+  Warehouse? warehouse(String? id) => warehouses.where((w) => w.id == whId(id)).firstOrNull;
+
+  int nextWarehouseCode() => warehouses.fold<int>(1, (n, w) => w.code >= n ? w.code + 1 : n);
+
+  void saveWarehouse(Warehouse w) {
+    final i = warehouses.indexWhere((x) => x.id == w.id);
+    if (i >= 0) {
+      warehouses[i] = w;
+    } else {
+      warehouses.add(w);
+    }
+    _commit();
+  }
+
+  bool warehouseUsed(String id) =>
+      id == mainWarehouseId ||
+      adjusts.any((a) => a.warehouseId == id) ||
+      invoices.any((i) => i.lines.any((l) => l.warehouseId == id)) ||
+      transfers.any((t) => t.fromId == id || t.lines.any((l) => l.toId == id));
+
+  bool removeWarehouse(String id) {
+    if (warehouseUsed(id)) return false;
+    warehouses.removeWhere((w) => w.id == id);
+    _commit();
+    return true;
+  }
+
+  int nextTransferNumber() => transfers.fold<int>(1, (n, t) => t.number >= n ? t.number + 1 : n);
+  int nextReceiptNumber() => transfers.fold<int>(1, (n, t) => t.receiptNo >= n ? t.receiptNo + 1 : n);
+
+  void saveTransfer(WarehouseTransfer t) {
+    final i = transfers.indexWhere((x) => x.id == t.id);
+    if (i >= 0) {
+      transfers[i] = t;
+    } else {
+      transfers.add(t);
+    }
+    _commit();
+  }
+
+  void removeTransfer(String id) {
+    transfers.removeWhere((t) => t.id == id);
+    _commit();
+  }
+
+  // ---------------------------------------------------------------- assets
+
+  int nextAssetCode() => assets.fold<int>(1, (n, a) => a.code >= n ? a.code + 1 : n);
+  Asset? asset(String? id) => assets.where((a) => a.id == id).firstOrNull;
+
+  /// Saves an asset and keeps its depreciation document in sync.
+  void saveAsset(Asset a) {
+    final i = assets.indexWhere((x) => x.id == a.id);
+    if (i >= 0) {
+      assets[i] = a;
+    } else {
+      assets.add(a);
+    }
+    final dep = vouchers.where((v) => v.kind == 'depreciation' && v.meta['asset'] == a.id).firstOrNull;
+    if (a.depreciation > 0 && !a.sold) {
+      final lines = [
+        VoucherLine(moeen: mDepreciation, desc: 'استهلاک ${a.name}', debit: a.depreciation),
+        VoucherLine(moeen: mAccDepreciation, desc: 'استهلاک ${a.name}', credit: a.depreciation),
+      ];
+      if (dep != null) {
+        dep.lines = lines;
+      } else {
+        final n = DateTime.now();
+        vouchers.add(Voucher(
+          id: newId(),
+          number: nextVoucherNumber(),
+          fixedNumber: nextFixedNumber(),
+          date: DateTime(n.year, n.month, n.day),
+          desc: 'استهلاک انباشته ${a.name}',
+          lines: lines,
+          kind: 'depreciation',
+          meta: {'asset': a.id},
+        ));
+      }
+    } else if (dep != null && !a.sold) {
+      vouchers.remove(dep);
+    }
+    _commit();
+  }
+
+  /// Deletes an asset that has no purchase or sale document.
+  bool removeAsset(String id) {
+    final a = asset(id);
+    if (a == null || a.buyVoucherId != null || a.sold) return false;
+    vouchers.removeWhere((v) => v.kind == 'depreciation' && v.meta['asset'] == id);
+    assets.removeWhere((x) => x.id == id);
+    _commit();
+    return true;
+  }
+
+  /// خرید اموال و تجهیزات — [items] are new assets (cost = net price);
+  /// [payLines] come from the settlement window.
+  Voucher buyAssets({
+    required DateTime date,
+    int? number,
+    String desc = '',
+    String? personId,
+    required List<Asset> items,
+    List<VoucherLine> payLines = const [],
+  }) {
+    final total = items.fold<int>(0, (s, a) => s + a.cost);
+    final d = desc.isEmpty ? 'خرید اموال و تجهیزات' : desc;
+    final lines = <VoucherLine>[
+      for (final a in items) VoucherLine(moeen: mAssets, desc: 'خرید ${a.name}', debit: a.cost),
+      if (personId != null) VoucherLine(moeen: mDebtorsTrade, tafsiliId: personId, desc: d, credit: total),
+      ...payLines,
+    ];
+    final v = Voucher(
+      id: newId(),
+      number: number ?? nextVoucherNumber(),
+      fixedNumber: nextFixedNumber(),
+      date: date,
+      desc: d,
+      lines: lines,
+      kind: 'assetBuy',
+      meta: {'assets': [for (final a in items) a.id], 'person': personId},
+    );
+    vouchers.add(v);
+    for (final a in items) {
+      a
+        ..buyVoucherId = v.id
+        ..purchaseDate ??= date;
+      if (a.code == 0) a.code = nextAssetCode();
+      assets.add(a);
+    }
+    _commit();
+    return v;
+  }
+
+  /// فروش اموال و تجهیزات — books the gain or loss against the book value.
+  Voucher sellAssets({
+    required DateTime date,
+    int? number,
+    String desc = '',
+    String? personId,
+    required List<(Asset, int)> sales,
+    List<VoucherLine> payLines = const [],
+  }) {
+    final total = sales.fold<int>(0, (s, x) => s + x.$2);
+    final d = desc.isEmpty ? 'فروش اموال و تجهیزات' : desc;
+    final lines = <VoucherLine>[
+      if (personId != null) VoucherLine(moeen: mDebtorsTrade, tafsiliId: personId, desc: d, debit: total),
+    ];
+    for (final (a, price) in sales) {
+      lines.add(VoucherLine(moeen: mAssets, desc: 'فروش ${a.name}', credit: a.cost));
+      if (a.depreciation > 0) lines.add(VoucherLine(moeen: mAccDepreciation, desc: 'استهلاک ${a.name}', debit: a.depreciation));
+      final gain = price - a.bookValue;
+      if (gain > 0) lines.add(VoucherLine(moeen: mOtherIncome, desc: 'سود فروش ${a.name}', credit: gain));
+      if (gain < 0) lines.add(VoucherLine(moeen: mOtherExpense, desc: 'زیان فروش ${a.name}', debit: -gain));
+    }
+    lines.addAll(payLines);
+    final v = Voucher(
+      id: newId(),
+      number: number ?? nextVoucherNumber(),
+      fixedNumber: nextFixedNumber(),
+      date: date,
+      desc: d,
+      lines: lines,
+      kind: 'assetSell',
+      meta: {'assets': [for (final x in sales) x.$1.id], 'person': personId},
+    );
+    vouchers.add(v);
+    for (final (a, price) in sales) {
+      a
+        ..sellVoucherId = v.id
+        ..salePrice = price;
+    }
+    _commit();
+    return v;
   }
 
   /// Weighted average purchase cost (net of line discounts).
@@ -936,6 +1142,18 @@ class AppStore extends ChangeNotifier {
 
   void removeVoucher(String id) {
     final v = vouchers.where((x) => x.id == id).firstOrNull;
+    if (v != null && v.kind == 'assetBuy') {
+      final ids = {for (final a in assets.where((a) => a.buyVoucherId == id)) a.id};
+      assets.removeWhere((a) => ids.contains(a.id));
+      vouchers.removeWhere((x) => x.kind == 'depreciation' && ids.contains(x.meta['asset']));
+    }
+    if (v != null && v.kind == 'assetSell') {
+      for (final a in assets.where((a) => a.sellVoucherId == id)) {
+        a
+          ..sellVoucherId = null
+          ..salePrice = 0;
+      }
+    }
     if (v != null && v.kind == 'reopen') {
       for (final c in vouchers.where((c) => c.meta['reopen'] == id)) {
         c.meta.remove('reopen');
