@@ -4,6 +4,7 @@ import 'package:taraz/core/format.dart';
 import 'package:taraz/core/hash.dart';
 import 'package:taraz/core/jalali.dart';
 import 'package:taraz/data/chart.dart';
+import 'package:taraz/data/journal.dart';
 import 'package:taraz/data/models.dart';
 import 'package:taraz/data/storage.dart';
 import 'package:taraz/data/store.dart';
@@ -353,6 +354,55 @@ void main() {
     expect(again.settings.openingOther['10501'], 2000);
   });
 
+  test('journal is balanced and trial balance matches balances', () {
+    final s = _tempStore();
+    final cash = s.accounts.first.id;
+    final ali = Person(id: newId(), name: 'Ali');
+    s.upsertPerson(ali);
+    final pr = Product(id: newId(), name: 'Cable');
+    s.upsertProduct(pr);
+    s.applyOpening(
+      date: DateTime(2026, 3, 21),
+      accountOpenings: {cash: 5000},
+      personOpenings: {ali.id: -800},
+      productQty: {pr.id: 4},
+      productCost: {pr.id: 100},
+      other: {'10501': 1000},
+    );
+    final d = DateTime(2026, 9, 1);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.purchase, number: 1, date: d, personId: ali.id,
+        lines: [InvoiceLine(productId: pr.id, qty: 6, unitPrice: 100)], paid: 200, accountId: cash));
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: d,
+        lines: [InvoiceLine(productId: pr.id, qty: 3, unitPrice: 180), InvoiceLine(title: 'Service', qty: 1, unitPrice: 60)],
+        discount: 20, extra: 10, paid: 590, accountId: cash));
+    s.upsertTxn(Txn(id: newId(), type: TxnType.expense, amount: 70, date: d, accountId: cash));
+    s.upsertTxn(Txn(id: newId(), type: TxnType.purchaseDiscount, amount: 50, date: d, personId: ali.id));
+    s.addAdjusts([StockAdjust(id: newId(), date: d, productId: pr.id, qty: -1, reason: AdjustReason.waste)]);
+    s.saveVoucher(Voucher(id: newId(), number: 1, fixedNumber: 1, date: d, lines: [
+      VoucherLine(moeen: mDebtorsTrade, tafsiliId: ali.id, debit: 300),
+      VoucherLine(moeen: mCash, tafsiliId: cash, credit: 300),
+    ]));
+
+    final j = buildJournal(s);
+    expect(j.fold<int>(0, (a, p) => a + p.debit), j.fold<int>(0, (a, p) => a + p.credit));
+
+    final f = ReportFilter()..level = TbLevel.tafsili;
+    final tb = trialBalance(s, j, f, TbOptions());
+    int bal(String moeen, String? id) => tb.firstWhere((r) => r.key == '$moeen|${id ?? ''}').bal;
+    expect(bal(mCash, cash), s.balance(cash));
+    expect(bal(mDebtorsTrade, ali.id), s.personBalance(ali.id));
+    expect(tb.fold<int>(0, (a, r) => a + r.balDr), tb.fold<int>(0, (a, r) => a + r.balCr));
+
+    final kolTb = trialBalance(s, j, ReportFilter(), TbOptions());
+    expect(kolTb.any((r) => r.code == '101'), isTrue);
+
+    final led = generalLedger(s, j, ReportFilter()..level = TbLevel.tafsili ..pathMoeen = mCash ..linkTafsili = cash);
+    expect(led.length, 1);
+    expect(led.first.end, s.balance(cash));
+    final period = generalLedger(s, j, ReportFilter()..level = TbLevel.moeen ..pathMoeen = mCash ..from = DateTime(2026, 6, 1));
+    expect(period.first.before, 5000);
+  });
+
   testWidgets('all pages render', (tester) async {
     tester.view.physicalSize = const Size(1600, 1000);
     tester.view.devicePixelRatio = 1.0;
@@ -410,6 +460,30 @@ void main() {
     await tester.tap(find.text('تایید (F9)').last);
     await tester.pumpAndSettle();
     expect(s.settings.openingDate, isNotNull);
+
+    // trial balance and general ledger
+    await tester.tap(find.text('گزارشات').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('تراز آزمایشی').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('مشاهده تراز'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('تراز آزمایشی —'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.close_rounded).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('انصراف (F10)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('دفتر کل').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('نمایش'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.byIcon(Icons.close_rounded).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('بازگشت (F10)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('اسناد').first);
+    await tester.pumpAndSettle();
 
     // manual voucher dialog opens
     await tester.tap(find.text('سند حسابداری دستی').first);

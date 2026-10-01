@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core/jalali.dart';
+import '../data/journal.dart' show TbLevel;
 import '../data/models.dart';
 import '../data/store.dart';
 import 'auth/auth_screens.dart';
@@ -16,6 +17,7 @@ import 'pages/home_page.dart';
 import 'pages/cheques_page.dart';
 import 'pages/invoices_page.dart';
 import 'pages/ledger_pages.dart';
+import 'pages/ledger_reports.dart';
 import 'pages/people_page.dart';
 import 'pages/products_page.dart';
 import 'pages/profit_page.dart';
@@ -326,12 +328,14 @@ final List<_Tab> _tabs = [
   _Tab('گزارشات', [
     _Group('گزارشات استاندارد', [
       _Item('ترازنامه', Icons.balance_rounded, _blue, run: _page(AppPage.balanceSheet)),
-      const _Item('تراز آزمایشی', Icons.scale_outlined, _slate),
+      _Item('تراز آزمایشی', Icons.scale_outlined, _blue, run: (c, _) => showTrialBalanceFilter(c)),
       _Item('صورت حساب سود و زیان', Icons.query_stats_rounded, _green,
           shortcut: 'Alt+F5', activator: _k(LogicalKeyboardKey.f5, alt: true), run: _page(AppPage.profit)),
-      const _Item('دفتر کل', Icons.menu_book_rounded, _slate),
-      _Item('دفاتر معین', Icons.book_outlined, _blue, run: _page(AppPage.accounts)),
-      _Item('دفاتر تفصیلی', Icons.import_contacts_outlined, _violet, run: _page(AppPage.people)),
+      _Item('دفتر کل', Icons.menu_book_rounded, _blue, run: (c, _) => showGeneralLedgerFilter(c)),
+      _Item('دفاتر معین', Icons.book_outlined, _blue,
+          run: (c, _) => showGeneralLedgerFilter(c, title: 'چاپ دفتر معین', level: TbLevel.moeen)),
+      _Item('دفاتر تفصیلی', Icons.import_contacts_outlined, _violet,
+          run: (c, _) => showGeneralLedgerFilter(c, title: 'چاپ دفتر تفصیلی', level: TbLevel.tafsili)),
       _Item('دفتر روزنامه', Icons.today_outlined, _blue, run: _page(AppPage.transactions)),
       _Item('گزارشات خرید', Icons.shopping_cart_outlined, _red,
           run: _page(AppPage.invoices, kind: InvoiceKind.purchase)),
@@ -378,7 +382,7 @@ final List<_Tab> _tabs = [
           run: _page(AppPage.products, hint: 'کالاهای کم‌موجود یا منفی با رنگ قرمز/نارنجی مشخص‌اند')),
       _Item('محاسبه قیمت تمام شده', Icons.functions_rounded, _amber,
           run: _page(AppPage.products, hint: 'قیمت تمام‌شده خودکار با میانگین موزون خرید محاسبه می‌شود')),
-      const _Item('کنترل تراز اسناد', Icons.balance_rounded, _slate),
+      _Item('کنترل تراز اسناد', Icons.balance_rounded, _blue, run: (c, _) => showTrialBalanceFilter(c)),
       const _Item('گزارش خلاف ماهیت', Icons.report_gmailerrorred_outlined, _slate),
       _Item('کنترل چک‌های ثبت شده', Icons.request_page_outlined, _cyan, run: _page(AppPage.cheques)),
       _Item('مرتب کردن اسناد', Icons.sort_rounded, _blue,

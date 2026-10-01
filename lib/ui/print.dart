@@ -130,3 +130,50 @@ void openFile(String path) {
     }
   } catch (_) {}
 }
+
+/// Prints a generic report table (opens in the browser with the print dialog).
+String printTable({
+  required AppStore store,
+  required String title,
+  String subtitle = '',
+  required List<String> headers,
+  required List<List<String>> rows,
+  Set<int> numeric = const {},
+  List<String>? footer,
+  String fileName = 'report',
+}) {
+  final s = store.settings;
+  String cell(String v, int i, {String tag = 'td'}) => '<$tag class="${numeric.contains(i) ? 'num' : ''}">${_esc(v)}</$tag>';
+  final body = StringBuffer();
+  for (final r in rows) {
+    body.writeln('<tr>${[for (var i = 0; i < r.length; i++) cell(r[i], i)].join()}</tr>');
+  }
+  final html = '''<!doctype html>
+<html lang="fa" dir="rtl"><head><meta charset="utf-8"><title>${_esc(title)}</title>
+<style>
+  @page { size: A4; margin: 10mm; }
+  body { font-family: Vazirmatn, Tahoma, sans-serif; font-size: 11px; color: #111; }
+  h1 { font-size: 16px; margin: 0 0 2px; } .sub { color: #555; margin-bottom: 10px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid #999; padding: 4px 6px; text-align: right; }
+  th { background: #eee; } tfoot td { font-weight: bold; background: #f5f5f5; }
+  .num { direction: ltr; text-align: left; white-space: nowrap; }
+  .noprint { text-align: center; margin: 10px; } @media print { .noprint { display: none; } }
+</style></head><body>
+<div class="noprint"><button onclick="window.print()">چاپ</button></div>
+<h1>${_esc(title)}</h1>
+<div class="sub">${_esc(s.businessName)}${s.businessName.isEmpty ? '' : ' — '}${_esc(subtitle)} — تاریخ چاپ ${jFormat(DateTime.now())}</div>
+<table><thead><tr>${[for (var i = 0; i < headers.length; i++) cell(headers[i], i, tag: 'th')].join()}</tr></thead>
+<tbody>
+$body</tbody>
+${footer == null ? '' : '<tfoot><tr>${[for (var i = 0; i < footer.length; i++) cell(footer[i], i)].join()}</tr></tfoot>'}
+</table>
+<script>window.onload=function(){setTimeout(function(){window.print();},300);};</script>
+</body></html>''';
+  final dir = Directory('${Storage.userFolder.path}${Storage.sep}prints');
+  if (!dir.existsSync()) dir.createSync(recursive: true);
+  final f = File('${dir.path}${Storage.sep}$fileName.html');
+  f.writeAsStringSync(html, flush: true);
+  openFile(f.path);
+  return f.path;
+}
