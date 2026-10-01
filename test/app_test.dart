@@ -440,6 +440,7 @@ void main() {
     expect(s.balance(cash), -100);
     expect(s.personBalance(reza.id), 100);
     expect(s.profit(d, d).expenses, 400);
+    expect(s.profit(d, d).discountsGiven, 50);
     final j = buildJournal(s);
     expect(j.fold<int>(0, (a, p) => a + p.debit), j.fold<int>(0, (a, p) => a + p.credit));
   });

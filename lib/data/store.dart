@@ -1060,8 +1060,20 @@ class AppStore extends ChangeNotifier {
       for (final l in v.lines) {
         final m = findMoeen(l.moeen);
         if (m == null) continue;
-        if (m.side == Side.income) r.otherIncome += l.credit - l.debit;
-        if (m.side == Side.expense) r.expenses += l.debit - l.credit;
+        final dr = l.debit - l.credit;
+        switch (m.code) {
+          case mSaleDiscount:
+            r.discountsGiven += dr;
+          case mPurchaseDiscount:
+            r.discountsReceived -= dr;
+          case mStockLoss:
+            r.stockLoss += dr;
+          case mCogs:
+            r.cogs += dr;
+          default:
+            if (m.side == Side.income) r.otherIncome -= dr;
+            if (m.side == Side.expense) r.expenses += dr;
+        }
       }
     }
     return r;
