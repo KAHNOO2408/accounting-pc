@@ -53,7 +53,9 @@ class AppStore extends ChangeNotifier {
   List<Voucher> vouchers = [];
   List<ChequeBook> chequeBooks = [];
   List<PrintTemplate> printTemplates = [];
-  List<Warehouse> warehouses = [];
+  List<Warehouse> warehouses = [_mainWarehouse()];
+
+  static Warehouse _mainWarehouse() => Warehouse(id: 'main', code: 1, name: 'انبار ۱', keeper: 'انباردار');
   List<WarehouseTransfer> transfers = [];
   List<Asset> assets = [];
 
@@ -128,7 +130,7 @@ class AppStore extends ChangeNotifier {
     chequeBooks = list('chequeBooks').map(ChequeBook.fromJson).toList();
     printTemplates = list('printTemplates').map(PrintTemplate.fromJson).toList();
     warehouses = list('warehouses').map(Warehouse.fromJson).toList();
-    if (warehouses.isEmpty) warehouses.add(Warehouse(id: 'main', code: 1, name: 'انبار ۱', keeper: 'انباردار'));
+    if (warehouses.isEmpty) warehouses.add(_mainWarehouse());
     transfers = list('transfers').map(WarehouseTransfer.fromJson).toList();
     assets = list('assets').map(Asset.fromJson).toList();
     final dt = j['defaultTemplates'];
