@@ -19,7 +19,7 @@ import 'simple_dialogs.dart';
 
 const _sky = Color(0xFFDCEBFA);
 const _skyDark = Color(0xFF9DC3EA);
-const _sel = Color(0xFF2F6FDE);
+const _selBlue = Color(0xFF2F6FDE);
 const _yellow = Color(0xFFF3E37C);
 
 /// بدهکار (they owe) = blue, بستانکار / طلبکار = red, zero = normal.
@@ -1527,7 +1527,7 @@ class _LedgerState extends State<_Ledger> {
                                 final rowColor = m == null || m.color == 0 ? null : Color(m.color).withValues(alpha: 0.5);
                                 final balColor = sel ? Colors.white : balanceColor(r.balance);
                                 return Material(
-                                  color: sel ? _sel : (rowColor ?? (i.isOdd ? const Color(0xFFF6FAFE) : Colors.white)),
+                                  color: sel ? _selBlue : (rowColor ?? (i.isOdd ? const Color(0xFFF6FAFE) : Colors.white)),
                                   child: InkWell(
                                     onTap: () => setState(() => _sel = i),
                                     onDoubleTap: () => _edit(s, r),
