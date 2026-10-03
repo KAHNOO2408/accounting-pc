@@ -46,7 +46,7 @@ Widget _kb(String label, VoidCallback? onTap, {String key = '', IconData? icon, 
         const SizedBox(width: 4),
       ],
       if (icon != null) ...[Icon(icon, size: 16), const SizedBox(width: 4)],
-      Flexible(child: Text(label, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis, maxLines: 2)),
+      Flexible(child: FittedBox(fit: BoxFit.scaleDown, child: Text(label, textAlign: TextAlign.center, maxLines: 1))),
     ]),
   );
   return height == null ? b : SizedBox(height: height, child: b);
@@ -1468,7 +1468,7 @@ class _LedgerState extends State<_Ledger> {
         );
 
     Widget tall(String label, String key, VoidCallback? on, {Color? color}) => SizedBox(
-          width: 120,
+          width: 104,
           height: 88,
           child: _kb(label, on, key: key, color: color, height: 88),
         );
@@ -1516,7 +1516,7 @@ class _LedgerState extends State<_Ledger> {
         autofocus: true,
         child: _Win(
           title: 'مشاهده اسناد   -----   ${a.kol} ----> ${a.name}',
-          width: 1240,
+          width: 1460,
           body: Padding(
             padding: const EdgeInsets.all(8),
             child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -1595,11 +1595,11 @@ class _LedgerState extends State<_Ledger> {
                       tall('ویرایش سند', 'F2', () => _edit(s, cur)),
                       const SizedBox(width: 4),
                       Column(mainAxisSize: MainAxisSize.min, children: [
-                        SizedBox(width: 190, child: _kb('تنظیم نمایش', _display, key: 'F6', height: 28)),
+                        SizedBox(width: 170, child: _kb('تنظیم نمایش', _display, key: 'F6', height: 28)),
                         const SizedBox(height: 2),
-                        SizedBox(width: 190, child: _kb('لیست چکها', () => _cheques(s), key: 'F5', height: 28)),
+                        SizedBox(width: 170, child: _kb('لیست چکها', () => _cheques(s), key: 'F5', height: 28)),
                         const SizedBox(height: 2),
-                        SizedBox(width: 190, child: _kb('مشاهده در لیست اسناد', () => _inDocs(cur), key: 'F4', height: 28)),
+                        SizedBox(width: 170, child: _kb('مشاهده در لیست اسناد', () => _inDocs(cur), key: 'F4', height: 28)),
                       ]),
                     ]),
                   ),

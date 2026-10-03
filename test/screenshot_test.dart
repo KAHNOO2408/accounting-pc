@@ -68,7 +68,7 @@ void main() {
     await shot(tester, '06-sale-invoice');
 
     await open(AppPage.home, '07-finance-tab', tab: 'مالی');
-    await tester.tap(find.text('جدول و مشاهده حساب‌ها').first);
+    await tester.tap(find.text('جدول و مشاهده حسابها').first);
     await tester.pumpAndSettle();
     await shot(tester, '08-accounts-selector');
     await tester.tap(find.text('رویت حساب'));

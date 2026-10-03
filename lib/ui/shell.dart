@@ -126,7 +126,7 @@ String? _firstOf(AppStore s, AccountType t) {
   return null;
 }
 
-final _accTable = _Item('جدول و مشاهده حساب‌ها', Icons.table_view_outlined, _blue,
+final _accTable = _Item('جدول و مشاهده حسابها', Icons.table_view_outlined, _blue,
     shortcut: 'Ctrl+A', activator: _k(LogicalKeyboardKey.keyA, ctrl: true), run: (c, _) => showAccountSelector(c));
 
 /// Tabs and button labels of the ribbon (used by «دسترسی دکمه ها»).
@@ -906,7 +906,7 @@ class _RibbonButtonState extends State<_RibbonButton> {
           onTap: widget.onTap,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 120),
-            width: 84,
+            width: i.label.length > 17 ? 100 : 84,
             padding: const EdgeInsets.fromLTRB(4, 6, 4, 4),
             decoration: BoxDecoration(
               color: _hover ? c.withValues(alpha: brand.dark ? 0.18 : 0.10) : Colors.transparent,
