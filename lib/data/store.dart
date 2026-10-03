@@ -199,6 +199,7 @@ class AppStore extends ChangeNotifier {
     _sortTxns();
     _ensureDocNumbers();
     _ensureTafsiliCodes();
+    _migrateLayouts();
   }
 
   /// Next free کد حساب تفصیلی (persons and products share one range, from 7001).
@@ -1607,15 +1608,34 @@ class AppStore extends ChangeNotifier {
   // ---------------------------------------------------------------- report layouts
 
   /// Layouts of a print type; the built-in Sakan-like layout is used when none were saved.
-  List<ReportLayout> layoutsOf(PrintDocType t) {
-    final list = reportLayouts.where((x) => x.type == t).toList();
-    if (!list.any((x) => x.id == 'builtin-${t.name}')) list.insert(0, defaultLayoutFor(t));
+  String _layoutKey(PrintDocType t, String variant) => variant.isEmpty ? t.name : '${t.name}:$variant';
+
+  /// Layouts of [t]; invoices keep their own per document ([variant] = sale, purchase, proforma…).
+  List<ReportLayout> layoutsOf(PrintDocType t, {String variant = ''}) {
+    final v = hasVariants(t) ? variant : '';
+    final list = reportLayouts.where((x) => x.type == t && x.variant == v).toList();
+    if (!list.any((x) => x.id == builtinLayoutId(t, v))) list.insert(0, defaultLayoutFor(t, v));
     return list;
   }
 
-  ReportLayout defaultLayout(PrintDocType t) {
-    final list = layoutsOf(t);
-    return list.where((x) => x.id == defaultLayouts[t.name]).firstOrNull ?? list.first;
+  ReportLayout defaultLayout(PrintDocType t, {String variant = ''}) {
+    final v = hasVariants(t) ? variant : '';
+    final list = layoutsOf(t, variant: v);
+    return list.where((x) => x.id == defaultLayouts[_layoutKey(t, v)]).firstOrNull ?? list.first;
+  }
+
+  /// Layouts saved before they were kept per document belonged to the sale invoice.
+  void _migrateLayouts() {
+    for (final l in reportLayouts) {
+      if (hasVariants(l.type) && l.variant.isEmpty) {
+        if (l.id == builtinLayoutId(l.type, '')) l.id = builtinLayoutId(l.type, 'sale');
+        l.variant = 'sale';
+      }
+    }
+    for (final t in PrintDocType.values.where(hasVariants)) {
+      final d = defaultLayouts.remove(t.name);
+      if (d != null) defaultLayouts['${t.name}:sale'] = d == builtinLayoutId(t, '') ? builtinLayoutId(t, 'sale') : d;
+    }
   }
 
   void saveLayout(ReportLayout l) {
@@ -1635,7 +1655,7 @@ class AppStore extends ChangeNotifier {
   }
 
   void setDefaultLayout(ReportLayout l) {
-    defaultLayouts[l.type.name] = l.id;
+    defaultLayouts[_layoutKey(l.type, l.variant)] = l.id;
     _commit();
   }
 

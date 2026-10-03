@@ -96,6 +96,9 @@ class RItem {
 class ReportLayout {
   String id;
   PrintDocType type;
+
+  /// Document the layout is for, e.g. 'sale', 'purchase', 'proforma' ('' = shared).
+  String variant;
   String name;
   double pageW, pageH, margin;
   Map<BandKind, double> bandHeights;
@@ -104,6 +107,7 @@ class ReportLayout {
   ReportLayout({
     required this.id,
     required this.type,
+    this.variant = '',
     required this.name,
     this.pageW = 148,
     this.pageH = 210,
@@ -122,6 +126,7 @@ class ReportLayout {
   Map<String, dynamic> toJson() => {
         'id': id,
         'type': type.name,
+        if (variant.isNotEmpty) 'v': variant,
         'name': name,
         'pw': pageW,
         'ph': pageH,
@@ -135,6 +140,7 @@ class ReportLayout {
     return ReportLayout(
       id: '${j['id'] ?? ''}',
       type: PrintDocType.values.firstWhere((t) => t.name == j['type'], orElse: () => PrintDocType.invoice),
+      variant: '${j['v'] ?? ''}',
       name: '${j['name'] ?? 'طرح'}',
       pageW: RItem._d(j['pw'], 148),
       pageH: RItem._d(j['ph'], 210),
@@ -189,7 +195,8 @@ RItem _t(BandKind band, double x, double y, double w, double h, String text,
     RItem(id: _id(), band: band, x: x, y: y, w: w, h: h, text: text, fontSize: fs, bold: bold, align: align, border: border, vertical: vertical);
 
 /// The invoice exactly as Sakan prints it (A5, «فاکتور فروش»).
-ReportLayout defaultInvoiceLayout({String id = 'builtin-invoice', String title = '{عنوان فاکتور}'}) {
+ReportLayout defaultInvoiceLayout({String id = 'builtin-invoice', String title = '{عنوان فاکتور}', bool buyer = true}) {
+  final party = buyer ? 'خریدار' : 'فروشنده';
   const h = BandKind.header, c = BandKind.columns, d = BandKind.data, f1 = BandKind.footer1, f2 = BandKind.footer2;
   // columns from right to left (content width 132)
   const cols = [
@@ -209,7 +216,7 @@ ReportLayout defaultInvoiceLayout({String id = 'builtin-invoice', String title =
     _t(h, 44, 8, 44, 7, '{نام فروشگاه}', fs: 12, align: 'center'),
     _t(h, 100, 1, 31, 8, '{شماره حواله}', fs: 15, bold: true, align: 'left'),
     _t(h, 82, 10, 49, 5.5, 'تاریخ: {تاریخ}', fs: 9, bold: true),
-    _t(h, 62, 16, 69, 6, 'نام خریدار: {نام خریدار}', fs: 11),
+    _t(h, 62, 16, 69, 6, 'نام $party: {نام خریدار}', fs: 11),
     _t(h, 62, 22.5, 69, 6, 'آدرس: {آدرس خریدار}', fs: 9),
     _t(h, 4, 16, 50, 6, 'شماره فاکتور: {شماره فاکتور}', fs: 9, bold: true),
     _t(h, 4, 22.5, 50, 6, 'تلفن: {تلفن فروشنده}', fs: 9),
@@ -247,9 +254,9 @@ ReportLayout defaultInvoiceLayout({String id = 'builtin-invoice', String title =
       _t(f1, 100, i * 6.0, 26, 6, label, fs: 9, border: Sides.all),
       _t(f1, 62, i * 6.0, 38, 6, field, fs: 9, align: 'center', border: Sides.all),
     ],
-    _t(f1, 63, 20, 68, 5, 'کلیه اقلام فاکتور کامل و سالم تحویل خریدار شده', fs: 9),
-    _t(f1, 63, 25, 68, 5, 'و مانده حساب مورد تایید خریدار می باشد', fs: 9),
-    _t(f1, 104, 32, 26, 6, 'مهر امضاء خریدار', fs: 9),
+    _t(f1, 63, 20, 68, 5, 'کلیه اقلام فاکتور کامل و سالم تحویل $party شده', fs: 9),
+    _t(f1, 63, 25, 68, 5, 'و مانده حساب مورد تایید $party می باشد', fs: 9),
+    _t(f1, 104, 32, 26, 6, 'مهر امضاء $party', fs: 9),
     _t(f1, 72, 32, 28, 6, 'مهر/امضاء فروشگاه', fs: 9),
     // ---------------- Footer2
     _t(f2, 0, 0, 132, 6, 'تسویه به صورت :   □   چک .................. روز ،  نقدی ،  نسیه', fs: 9, bold: true, border: Sides.left | Sides.right | Sides.bottom),
@@ -301,11 +308,31 @@ ReportLayout defaultWarehouseLayout() {
   );
 }
 
-ReportLayout defaultLayoutFor(PrintDocType t) => switch (t) {
-      PrintDocType.warehouse => defaultWarehouseLayout(),
-      PrintDocType.ledger => defaultLedgerLayout(),
-      _ => defaultInvoiceLayout(),
-    };
+/// Documents that can each have their own print layouts.
+const layoutVariants = {
+  'sale': 'فاکتور فروش',
+  'purchase': 'فاکتور خرید',
+  'proforma': 'پیش فاکتور',
+  'saleReturn': 'برگشت از فروش',
+  'purchaseReturn': 'برگشت از خرید',
+};
+
+/// Types whose layouts are kept per document ([layoutVariants]).
+bool hasVariants(PrintDocType t) => t == PrintDocType.invoice;
+
+String builtinLayoutId(PrintDocType t, String variant) => variant.isEmpty ? 'builtin-${t.name}' : 'builtin-${t.name}-$variant';
+
+ReportLayout defaultLayoutFor(PrintDocType t, [String variant = '']) {
+  final l = switch (t) {
+    PrintDocType.warehouse => defaultWarehouseLayout(),
+    PrintDocType.ledger => defaultLedgerLayout(),
+    _ => defaultInvoiceLayout(buyer: variant != 'purchase' && variant != 'saleReturn'),
+  };
+  l
+    ..id = builtinLayoutId(t, variant)
+    ..variant = variant;
+  return l;
+}
 
 /// Placeholders of «پرینت حساب».
 const ledgerFields = ['نام حساب', 'کد حساب', 'عنوان کل', 'عنوان معین', 'نام فروشگاه', 'تاریخ', 'از تاریخ', 'تا تاریخ', 'صفحه', 'جمع بدهکار', 'جمع بستانکار', 'مانده', 'تشخیص'];

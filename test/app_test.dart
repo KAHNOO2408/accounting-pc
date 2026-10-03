@@ -1321,4 +1321,59 @@ void main() {
     }
     expect(s.recycle.length, 1);
   });
+
+  test('each invoice kind keeps its own print layouts', () {
+    final s = _tempStore();
+    expect(s.defaultLayout(PrintDocType.invoice, variant: 'sale').id, 'builtin-invoice-sale');
+    expect(s.defaultLayout(PrintDocType.invoice, variant: 'purchase').id, 'builtin-invoice-purchase');
+    final buy = s.defaultLayout(PrintDocType.invoice, variant: 'purchase');
+    expect(buy.items.any((i) => i.text.contains('نام فروشنده')), isTrue);
+    final mine = buy.copy()
+      ..id = newId()
+      ..name = 'خرید من';
+    s.saveLayout(mine);
+    s.setDefaultLayout(mine);
+    expect(s.defaultLayout(PrintDocType.invoice, variant: 'purchase').name, 'خرید من');
+    expect(s.defaultLayout(PrintDocType.invoice, variant: 'sale').id, 'builtin-invoice-sale');
+    expect(s.layoutsOf(PrintDocType.invoice, variant: 'proforma').length, 1);
+    expect(s.layoutsOf(PrintDocType.invoice, variant: 'purchase').length, 2);
+    // old shared layouts become the sale invoice's
+    final legacy = defaultLayoutFor(PrintDocType.invoice)
+      ..id = 'old'
+      ..variant = ''
+      ..name = 'قدیمی';
+    final j = s.toJson();
+    (j['reportLayouts'] as List).add(legacy.toJson());
+    j['defaultLayouts'] = {'invoice': 'old'};
+    final dir = Directory.systemTemp.createTempSync('lay');
+    final st = Storage(dir)..save(j);
+    final re = AppStore.open(st);
+    expect(re.defaultLayout(PrintDocType.invoice, variant: 'sale').name, 'قدیمی');
+    expect(re.defaultLayout(PrintDocType.invoice, variant: 'purchase').name, 'خرید من');
+  });
+
+  testWidgets('print forms window opens a designer per document', (tester) async {
+    tester.view.physicalSize = const Size(1600, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final s = _tempStore();
+    s.completeSetup(ownerName: 'Ali');
+    await tester.pumpWidget(TarazApp(store: s));
+    await tester.pumpAndSettle();
+    showPrintForms(tester.element(find.text('خرید و فروش').first));
+    await tester.pumpAndSettle();
+    expect(find.text('طراحی فرم های چاپ'), findsWidgets);
+    for (final (label, title) in [
+      ('فاکتور خرید', 'گزارش سازی — چاپ فاکتور (فاکتور خرید)'),
+      ('پیش فاکتور', 'گزارش سازی — چاپ فاکتور (پیش فاکتور)'),
+      ('گزارش حساب', 'گزارش سازی — پرینت حساب'),
+    ]) {
+      await tester.tap(find.text(label).last);
+      await tester.pumpAndSettle();
+      expect(find.text(title), findsOneWidget, reason: 'page: $title');
+      expect(tester.takeException(), isNull, reason: 'page: $title');
+      await tester.tap(find.text('انصراف (F10)').last);
+      await tester.pumpAndSettle();
+    }
+  });
 }

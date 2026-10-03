@@ -31,6 +31,7 @@ import 'dialogs/stock_dialogs.dart';
 import 'dialogs/ledger_dialogs.dart';
 import 'dialogs/books_dialogs.dart';
 import 'dialogs/sakan_tools.dart';
+import 'print_designer.dart' show showPrintForms;
 import 'pages/profit_page.dart';
 import 'pages/reports_page.dart';
 import 'pages/settings_page.dart';
@@ -376,6 +377,7 @@ final List<_Tab> _tabs = [
   _Tab('متفرقه', [
     _Group('تنظیمات', [
       _Item('تنظیمات', Icons.tune_rounded, _blue, run: _page(AppPage.settings)),
+      _Item('طراحی فرم های چاپ', Icons.print_outlined, _violet, run: (c, _) => showPrintForms(c)),
       _Item('سطل بازیافت', Icons.delete_outline_rounded, _red, run: (c, _) => showRecycleBin(c)),
     ]),
     _Group('متفرقه', [

@@ -502,21 +502,38 @@ Future<void> showPrintTypeMenu(BuildContext anchor, Future<Invoice?> Function() 
 
 // =================================================================== گزارش سازی
 
-Future<void> showReportBuilder(BuildContext context, Invoice inv, PrintDocType type) => showDialog<void>(
-    context: context,
-    builder: (_) => type == PrintDocType.barcode ? _ReportBuilder(inv: inv, type: type) : _LayoutPicker(inv: inv, type: type));
+/// Which layouts an invoice uses: each document has its own (فاکتور فروش، فاکتور خرید، پیش فاکتور…).
+String invoiceVariant(Invoice inv) => inv.proforma ? 'proforma' : inv.kind.name;
+
+Future<void> showReportBuilder(BuildContext context, Invoice inv, PrintDocType type) => type == PrintDocType.barcode
+    ? showDialog<void>(context: context, builder: (_) => _ReportBuilder(inv: inv, type: type))
+    : showLayoutPicker(
+        context,
+        type: type,
+        variant: invoiceVariant(inv),
+        data: (s) => invoiceReportData(s, inv, type: type),
+        fileName: '${type.name}-${inv.number}',
+      );
+
+/// «گزارش سازی» of any band layout: pick, build, edit, preview and print.
+Future<void> showLayoutPicker(BuildContext context,
+        {required PrintDocType type, String variant = '', required ReportData Function(AppStore s) data, String fileName = 'report'}) =>
+    showDialog<void>(context: context, builder: (_) => _LayoutPicker(type: type, variant: variant, data: data, fileName: fileName));
 
 /// Opens the in-app «Report Preview» of an invoice with the default layout.
 Future<void> previewInvoice(BuildContext context, Invoice inv, PrintDocType type) {
   final s = StoreScope.read(context);
-  return showReportPreview(context, s.defaultLayout(type), invoiceReportData(s, inv, type: type), fileName: '${type.name}-${inv.number}');
+  return showReportPreview(context, s.defaultLayout(type, variant: invoiceVariant(inv)), invoiceReportData(s, inv, type: type),
+      fileName: '${type.name}-${inv.number}');
 }
 
-/// «گزارش سازی» for band layouts (فاکتور / حواله انبار).
+/// «گزارش سازی» for band layouts (فاکتور / حواله انبار / پرینت حساب).
 class _LayoutPicker extends StatefulWidget {
-  final Invoice inv;
   final PrintDocType type;
-  const _LayoutPicker({required this.inv, required this.type});
+  final String variant;
+  final ReportData Function(AppStore s) data;
+  final String fileName;
+  const _LayoutPicker({required this.type, this.variant = '', required this.data, this.fileName = 'report'});
 
   @override
   State<_LayoutPicker> createState() => _LayoutPickerState();
@@ -525,9 +542,13 @@ class _LayoutPicker extends StatefulWidget {
 class _LayoutPickerState extends State<_LayoutPicker> {
   String? _id;
 
-  ReportLayout _current(AppStore s) => s.layoutsOf(widget.type).where((x) => x.id == _id).firstOrNull ?? s.defaultLayout(widget.type);
+  String get _v => hasVariants(widget.type) ? widget.variant : '';
 
-  ReportData _data(AppStore s) => invoiceReportData(s, widget.inv, type: widget.type);
+  List<ReportLayout> _list(AppStore s) => s.layoutsOf(widget.type, variant: _v);
+
+  ReportLayout _current(AppStore s) => _list(s).where((x) => x.id == _id).firstOrNull ?? s.defaultLayout(widget.type, variant: _v);
+
+  ReportData _data(AppStore s) => widget.data(s);
 
   Future<void> _design({required bool create}) async {
     final s = StoreScope.read(context);
@@ -535,7 +556,8 @@ class _LayoutPickerState extends State<_LayoutPicker> {
     final base = create
         ? (cur.copy()
           ..id = newId()
-          ..name = 'طرح ${s.layoutsOf(widget.type).length + 1}')
+          ..variant = _v
+          ..name = 'طرح ${_list(s).length + 1}')
         : cur;
     final r = await showReportDesigner(context, base, _data(s));
     if (r != null && mounted) {
@@ -549,7 +571,7 @@ class _LayoutPickerState extends State<_LayoutPicker> {
     final l = _current(s);
     s.setDefaultLayout(l);
     try {
-      printReport(l, _data(s), fileName: '${widget.type.name}-${widget.inv.number}');
+      printReport(l, _data(s), fileName: widget.fileName);
     } catch (e) {
       toast(context, 'چاپ ناموفق: $e', error: true);
     }
@@ -559,7 +581,7 @@ class _LayoutPickerState extends State<_LayoutPicker> {
   Widget build(BuildContext context) {
     final s = StoreScope.of(context);
     final th = Theme.of(context);
-    final list = s.layoutsOf(widget.type);
+    final list = _list(s);
     final l = _current(s);
     final size = MediaQuery.of(context).size;
     return CallbackShortcuts(
@@ -582,7 +604,7 @@ class _LayoutPickerState extends State<_LayoutPicker> {
                   const Icon(Icons.print_rounded),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text('گزارش سازی — ${widget.type.label}',
+                    child: Text('گزارش سازی — ${widget.type.label}${_v.isEmpty ? '' : ' (${layoutVariants[_v] ?? _v})'}',
                         style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.white)),
                   ),
                   IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded)),
@@ -602,7 +624,7 @@ class _LayoutPickerState extends State<_LayoutPicker> {
                         for (final x in list)
                           DropdownMenuItem(
                             value: x.id,
-                            child: Text('${x.name}${s.defaultLayout(widget.type).id == x.id ? '  (پیش‌فرض)' : ''}'),
+                            child: Text('${x.name}${s.defaultLayout(widget.type, variant: _v).id == x.id ? '  (پیش‌فرض)' : ''}'),
                           ),
                       ],
                       onChanged: (v) => setState(() => _id = v),
@@ -656,7 +678,7 @@ class _LayoutPickerState extends State<_LayoutPicker> {
                   OutlinedButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف (F10)')),
                   const SizedBox(width: 8),
                   OutlinedButton.icon(
-                    onPressed: () => showReportPreview(context, l, _data(s), fileName: '${widget.type.name}-${widget.inv.number}'),
+                    onPressed: () => showReportPreview(context, l, _data(s), fileName: widget.fileName),
                     icon: const Icon(Icons.visibility_outlined, size: 18),
                     label: const Text('مشاهده پویا'),
                   ),
@@ -1000,6 +1022,107 @@ class _DesignerState extends State<_Designer> {
           ]),
         ),
       ),
+    );
+  }
+}
+
+// =================================================================== طراحی فرم های چاپ
+
+/// One place to design the printout of each document separately.
+Future<void> showPrintForms(BuildContext context) => showDialog<void>(context: context, builder: (_) => const _PrintForms());
+
+/// A sample invoice of [variant]: the latest real one, or a made-up one.
+Invoice sampleInvoice(AppStore s, String variant) {
+  final kind = variant == 'proforma' ? InvoiceKind.sale : InvoiceKind.values.firstWhere((k) => k.name == variant, orElse: () => InvoiceKind.sale);
+  final real = s.invoices.where((i) => invoiceVariant(i) == variant).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  if (real.isNotEmpty) return real.first;
+  final prods = s.productsSorted.take(3).toList();
+  return Invoice(
+    id: 'sample',
+    kind: kind,
+    proforma: variant == 'proforma',
+    number: 1,
+    date: DateTime.now(),
+    personId: s.peopleSorted.firstOrNull?.id,
+    lines: prods.isEmpty
+        ? [InvoiceLine(title: 'کالای نمونه', qty: 2, unitPrice: 150000), InvoiceLine(title: 'کالای نمونه ۲', qty: 1, unitPrice: 320000)]
+        : [for (final p in prods) InvoiceLine(productId: p.id, title: p.name, qty: 1, unitPrice: kind == InvoiceKind.purchase ? p.buyPrice : p.sellPrice)],
+  );
+}
+
+/// Sample data of «پرینت حساب» for the designer.
+ReportData sampleLedgerData(AppStore s) {
+  final st = s.settings;
+  final name = s.peopleSorted.firstOrNull?.name ?? 'طرف حساب نمونه';
+  final today = jFormat(DateTime.now());
+  Map<String, String> row(String i, String desc, String d, String c, String m, String t) =>
+      {'ردیف': i, 'ش س': i, 'تاریخ سند': today, 'شرح سند': desc, 'بدهکار': d, 'بستانکار': c, 'مانده ردیف': m, 'ت': t, 'شماره ثابت': i};
+  return ReportData(
+    title: 'گزارش حساب $name',
+    fields: {
+      'نام حساب': name,
+      'کد حساب': '7001',
+      'عنوان کل': 'اشخاص',
+      'عنوان معین': 'اشخاص',
+      'نام فروشگاه': st.businessName.isEmpty ? st.ownerName : st.businessName,
+      'تاریخ': today,
+      'جمع بدهکار': '1,500,000',
+      'جمع بستانکار': '500,000',
+      'مانده': '1,000,000',
+      'تشخیص': 'بد',
+    },
+    rows: [
+      row('', 'منقول از قبل', '0', '0', '0', '-'),
+      row('1', 'فاکتور 1  فروش  1 قلم کالا', '1,500,000', '0', '1,500,000', 'بد'),
+      row('2', 'دریافت نقدی', '0', '500,000', '1,000,000', 'بد'),
+    ],
+  );
+}
+
+class _PrintForms extends StatelessWidget {
+  const _PrintForms();
+
+  @override
+  Widget build(BuildContext context) {
+    final s = StoreScope.of(context);
+    final th = Theme.of(context);
+    final forms = <(String, IconData, Color, PrintDocType, String)>[
+      ('فاکتور فروش', Icons.sell_outlined, AppColors.income, PrintDocType.invoice, 'sale'),
+      ('فاکتور خرید', Icons.shopping_cart_outlined, AppColors.expense, PrintDocType.invoice, 'purchase'),
+      ('پیش فاکتور', Icons.note_add_outlined, AppColors.discount, PrintDocType.invoice, 'proforma'),
+      ('برگشت از فروش', Icons.assignment_return_outlined, AppColors.loan, PrintDocType.invoice, 'saleReturn'),
+      ('برگشت از خرید', Icons.remove_shopping_cart_outlined, AppColors.loan, PrintDocType.invoice, 'purchaseReturn'),
+      ('حواله انبار', Icons.inventory_2_outlined, AppColors.debt, PrintDocType.warehouse, ''),
+      ('گزارش حساب', Icons.receipt_long_outlined, th.colorScheme.primary, PrintDocType.ledger, ''),
+    ];
+    return FormDialog(
+      title: 'طراحی فرم های چاپ',
+      width: 620,
+      actions: [FilledButton(onPressed: () => Navigator.pop(context), child: const Text('بستن'))],
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Text('هر سند طرح چاپ جدا دارد؛ روی هر کدام بزنید تا طرح‌هایش را بسازید، ویرایش کنید یا پیش‌فرض کنید.',
+            style: th.textTheme.bodySmall?.copyWith(color: th.hintColor)),
+        const SizedBox(height: 10),
+        for (final (label, icon, color, type, variant) in forms)
+          Card(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            child: ListTile(
+              leading: CircleAvatar(backgroundColor: color.withValues(alpha: 0.15), child: Icon(icon, color: color)),
+              title: Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: Text('${s.layoutsOf(type, variant: variant).length} طرح — پیش‌فرض: ${s.defaultLayout(type, variant: variant).name}'),
+              trailing: const Icon(Icons.chevron_left_rounded),
+              onTap: () => showLayoutPicker(
+                context,
+                type: type,
+                variant: variant,
+                data: (st) => type == PrintDocType.ledger
+                    ? sampleLedgerData(st)
+                    : invoiceReportData(st, sampleInvoice(st, variant.isEmpty ? 'sale' : variant), type: type),
+                fileName: '${type.name}-sample',
+              ),
+            ),
+          ),
+      ]),
     );
   }
 }
