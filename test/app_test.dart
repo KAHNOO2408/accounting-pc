@@ -1186,6 +1186,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('انتخاب دفتر تفصیلی'), findsOneWidget);
     expect(find.text('Reza'), findsOneWidget);
+    expect(find.text(groupDigits(100)), findsWidgets); // جمع کل بدهی on the blue bar
     expect(tester.takeException(), isNull);
     await tester.tap(find.text('Reza'));
     await tester.pumpAndSettle();

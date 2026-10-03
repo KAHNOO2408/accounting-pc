@@ -178,7 +178,6 @@ final List<_Tab> _tabs = [
           shortcut: 'Ctrl+2',
           activator: _k(LogicalKeyboardKey.digit2, ctrl: true),
           run: (c, _) => showTxnDialog(c, type: TxnType.saleDiscount, title: 'تخفیف از فروش')),
-      _accTable,
     ]),
   ]),
   _Tab('خرید و فروش', [
@@ -215,7 +214,6 @@ final List<_Tab> _tabs = [
           shortcut: 'Ctrl+F5',
           activator: _k(LogicalKeyboardKey.f5, ctrl: true),
           run: (c, _) => showInvoiceEditor(c, kind: InvoiceKind.purchaseReturn)),
-      _accTable,
     ]),
   ]),
   _Tab('عملیات کالا', [
@@ -236,10 +234,8 @@ final List<_Tab> _tabs = [
       _Item('لیست پیش فاکتور', Icons.library_books_outlined, _cyan,
           shortcut: 'Ctrl+F7', activator: _k(LogicalKeyboardKey.f7, ctrl: true), run: _page(AppPage.proformas)),
     ]),
-    _Group('مشاهده حساب‌ها', [_accTable]),
   ]),
   _Tab('مالی', [
-    _Group('مشاهده حساب‌ها', [_accTable]),
     _Group('عملیات نقدی', [
       _Item('دریافت نقدی', Icons.payments_outlined, _green,
           shortcut: 'F1',
@@ -315,6 +311,7 @@ final List<_Tab> _tabs = [
               dir: ChequeDirection.received, status: ChequeStatus.endorsed, hint: 'روی چک، منوی ⋮ ← «پس گرفتن»')),
       _Item('معرفی دسته چک', Icons.menu_book_outlined, _violet, run: (c, _) => showChequeBooksWindow(c)),
     ]),
+    _Group('مشاهده حساب‌ها', [_accTable]),
   ]),
   _Tab('مالی ویژه', [
     _Group('ادغام', [
@@ -328,7 +325,6 @@ final List<_Tab> _tabs = [
           run: (c, _) => showTxnDialog(c, type: TxnType.transfer, title: 'دریافت و پرداخت بین حساب‌ها')),
       _Item('جا به جایی چک', Icons.swap_horiz_rounded, _cyan, run: (c, _) => showChequeMoveDialog(c)),
       _Item('راس‌گیری چک', Icons.calculate_outlined, _cyan, run: (c, _) => showChequeAverageDialog(c)),
-      _accTable,
     ]),
   ]),
   _Tab('هزینه و درآمد', [
@@ -351,7 +347,6 @@ final List<_Tab> _tabs = [
           shortcut: 'Alt+F10',
           activator: _k(LogicalKeyboardKey.f10, alt: true),
           run: (c, _) => showTxnDialog(c, type: TxnType.expense, title: 'پرداخت هزینه')),
-      _accTable,
     ]),
   ]),
   _Tab('گزارشات', [
@@ -794,8 +789,10 @@ class _Ribbon extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+            // every button stays visible: a long tab is scaled down to fit
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.centerStart,
               child: IntrinsicHeight(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,

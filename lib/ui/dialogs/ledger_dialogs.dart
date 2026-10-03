@@ -703,9 +703,10 @@ class _AccountSelectorState extends State<_AccountSelector> {
     final s = StoreScope.of(context);
     final rows = _rows(s);
     final cur = _current(rows);
-    final debit = rows.fold<int>(0, (a, r) => a + (r.balance > 0 ? r.balance : 0));
-    final credit = rows.fold<int>(0, (a, r) => a + (r.balance < 0 ? -r.balance : 0));
     final allRows = accountRows(s, _cat, _balances(buildJournal(s)));
+    // جمع کل بدهی و جمع کل طلب of the whole group
+    final debit = allRows.fold<int>(0, (a, r) => a + (r.balance > 0 ? r.balance : 0));
+    final credit = allRows.fold<int>(0, (a, r) => a + (r.balance < 0 ? -r.balance : 0));
     final kols = {for (final r in allRows) r.kol}.toList();
     final moeens = {for (final r in allRows) if (_kolFilter == null || r.kol == _kolFilter) r.moeen}.toList();
     AccCat? byKey(String k) => accCategories.expand((r) => r).where((c) => c.shortcut == k).firstOrNull;
@@ -730,23 +731,32 @@ class _AccountSelectorState extends State<_AccountSelector> {
           ),
         );
 
-    Widget sideBar(int side, int value, Color color) => InkWell(
-          onTap: () => setState(() => _side = _side == side ? 0 : side),
-          child: Container(
-            height: _bh,
-            width: 220,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(color: color, border: Border.all(color: Colors.black26)),
-            child: Row(children: [
-              Icon(_side == side ? Icons.radio_button_checked : Icons.circle, size: 14, color: Colors.white),
-              const Spacer(),
-              Text(groupDigits(value), textDirection: TextDirection.ltr, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15)),
-            ]),
+    Widget sideBar(int side, int value, Color color, String label) => Tooltip(
+          message: label,
+          child: InkWell(
+            onTap: () => setState(() => _side = _side == side ? 0 : side),
+            child: Container(
+              height: _bh,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(color: color, border: Border.all(color: Colors.black26)),
+              child: Row(children: [
+                Icon(_side == side ? Icons.radio_button_checked : Icons.circle, size: 14, color: Colors.white),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: Text(groupDigits(value),
+                        textDirection: TextDirection.ltr, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 17)),
+                  ),
+                ),
+              ]),
+            ),
           ),
         );
 
     Widget dd(String? value, List<String> items, String hint, ValueChanged<String?> on) => SizedBox(
-          width: 210,
+          width: 170,
           height: _bh,
           child: DropdownButtonFormField<String>(
             value: value,
@@ -794,62 +804,59 @@ class _AccountSelectorState extends State<_AccountSelector> {
             // ---------------------------------------------------- filters and totals
             Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
               Expanded(
-                child: Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(children: [
-                      SizedBox(width: 90, child: _kb(_nonZero ? 'فیلتر ✓' : 'فیلتر', () => setState(() => _nonZero = !_nonZero), height: _bh * 2 + _gap)),
-                      const SizedBox(width: _gap),
-                      Column(mainAxisSize: MainAxisSize.min, children: [
-                        Row(mainAxisSize: MainAxisSize.min, children: [
-                          SizedBox(width: 90, height: _bh, child: _kb('عنوان حساب', () {}, color: const Color(0xFFF1F1F1))),
-                          const SizedBox(width: 2),
-                          dd(_kolFilter, kols, 'کل ها', (v) => setState(() {
-                                _kolFilter = v;
-                                _moeenFilter = null;
-                              })),
-                        ]),
-                        const SizedBox(height: _gap),
-                        Row(mainAxisSize: MainAxisSize.min, children: [
-                          SizedBox(width: 90, height: _bh, child: _kb('عنوان حساب', () {}, color: const Color(0xFFF1F1F1))),
-                          const SizedBox(width: 2),
-                          dd(_moeenFilter, moeens, 'معین ها', (v) => setState(() => _moeenFilter = v)),
-                        ]),
-                      ]),
-                      const SizedBox(width: _gap),
-                      SizedBox(
-                        width: 80,
-                        child: _kb('خالی', () {
-                          _search.clear();
-                          _codeSearch.clear();
-                          setState(() {
-                            _kolFilter = null;
+                child: Row(children: [
+                  SizedBox(width: 80, child: _kb(_nonZero ? 'فیلتر ✓' : 'فیلتر', () => setState(() => _nonZero = !_nonZero), height: _bh * 2 + _gap)),
+                  const SizedBox(width: _gap),
+                  Column(mainAxisSize: MainAxisSize.min, children: [
+                    Row(mainAxisSize: MainAxisSize.min, children: [
+                      SizedBox(width: 90, height: _bh, child: _kb('عنوان حساب', () {}, color: const Color(0xFFF1F1F1))),
+                      const SizedBox(width: 2),
+                      dd(_kolFilter, kols, 'کل ها', (v) => setState(() {
+                            _kolFilter = v;
                             _moeenFilter = null;
-                            _side = 0;
-                            _nonZero = false;
-                          });
-                        }, height: _bh * 2 + _gap),
-                      ),
-                      const SizedBox(width: _gap),
-                      Column(mainAxisSize: MainAxisSize.min, children: [
-                        sideBar(1, debit, const Color(0xFF2346D8)),
-                        const SizedBox(height: _gap),
-                        sideBar(2, credit, const Color(0xFFC62828)),
-                      ]),
-                      const SizedBox(width: _gap),
-                      InkWell(
-                        onTap: () => setState(() => _side = 0),
-                        child: Container(
-                          width: 44,
-                          height: _bh,
-                          color: Colors.black12,
-                          child: Icon(_side == 0 ? Icons.radio_button_checked : Icons.radio_button_off, size: 18),
-                        ),
-                      ),
+                          })),
+                    ]),
+                    const SizedBox(height: _gap),
+                    Row(mainAxisSize: MainAxisSize.min, children: [
+                      SizedBox(width: 90, height: _bh, child: _kb('عنوان حساب', () {}, color: const Color(0xFFF1F1F1))),
+                      const SizedBox(width: 2),
+                      dd(_moeenFilter, moeens, 'معین ها', (v) => setState(() => _moeenFilter = v)),
+                    ]),
+                  ]),
+                  const SizedBox(width: _gap),
+                  SizedBox(
+                    width: 70,
+                    child: _kb('خالی', () {
+                      _search.clear();
+                      _codeSearch.clear();
+                      setState(() {
+                        _kolFilter = null;
+                        _moeenFilter = null;
+                        _side = 0;
+                        _nonZero = false;
+                      });
+                    }, height: _bh * 2 + _gap),
+                  ),
+                  const SizedBox(width: _gap),
+                  // جمع کل بدهی (آبی) و جمع کل طلب (قرمز)
+                  Expanded(
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      sideBar(1, debit, const Color(0xFF2346D8), 'جمع بدهکاران'),
+                      const SizedBox(height: _gap),
+                      sideBar(2, credit, const Color(0xFFC62828), 'جمع بستانکاران'),
                     ]),
                   ),
-                ),
+                  const SizedBox(width: _gap),
+                  InkWell(
+                    onTap: () => setState(() => _side = 0),
+                    child: Container(
+                      width: 40,
+                      height: _bh,
+                      color: Colors.black12,
+                      child: Icon(_side == 0 ? Icons.radio_button_checked : Icons.radio_button_off, size: 18),
+                    ),
+                  ),
+                ]),
               ),
               const SizedBox(width: _gap),
               // buttons pinned to the left edge, all the same size
