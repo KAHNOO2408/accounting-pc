@@ -1110,5 +1110,17 @@ void main() {
     expect(find.text('تعیین نوع چاپ'), findsNothing);
     expect(tester.takeException(), isNull);
     expect(s.invoices.length, 1);
+
+    // a متفرقه invoice is not opened in the financial window either
+    final misc = Invoice(id: newId(), kind: InvoiceKind.sale, number: 8, date: DateTime.now(),
+        lines: [InvoiceLine(productId: prod.id, qty: 1, unitPrice: 50)]);
+    s.saveInvoice(misc);
+    showInvoiceEditor(tester.element(find.text('خرید و فروش').first), edit: misc);
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.f5);
+    await tester.pumpAndSettle();
+    expect(find.text('بدهی قبلی'), findsNothing);
+    expect(find.textContaining('فاکتور متفرقه باید کامل تسویه شود'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

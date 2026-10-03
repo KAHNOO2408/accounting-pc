@@ -469,7 +469,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
 
   // ------------------------------------------------------------------ save
 
-  Future<Invoice?> _save({bool close = true, bool settle = true, bool draft = false}) async {
+  Future<Invoice?> _save({bool close = true, bool settle = true, bool draft = false, bool askPay = true}) async {
     final store = StoreScope.read(context);
     final lines = [..._lines, ..._services].where((l) => !l.isEmpty).toList();
     String? err;
@@ -492,19 +492,25 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     if (!_proforma && !_legacy && settle) {
       final signed = _kind.txnType.personSign * _total;
       final before = _person == null ? 0 : store.personBalance(_person!, excludeInvoiceId: (_saved ?? widget.edit)?.id);
-      final r = await showPayMethodsDialog(
-        context,
-        personId: _person,
-        items: _preItems ?? const [],
-        before: before,
-        docAmount: signed,
-        receiveSide: _kind.moneyIn,
-        title: '${_kind.moneyIn ? 'نحوه دریافت' : 'نحوه پرداخت'} — $_title',
-        skipLabel: _person == null ? null : 'ثبت فاکتور بدون ${_kind.moneyIn ? 'دریافت' : 'پرداخت'}',
-      );
+      // «تایید و چاپ» (F5/F8) never opens the financial window: it uses what
+      // was entered with «عملیات مالی F11», if anything.
+      final r = !askPay
+          ? (_preItems ?? const <PayItem>[])
+          : await showPayMethodsDialog(
+              context,
+              personId: _person,
+              items: _preItems ?? const [],
+              before: before,
+              docAmount: signed,
+              receiveSide: _kind.moneyIn,
+              title: '${_kind.moneyIn ? 'نحوه دریافت' : 'نحوه پرداخت'} — $_title',
+              skipLabel: _person == null ? null : 'ثبت فاکتور بدون ${_kind.moneyIn ? 'دریافت' : 'پرداخت'}',
+            );
       if (r == null || !mounted) return null;
       if (_person == null && signed + sumPayments(r) - sumReceipts(r) != 0) {
-        setState(() => _err = 'فاکتور کامل تسویه نشده؛ برای ثبت مانده (نسیه) $_partyLabel را انتخاب کنید');
+        setState(() => _err = askPay
+            ? 'فاکتور کامل تسویه نشده؛ برای ثبت مانده (نسیه) $_partyLabel را انتخاب کنید'
+            : 'فاکتور متفرقه باید کامل تسویه شود؛ ابتدا $_partyLabel را انتخاب کنید یا «عملیات مالی F11» را انجام دهید');
         return null;
       }
       items = r;
@@ -559,7 +565,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     final nav = Navigator.of(context);
     // تایید و چاپ only saves and prints; the financial window opens only for
     // a متفرقه invoice, which must be settled before it can be saved.
-    final inv = await _save(close: false, settle: _person == null);
+    final inv = await _save(close: false, askPay: false);
     if (inv == null || !mounted) return;
     nav.pop();
     for (final t in types) {
