@@ -518,7 +518,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       ..discount = _discount
       ..extra = _extra
       ..note = _note
-      ..info = {
+      ..info = ({
         ...inv.info,
         'warehouseNo': normalizeDigits(_warehouseNo.text.trim()),
         'requestNo': _requestNo.text.trim(),
@@ -528,7 +528,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
         'receiver': _receiver,
         'buyerName': _person == null ? _buyerName.text.trim() : '',
         'saleDate': _saleDate.toIso8601String(),
-      }..removeWhere((_, v) => v.isEmpty);
+      }..removeWhere((_, v) => v.isEmpty));
     if (!_legacy) {
       inv
         ..paid = 0
@@ -673,7 +673,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
 
   Widget _lbl(String t) => Padding(padding: const EdgeInsets.symmetric(horizontal: 6), child: Text(t, style: const TextStyle(fontWeight: FontWeight.w700)));
 
-  Widget _date(DateTime v, ValueChanged<DateTime> on, {double width = 160}) => SizedBox(
+  Widget _dateBox(DateTime v, ValueChanged<DateTime> on, {double width = 160}) => SizedBox(
         width: width,
         height: 40,
         child: DateField(label: '', value: v, onChanged: (d) => on(d ?? v)),
@@ -777,7 +777,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                     if (r != null) setState(() => _receiver = r.trim());
                   }, width: 160, color: const Color(0xFFE8F0FB)),
                   _lbl('تاریخ فاکتور'),
-                  _date(_date, (d) => setState(() => _date = d)),
+                  _dateBox(_date, (d) => setState(() => _date = d)),
                   _lbl('شماره فاکتور'),
                   _field(_number, width: 110, ltr: true),
                   _lbl('بابت:'),
@@ -815,7 +815,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                   _lbl('معین حساب:'),
                   _valueBox(_person == null ? 'متفرقه' : (_buy ? 'بستانکاران تجاری' : 'بدهکاران تجاری'), width: 170, bold: false),
                   _lbl(_buy ? 'تاریخ خرید:' : 'تاریخ فروش:'),
-                  _date(_saleDate, (d) => setState(() => _saleDate = d)),
+                  _dateBox(_saleDate, (d) => setState(() => _saleDate = d)),
                   const SizedBox(width: 8),
                   _btn('اعمال مدل های تخفیفات و جوایز', () => showComingSoon(context, 'اعمال مدل های تخفیفات و جوایز')),
                   const SizedBox(width: 6),
