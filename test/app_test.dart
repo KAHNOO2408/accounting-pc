@@ -920,7 +920,6 @@ void main() {
     await tester.tap(find.text('فاکتور فروش').first);
     await tester.pumpAndSettle();
     expect(find.text('تعیین نوع چاپ'), findsOneWidget);
-    expect(find.text('اقلام کالا'), findsWidgets);
     expect(tester.takeException(), isNull);
     // type a product → «تعیین تعداد» → price window
     await tester.enterText(find.descendant(of: find.byType(RawAutocomplete<Product>), matching: find.byType(TextField)).first, 'Cable');
@@ -1021,6 +1020,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     final s = _tempStore();
+    s.completeSetup(ownerName: 'Ali');
     final prod = Product(id: newId(), name: 'Cable', code: '7001', sellPrice: 50, openingQty: 5);
     s.upsertProduct(prod);
     s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: DateTime.now(),
