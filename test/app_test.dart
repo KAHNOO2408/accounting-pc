@@ -7,6 +7,7 @@ import 'package:taraz/data/chart.dart';
 import 'package:taraz/data/journal.dart';
 import 'package:taraz/data/kardex.dart';
 import 'package:taraz/data/models.dart';
+import 'package:taraz/data/report_layout.dart';
 import 'package:taraz/data/storage.dart';
 import 'package:taraz/data/store.dart';
 import 'package:taraz/main.dart';
@@ -1158,6 +1159,8 @@ void main() {
     expect(balanceColor(200), debtorBlue);
     expect(balanceColor(-150), creditorRed);
     expect(balanceColor(0), isNull);
+    expect(defaultLayoutFor(PrintDocType.ledger).itemsOf(BandKind.data).length, 7);
+    expect(s.layoutsOf(PrintDocType.ledger).first.id, 'builtin-ledger');
     expect(const DateFilter(from: null, to: null).isEmpty, isTrue);
     expect(DateFilter(from: DateTime(2025, 1, 2)).hasDate(DateTime(2025, 1, 1)), isFalse);
   });
@@ -1200,6 +1203,24 @@ void main() {
     await tester.tap(find.text('تایید').last);
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
+    // مشخصه filter and cost centers
+    await tester.tap(find.text('فیلتر مرکز هزینه(رکورد)'));
+    await tester.pumpAndSettle();
+    expect(find.text('انتخاب مرکز هزینه(رکورد)'), findsOneWidget);
+    await tester.tap(find.text('بازگشت').last);
+    await tester.pumpAndSettle();
+    // چاپ ▸ نمایش ▸ پرینت حساب opens the band report preview
+    await tester.tap(find.text('چاپ').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('نمایش  ◂'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('پرینت حساب با منقول جدیداز قبل'));
+    await tester.pumpAndSettle();
+    expect(find.text('Report-Preview'), findsOneWidget);
+    expect(find.textContaining('منقول از قبل'), findsWidgets);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('Close'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('بازگشت').last);
     await tester.pumpAndSettle();
     // other groups render too

@@ -9,6 +9,8 @@ import '../../data/models.dart';
 import '../../data/store.dart';
 import '../pages/vouchers_page.dart';
 import '../print.dart';
+import '../report/report_designer.dart';
+import '../report/report_render.dart';
 import '../shell.dart';
 import '../widgets/common.dart';
 import 'misc_dialogs.dart';
@@ -492,11 +494,17 @@ class _AccountSelector extends StatefulWidget {
 class _AccountSelectorState extends State<_AccountSelector> {
   late AccCat _cat = accCategories.expand((r) => r).firstWhere((c) => c.label == widget.category, orElse: () => accCategories[0][5]);
   final _search = TextEditingController();
+  final _codeSearch = TextEditingController();
   final _scroll = ScrollController();
   String? _sel;
+
+  static const double _bw = 190; // one button column on the left edge
+  static const double _bh = 36;
+  static const double _gap = 4;
+
+  Widget _fixed(Widget child) => SizedBox(width: _bw, height: _bh, child: child);
   int _side = 0; // 0 همه، 1 بدهکاران (آبی)، 2 بستانکاران (قرمز)
   bool _nonZero = false; // فیلتر
-  bool _byCode = false; // عنوان حساب / شناسه
   bool _sortByBalance = false; // مانده دفتر
   String? _kolFilter, _moeenFilter;
   int _code = 0;
@@ -505,11 +513,13 @@ class _AccountSelectorState extends State<_AccountSelector> {
   void initState() {
     super.initState();
     _search.addListener(() => setState(() {}));
+    _codeSearch.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
     _search.dispose();
+    _codeSearch.dispose();
     _scroll.dispose();
     super.dispose();
   }
@@ -523,8 +533,10 @@ class _AccountSelectorState extends State<_AccountSelector> {
       if (_nonZero && r.balance == 0) return false;
       if (_side == 1 && r.balance <= 0) return false;
       if (_side == 2 && r.balance >= 0) return false;
+      final code = normalizeDigits(_codeSearch.text.trim());
+      if (code.isNotEmpty && !r.code.startsWith(code)) return false;
       if (q.isEmpty) return true;
-      return _byCode ? r.code.toLowerCase().contains(q) : (r.name.toLowerCase().contains(q) || r.code.contains(q));
+      return r.name.toLowerCase().contains(q) || r.code.contains(q);
     }).toList();
     if (_sortByBalance) list.sort((a, b) => b.balance.compareTo(a.balance));
     return list;
@@ -717,7 +729,7 @@ class _AccountSelectorState extends State<_AccountSelector> {
     Widget sideBar(int side, int value, Color color) => InkWell(
           onTap: () => setState(() => _side = _side == side ? 0 : side),
           child: Container(
-            height: 30,
+            height: _bh,
             width: 220,
             padding: const EdgeInsets.symmetric(horizontal: 8),
             decoration: BoxDecoration(color: color, border: Border.all(color: Colors.black26)),
@@ -731,7 +743,7 @@ class _AccountSelectorState extends State<_AccountSelector> {
 
     Widget dd(String? value, List<String> items, String hint, ValueChanged<String?> on) => SizedBox(
           width: 210,
-          height: 32,
+          height: _bh,
           child: DropdownButtonFormField<String>(
             value: value,
             isExpanded: true,
@@ -776,68 +788,90 @@ class _AccountSelectorState extends State<_AccountSelector> {
               ]),
             const SizedBox(height: 6),
             // ---------------------------------------------------- filters and totals
-            Wrap(spacing: 8, runSpacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: [
-              _kb(_nonZero ? 'فیلتر ✓' : 'فیلتر', () => setState(() => _nonZero = !_nonZero), height: 66),
-              Column(mainAxisSize: MainAxisSize.min, children: [
-                Row(mainAxisSize: MainAxisSize.min, children: [
-                  _lbl('عنوان حساب'),
-                  dd(_kolFilter, kols, 'کل ها', (v) => setState(() {
-                        _kolFilter = v;
-                        _moeenFilter = null;
-                      })),
-                ]),
-                const SizedBox(height: 2),
-                Row(mainAxisSize: MainAxisSize.min, children: [
-                  _lbl('عنوان حساب'),
-                  dd(_moeenFilter, moeens, 'معین ها', (v) => setState(() => _moeenFilter = v)),
-                ]),
-              ]),
-              _kb('خالی', () {
-                _search.clear();
-                setState(() {
-                  _kolFilter = null;
-                  _moeenFilter = null;
-                  _side = 0;
-                  _nonZero = false;
-                });
-              }, height: 66),
-              Column(mainAxisSize: MainAxisSize.min, children: [
-                sideBar(1, debit, const Color(0xFF2346D8)),
-                const SizedBox(height: 2),
-                sideBar(2, credit, const Color(0xFFC62828)),
-              ]),
-              InkWell(
-                onTap: () => setState(() => _side = 0),
-                child: Container(
-                  width: 40,
-                  height: 34,
-                  color: Colors.black12,
-                  child: Icon(_side == 0 ? Icons.radio_button_checked : Icons.radio_button_off, size: 18),
+            Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+              Expanded(
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(children: [
+                      SizedBox(width: 90, child: _kb(_nonZero ? 'فیلتر ✓' : 'فیلتر', () => setState(() => _nonZero = !_nonZero), height: _bh * 2 + _gap)),
+                      const SizedBox(width: _gap),
+                      Column(mainAxisSize: MainAxisSize.min, children: [
+                        Row(mainAxisSize: MainAxisSize.min, children: [
+                          SizedBox(width: 90, height: _bh, child: _kb('عنوان حساب', () {}, color: const Color(0xFFF1F1F1))),
+                          const SizedBox(width: 2),
+                          dd(_kolFilter, kols, 'کل ها', (v) => setState(() {
+                                _kolFilter = v;
+                                _moeenFilter = null;
+                              })),
+                        ]),
+                        const SizedBox(height: _gap),
+                        Row(mainAxisSize: MainAxisSize.min, children: [
+                          SizedBox(width: 90, height: _bh, child: _kb('عنوان حساب', () {}, color: const Color(0xFFF1F1F1))),
+                          const SizedBox(width: 2),
+                          dd(_moeenFilter, moeens, 'معین ها', (v) => setState(() => _moeenFilter = v)),
+                        ]),
+                      ]),
+                      const SizedBox(width: _gap),
+                      SizedBox(
+                        width: 80,
+                        child: _kb('خالی', () {
+                          _search.clear();
+                          _codeSearch.clear();
+                          setState(() {
+                            _kolFilter = null;
+                            _moeenFilter = null;
+                            _side = 0;
+                            _nonZero = false;
+                          });
+                        }, height: _bh * 2 + _gap),
+                      ),
+                      const SizedBox(width: _gap),
+                      Column(mainAxisSize: MainAxisSize.min, children: [
+                        sideBar(1, debit, const Color(0xFF2346D8)),
+                        const SizedBox(height: _gap),
+                        sideBar(2, credit, const Color(0xFFC62828)),
+                      ]),
+                      const SizedBox(width: _gap),
+                      InkWell(
+                        onTap: () => setState(() => _side = 0),
+                        child: Container(
+                          width: 44,
+                          height: _bh,
+                          color: Colors.black12,
+                          child: Icon(_side == 0 ? Icons.radio_button_checked : Icons.radio_button_off, size: 18),
+                        ),
+                      ),
+                    ]),
+                  ),
                 ),
               ),
+              const SizedBox(width: _gap),
+              // buttons pinned to the left edge, all the same size
               Column(mainAxisSize: MainAxisSize.min, children: [
                 Row(mainAxisSize: MainAxisSize.min, children: [
-                  _kb('رویت امانی های پرداختی', () => showComingSoon(context, 'رویت امانی های پرداختی')),
-                  const SizedBox(width: 4),
-                  _kb('اطلاعات دفتر', () => _info(cur)),
-                  const SizedBox(width: 4),
-                  _kb('افزودن', _add),
+                  _fixed(_kb('رویت امانی های پرداختی', () => showComingSoon(context, 'رویت امانی های پرداختی'), height: _bh)),
+                  const SizedBox(width: _gap),
+                  _fixed(_kb('اطلاعات دفتر', () => _info(cur), height: _bh)),
+                  const SizedBox(width: _gap),
+                  _fixed(_kb('افزودن', _add, height: _bh)),
                 ]),
-                const SizedBox(height: 2),
+                const SizedBox(height: _gap),
                 Row(mainAxisSize: MainAxisSize.min, children: [
-                  _kb('رویت امانی های دریافتی', () => showComingSoon(context, 'رویت امانی های دریافتی'), key: 'F2'),
-                  const SizedBox(width: 4),
-                  _kb('رویت حساب', () => _view(cur), key: 'F3', color: const Color(0xFFFFE0B2)),
-                  const SizedBox(width: 4),
-                  _kb('حذف', () => _delete(s, cur)),
+                  _fixed(_kb('رویت امانی های دریافتی', () => showComingSoon(context, 'رویت امانی های دریافتی'), key: 'F2', height: _bh)),
+                  const SizedBox(width: _gap),
+                  _fixed(_kb('رویت حساب', () => _view(cur), key: 'F3', color: const Color(0xFFFFE0B2), height: _bh)),
+                  const SizedBox(width: _gap),
+                  _fixed(_kb('حذف', () => _delete(s, cur), height: _bh)),
                 ]),
               ]),
             ]),
-            const SizedBox(height: 6),
+            const SizedBox(height: _gap),
             Row(children: [
               _lbl('کد دفتر:'),
               Container(
-                height: 34,
+                height: _bh,
                 decoration: BoxDecoration(color: Colors.white, border: Border.all(color: Colors.black26), borderRadius: BorderRadius.circular(4)),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   SizedBox(width: 70, child: Text('$_code', textAlign: TextAlign.center)),
@@ -851,7 +885,7 @@ class _AccountSelectorState extends State<_AccountSelector> {
               _lbl('جستجو:'),
               Expanded(
                 child: SizedBox(
-                  height: 36,
+                  height: _bh,
                   child: TextField(
                     controller: _search,
                     autofocus: true,
@@ -860,20 +894,31 @@ class _AccountSelectorState extends State<_AccountSelector> {
                   ),
                 ),
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: _gap),
               Tooltip(
                 message: 'نام یا کد دفتر را تایپ کنید؛ Enter یا F3 حساب را باز می‌کند',
-                child: _kb('?', () {}, height: 36),
+                child: SizedBox(width: 40, child: _kb('?', () {}, height: _bh)),
               ),
-              const SizedBox(width: 6),
-              _kb(_sortByBalance ? 'مانده دفتر ↓' : 'مانده دفتر', () => setState(() => _sortByBalance = !_sortByBalance)),
-              const SizedBox(width: 6),
-              _kb(_byCode ? 'شناسه' : 'عنوان حساب', () => setState(() => _byCode = !_byCode), color: const Color(0xFFF1F1F1)),
-              const SizedBox(width: 6),
-              _kb('تنظیم جمع مبالغ اسناد', () {
+              const SizedBox(width: _gap),
+              SizedBox(width: 120, child: _kb(_sortByBalance ? 'مانده دفتر ↓' : 'مانده دفتر', () => setState(() => _sortByBalance = !_sortByBalance), height: _bh)),
+              const SizedBox(width: _gap),
+              // pinned to the left edge, aligned with the button columns above
+              _fixed(_kb('عنوان حساب', () => _codeSearch.clear(), color: const Color(0xFFF1F1F1), height: _bh)),
+              const SizedBox(width: _gap),
+              _fixed(SizedBox(
+                height: _bh,
+                child: TextField(
+                  controller: _codeSearch,
+                  textDirection: TextDirection.ltr,
+                  decoration: const InputDecoration(isDense: true, filled: true, fillColor: Colors.white, hintText: 'شناسه'),
+                  onSubmitted: (_) => _ok(rows),
+                ),
+              )),
+              const SizedBox(width: _gap),
+              _fixed(_kb('تنظیم جمع مبالغ اسناد', () {
                 setState(() {});
                 toast(context, 'جمع مبالغ اسناد دوباره محاسبه شد');
-              }),
+              }, height: _bh)),
             ]),
             const SizedBox(height: 6),
             // ---------------------------------------------------- grid
@@ -936,15 +981,20 @@ class _AccountSelectorState extends State<_AccountSelector> {
               ),
             ),
             const SizedBox(height: 6),
-            Wrap(spacing: 6, runSpacing: 6, children: [
-              _kb('رویت امانی های دریافتی پرداختی', () => showComingSoon(context, 'رویت امانی های دریافتی پرداختی')),
-              _kb('یادداشت کالا', () => _notebook(s, cur)),
-              _kb('رویت مراکز هزینه(رکورد)', () => showComingSoon(context, 'رویت مراکز هزینه(رکورد)')),
-              _kb('رویت مراکز دفاتر مربوطه', () => _centers(s, cur)),
-              _kb('رویت حسابهای مربوطه', () => _related(s, cur)),
-              _kb('رویت اقساط مربوطه', () => _installments(s, cur)),
-              _kb('تایید', () => _ok(rows), key: 'F9', color: const Color(0xFFD7F2D7)),
-              _kb('انصراف', () => Navigator.pop(context), key: 'F10', color: const Color(0xFFFBE0E0)),
+            Row(children: [
+              for (final (i, b) in [
+                _kb('رویت امانی های دریافتی پرداختی', () => showComingSoon(context, 'رویت امانی های دریافتی پرداختی'), height: _bh),
+                _kb('یادداشت کالا', () => _notebook(s, cur), height: _bh),
+                _kb('رویت مراکز هزینه(رکورد)', () => showCostCenterPicker(context), height: _bh),
+                _kb('رویت مراکز دفاتر مربوطه', () => _centers(s, cur), height: _bh),
+                _kb('رویت حسابهای مربوطه', () => _related(s, cur), height: _bh),
+                _kb('رویت اقساط مربوطه', () => _installments(s, cur), height: _bh),
+                _kb('تایید', () => _ok(rows), key: 'F9', color: const Color(0xFFD7F2D7), height: _bh),
+                _kb('انصراف', () => Navigator.pop(context), key: 'F10', color: const Color(0xFFFBE0E0), height: _bh),
+              ].indexed) ...[
+                if (i > 0) const SizedBox(width: _gap),
+                Expanded(child: b),
+              ],
             ]),
           ]),
         ),
@@ -1012,13 +1062,17 @@ class _LedgerState extends State<_Ledger> {
   final _hidden = <int>{};
   final _scroll = ScrollController();
   bool _printNotes = false, _printSpec = false;
+  CostFilter? _cost; // فیلتر مرکز هزینه(رکورد)
+  final _specCtl = TextEditingController();
+  String? _specKey;
 
-  static const _types = ['تمامی اسناد', 'فاکتورها', 'دریافت و پرداخت', 'اسناد حسابداری', 'سند افتتاحیه'];
+  static const _types = ['تمامی اسناد', 'بدون مشخصه', 'با مشخصه'];
   static const _cols = ['ردیف', 'رنگ', 'ش س', 'تاریخ', 'شرح سند', 'بدهکار', 'بستانکار', 'ت', 'مانده', 'شماره ثابت'];
   static const _w = [56.0, 44.0, 70.0, 96.0, 0.0, 130.0, 130.0, 36.0, 140.0, 80.0];
 
   @override
   void dispose() {
+    _specCtl.dispose();
     _desc.dispose();
     _scroll.dispose();
     super.dispose();
@@ -1061,25 +1115,30 @@ class _LedgerState extends State<_Ledger> {
     return d.isEmpty ? p.docLabel : (d.contains(p.docLabel) ? d : '${p.docLabel} — $d');
   }
 
-  bool _typeOk(Posting p) => switch (_type) {
-        'فاکتورها' => p.docKey?.startsWith('inv:') == true,
-        'دریافت و پرداخت' => p.docKey?.startsWith('txn:') == true,
-        'اسناد حسابداری' => p.docKey?.startsWith('v:') == true,
-        'سند افتتاحیه' => p.isOpening,
-        _ => true,
-      };
+  bool _typeOk(AppStore s, Posting p) {
+    final spec = p.docKey == null ? '' : (s.docMeta[p.docKey]?.spec ?? '');
+    return switch (_type) {
+      'بدون مشخصه' => spec.isEmpty,
+      'با مشخصه' => spec.isNotEmpty,
+      _ => true,
+    };
+  }
 
   List<_LRow> _shown(AppStore s, List<_LRow> all) {
     final q = normalizeDigits(_descApplied.trim()).toLowerCase();
     return all.where((r) {
       final p = r.p;
-      if (!_typeOk(p)) return false;
+      if (!_typeOk(s, p)) return false;
       if (_onlyMarked && !_isMarked(r)) return false;
       final meta = p.docKey == null ? null : s.docMeta[p.docKey];
       if (_center != '*') {
         final c = meta?.center ?? '';
         if (_center == '-' && c.isNotEmpty) return false;
         if (_center != '-' && c != _center) return false;
+      }
+      if (_cost != null) {
+        final cc = meta?.costCenter ?? '';
+        if (cc.isEmpty ? !_cost!.none : !_cost!.centers.contains(cc)) return false;
       }
       if (_date.color != null && (meta?.color ?? 0) != _colorValue(_date.color!)) return false;
       if (!_date.hasDate(_date.onModified && meta != null && meta.modifiedAt > 0 ? DateTime.fromMillisecondsSinceEpoch(meta.modifiedAt) : p.date)) return false;
@@ -1266,26 +1325,79 @@ class _LedgerState extends State<_Ledger> {
     ];
   }
 
-  void _print(AppStore s, List<_LRow> all, List<_LRow> shown, {bool carried = false}) {
-    final rows = [for (final r in shown) _cells(s, r)];
-    if (carried && shown.isNotEmpty) {
-      final i = all.indexOf(shown.first);
+  /// Data of «پرینت حساب»; with [carried] the first row is «منقول از قبل».
+  ReportData _reportData(AppStore s, List<_LRow> all, List<_LRow> shown, {bool carried = false}) {
+    final a = widget.acc;
+    final st = s.settings;
+    final rows = <Map<String, String>>[];
+    if (carried) {
+      final i = shown.isEmpty ? -1 : all.indexOf(shown.first);
       final before = i <= 0 ? 0 : all[i - 1].balance;
-      rows.insert(0, ['', '', '', '', 'منقول از قبل', before > 0 ? groupDigits(before) : '', before < 0 ? groupDigits(-before) : '',
-        before > 0 ? 'بد' : (before < 0 ? 'بس' : '-'), groupDigits(before.abs()), '']);
+      rows.add({
+        'ردیف': '',
+        'ش س': '',
+        'تاریخ سند': '',
+        'شرح سند': 'منقول از قبل',
+        'بدهکار': before > 0 ? groupDigits(before) : '0',
+        'بستانکار': before < 0 ? groupDigits(-before) : '0',
+        'مانده ردیف': groupDigits(before.abs()),
+        'ت': before > 0 ? 'بد' : (before < 0 ? 'بس' : '-'),
+        'شماره ثابت': '',
+      });
     }
-    final d = shown.fold<int>(0, (a, r) => a + r.p.debit);
-    final c = shown.fold<int>(0, (a, r) => a + r.p.credit);
-    printTable(
-      store: s,
-      title: 'صورت حساب ${widget.acc.name}',
-      subtitle: '${widget.acc.kol} / ${widget.acc.moeen} — کد ${widget.acc.code}',
-      headers: _cols,
+    for (final r in shown) {
+      final c = _cells(s, r);
+      rows.add({
+        'ردیف': c[0],
+        'ش س': c[2],
+        'تاریخ سند': c[3],
+        'شرح سند': c[4],
+        'بدهکار': c[5].isEmpty ? '0' : c[5],
+        'بستانکار': c[6].isEmpty ? '0' : c[6],
+        'ت': c[7],
+        'مانده ردیف': c[8],
+        'شماره ثابت': c[9],
+      });
+    }
+    final d = shown.fold<int>(0, (x, r) => x + r.p.debit);
+    final c = shown.fold<int>(0, (x, r) => x + r.p.credit);
+    return ReportData(
+      title: 'گزارش حساب ${a.name}',
+      fields: {
+        'نام حساب': a.name,
+        'کد حساب': a.code,
+        'عنوان کل': a.kol,
+        'عنوان معین': a.moeen,
+        'نام فروشگاه': st.businessName.isEmpty ? st.ownerName : st.businessName,
+        'تاریخ': jFormat(DateTime.now()),
+        'از تاریخ': _date.from == null ? '' : jFormat(_date.from!),
+        'تا تاریخ': _date.to == null ? '' : jFormat(_date.to!),
+        'جمع بدهکار': groupDigits(d),
+        'جمع بستانکار': groupDigits(c),
+        'مانده': groupDigits((d - c).abs()),
+        'تشخیص': d - c > 0 ? 'بد' : (d - c < 0 ? 'بس' : '-'),
+      },
       rows: rows,
-      numeric: const {5, 6, 8},
-      footer: ['', '', '', '', 'جمع', groupDigits(d), groupDigits(c), d - c >= 0 ? 'بد' : 'بس', groupDigits((d - c).abs()), ''],
-      fileName: 'ledger',
     );
+  }
+
+  void _print(AppStore s, List<_LRow> all, List<_LRow> shown, {bool carried = false}) {
+    showReportPreview(context, s.defaultLayout(PrintDocType.ledger), _reportData(s, all, shown, carried: carried), fileName: 'ledger');
+  }
+
+  /// طراحی ▸ — edits the account print layout in the band designer.
+  Future<void> _design(AppStore s, List<_LRow> all, List<_LRow> shown, {bool create = false}) async {
+    final cur = s.defaultLayout(PrintDocType.ledger);
+    final base = create
+        ? (cur.copy()
+          ..id = newId()
+          ..name = 'طرح ${s.layoutsOf(PrintDocType.ledger).length + 1}')
+        : cur;
+    final r = await showReportDesigner(context, base, _reportData(s, all, shown));
+    if (r != null) {
+      s.saveLayout(r);
+      s.setDefaultLayout(r);
+    }
   }
 
   void _excel(AppStore s, List<_LRow> shown) {
@@ -1316,7 +1428,8 @@ class _LedgerState extends State<_Ledger> {
       const PopupMenuItem(value: 'fx', child: Text('گزارش از گردش ارزی')),
     ]);
     if (!mounted || sub == null) return;
-    if (top == 'design' || sub == 'fx') return showComingSoon(context, sub == 'fx' ? 'گزارش از گردش ارزی' : 'طراحی پرینت حساب');
+    if (sub == 'fx') return showComingSoon(context, 'گزارش از گردش ارزی');
+    if (top == 'design') return _design(s, all, shown, create: sub == 'new');
     _print(s, all, shown, carried: sub == 'carried');
   }
 
@@ -1333,7 +1446,11 @@ class _LedgerState extends State<_Ledger> {
     final bal = debit - credit;
     final meta = cur?.p.docKey == null ? null : s.docMeta[cur!.p.docKey];
     final curInv = cur?.p.docKey?.startsWith('inv:') == true ? s.invoices.where((i) => 'inv:${i.id}' == cur!.p.docKey).firstOrNull : null;
-    final spec = curInv?.info['babat'] ?? meta?.archive ?? '';
+    final curKey = cur?.p.docKey;
+    if (curKey != _specKey) {
+      _specKey = curKey;
+      _specCtl.text = meta?.spec ?? '';
+    }
     final notes = cur == null ? (s.notebooks[a.key] ?? '') : _descOf(s, cur.p) + (curInv != null && curInv.note.isNotEmpty ? '\n${curInv.note}' : '');
     final visible = [for (var i = 0; i < _cols.length; i++) if (!_hidden.contains(i)) i];
 
@@ -1446,7 +1563,15 @@ class _LedgerState extends State<_Ledger> {
                       ]),
                       const SizedBox(width: 6),
                       Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        _kb('فیلتر مرکز هزینه(رکورد)', () => showComingSoon(context, 'فیلتر مرکز هزینه(رکورد)'), height: 30),
+                        _kb(_cost == null ? 'فیلتر مرکز هزینه(رکورد)' : 'فیلتر مرکز هزینه(رکورد) ✓', () async {
+                          final r = await showCostCenterPicker(context, current: _cost, select: true);
+                          if (r != null && mounted) {
+                            setState(() {
+                              _cost = r.isAll ? null : r;
+                              _sel = null;
+                            });
+                          }
+                        }, height: 30, color: _cost == null ? null : const Color(0xFFFFE082)),
                         const SizedBox(height: 3),
                         Row(mainAxisSize: MainAxisSize.min, children: [
                           _kb('گزینه های جستجو', () => _searchOptions(s, rows), key: 'F8', height: 30),
@@ -1574,12 +1699,16 @@ class _LedgerState extends State<_Ledger> {
                     Row(children: [
                       const SizedBox(width: 70, child: Text('مشخصه:')),
                       Expanded(
-                        child: Container(
-                          height: 30,
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          decoration: BoxDecoration(color: Colors.white, border: Border.all(color: Colors.black26)),
-                          child: Text(spec, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        child: SizedBox(
+                          height: 32,
+                          child: TextField(
+                            controller: _specCtl,
+                            enabled: curKey != null,
+                            decoration: const InputDecoration(isDense: true, filled: true, fillColor: Colors.white, contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
+                            onChanged: (v) {
+                              if (curKey != null) s.updateDocMeta(curKey, (m) => m.spec = v.trim());
+                            },
+                          ),
                         ),
                       ),
                     ]),
@@ -1633,4 +1762,121 @@ class _LedgerState extends State<_Ledger> {
       ),
     );
   }
+}
+
+// ================================================================ انتخاب مرکز هزینه(رکورد)
+
+class CostFilter {
+  final Set<String> centers;
+  final bool none; // ردیف های بدون مرکز هزینه
+  final bool isAll;
+  const CostFilter(this.centers, {this.none = false, this.isAll = false});
+}
+
+/// «انتخاب مرکز هزینه(رکورد)». With [select] the choice is returned on تایید.
+Future<CostFilter?> showCostCenterPicker(BuildContext context, {CostFilter? current, bool select = false}) {
+  final s = StoreScope.read(context);
+  final all = {for (final m in s.docMeta.values) if (m.costCenter.isNotEmpty) m.costCenter}.toList()..sort();
+  final chosen = <String>{...(current?.centers ?? (current == null ? all.toSet() : const <String>{}))};
+  var none = current?.none ?? true;
+  final search = TextEditingController();
+  return showDialog<CostFilter>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(builder: (ctx, set) {
+      final q = normalizeDigits(search.text.trim());
+      final shown = all.where((c) => q.isEmpty || normalizeDigits(c).contains(q)).toList();
+      void ok() => Navigator.pop(ctx, CostFilter(chosen, none: none, isAll: chosen.length == all.length && none));
+      return CallbackShortcuts(
+        bindings: {
+          const SingleActivator(LogicalKeyboardKey.f9): ok,
+          const SingleActivator(LogicalKeyboardKey.f10): () => Navigator.pop(ctx),
+        },
+        child: Dialog(
+          backgroundColor: _sky,
+          child: SizedBox(
+            width: 380,
+            height: 520,
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              HeaderBand(
+                padding: const EdgeInsets.fromLTRB(16, 6, 6, 6),
+                child: Row(children: [
+                  const Expanded(child: Text('انتخاب مرکز هزینه(رکورد)', style: TextStyle(fontWeight: FontWeight.w800, color: Colors.white))),
+                  IconButton(onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close_rounded)),
+                ]),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Row(children: [
+                  Expanded(child: _kb('همه', () => set(() {
+                        chosen.addAll(all);
+                        none = true;
+                      }), icon: Icons.check_rounded, height: 38)),
+                  const SizedBox(width: 4),
+                  Expanded(child: _kb('هیچ', () => set(() {
+                        chosen.clear();
+                        none = false;
+                      }), icon: Icons.check_rounded, height: 38)),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    flex: 2,
+                    child: _kb('ردیف های بدون مرکز هزینه', () => set(() => none = !none),
+                        color: none ? const Color(0xFFFFE082) : null, height: 38),
+                  ),
+                ]),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: SizedBox(
+                  height: 34,
+                  child: TextField(
+                    controller: search,
+                    onChanged: (_) => set(() {}),
+                    decoration: const InputDecoration(isDense: true, filled: true, fillColor: Colors.white),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(color: Colors.white, border: Border.all(color: _skyDark)),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                    Container(
+                      color: const Color(0xFFEFF5FC),
+                      child: Row(children: [_hcell('انتخاب', 70), _hcell('نام مرکز هزینه(رکورد)', 0)]),
+                    ),
+                    Expanded(
+                      child: shown.isEmpty
+                          ? const Center(child: Text('مرکز هزینه ای ثبت نشده', style: TextStyle(color: Colors.black45)))
+                          : ListView(children: [
+                              for (final c in shown)
+                                InkWell(
+                                  onTap: () => set(() => chosen.contains(c) ? chosen.remove(c) : chosen.add(c)),
+                                  child: SizedBox(
+                                    height: 32,
+                                    child: Row(children: [
+                                      _cell(Checkbox(value: chosen.contains(c), onChanged: (v) => set(() => v == true ? chosen.add(c) : chosen.remove(c))), 70),
+                                      _cell(Text(c), 0, align: Alignment.centerRight),
+                                    ]),
+                                  ),
+                                ),
+                            ]),
+                    ),
+                  ]),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Row(children: [
+                  if (select) Expanded(child: _kb('تایید', ok, key: 'F9', icon: Icons.check_rounded, color: const Color(0xFFD7F2D7), height: 38)),
+                  if (select) const SizedBox(width: 6),
+                  Expanded(child: _kb('بازگشت', () => Navigator.pop(ctx), key: 'F10', icon: Icons.reply_rounded, height: 38)),
+                ]),
+              ),
+            ]),
+          ),
+        ),
+      );
+    }),
+  );
 }

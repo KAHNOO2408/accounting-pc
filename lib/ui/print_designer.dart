@@ -44,6 +44,7 @@ class PrintDoc {
 String defaultPrintTitle(Invoice inv, PrintDocType t) => switch (t) {
       PrintDocType.warehouse => inv.kind.stockSign > 0 ? 'رسید انبار' : 'حواله انبار',
       PrintDocType.barcode => 'برچسب بارکد',
+      PrintDocType.ledger => 'گزارش حساب',
       PrintDocType.invoice => inv.proforma ? 'پیش‌فاکتور فروش' : inv.kind.label,
     };
 
@@ -474,7 +475,7 @@ Future<void> showPrintTypeMenu(BuildContext anchor, Future<Invoice?> Function() 
     context: anchor,
     position: pos,
     items: [
-      for (final x in PrintDocType.values)
+      for (final x in PrintDocType.values.where((x) => x != PrintDocType.ledger))
         PopupMenuItem(
           value: x,
           child: Row(children: [
@@ -483,6 +484,7 @@ Future<void> showPrintTypeMenu(BuildContext anchor, Future<Invoice?> Function() 
                 PrintDocType.invoice => Icons.receipt_long_outlined,
                 PrintDocType.warehouse => Icons.inventory_2_outlined,
                 PrintDocType.barcode => Icons.qr_code_2_rounded,
+                PrintDocType.ledger => Icons.receipt_long_outlined,
               },
               size: 18,
             ),

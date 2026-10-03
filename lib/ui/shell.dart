@@ -126,7 +126,7 @@ String? _firstOf(AppStore s, AccountType t) {
   return null;
 }
 
-final _accTable = _Item('جدول و مشاهده حساب‌ها', Icons.table_view_outlined, _slate,
+final _accTable = _Item('جدول و مشاهده حساب‌ها', Icons.table_view_outlined, _blue,
     shortcut: 'Ctrl+A', activator: _k(LogicalKeyboardKey.keyA, ctrl: true), run: (c, _) => showAccountSelector(c));
 
 /// Tabs and button labels of the ribbon (used by «دسترسی دکمه ها»).
@@ -237,6 +237,7 @@ final List<_Tab> _tabs = [
     _Group('مشاهده حساب‌ها', [_accTable]),
   ]),
   _Tab('مالی', [
+    _Group('مشاهده حساب‌ها', [_accTable]),
     _Group('عملیات نقدی', [
       _Item('دریافت نقدی', Icons.payments_outlined, _green,
           shortcut: 'F1',
@@ -311,7 +312,6 @@ final List<_Tab> _tabs = [
           run: _page(AppPage.cheques,
               dir: ChequeDirection.received, status: ChequeStatus.endorsed, hint: 'روی چک، منوی ⋮ ← «پس گرفتن»')),
       _Item('معرفی دسته چک', Icons.menu_book_outlined, _violet, run: (c, _) => showChequeBooksWindow(c)),
-      _accTable,
     ]),
   ]),
   _Tab('مالی ویژه', [

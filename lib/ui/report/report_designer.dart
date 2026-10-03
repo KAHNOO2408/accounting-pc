@@ -99,7 +99,7 @@ class _DesignerState extends State<_Designer> {
           Text('درج فیلد:', style: Theme.of(ctx).textTheme.labelMedium),
           const SizedBox(height: 6),
           Wrap(spacing: 4, runSpacing: 4, children: [
-            for (final f in [...invoiceFields, ...rowFields])
+            for (final f in fieldsFor(l.type))
               ActionChip(
                 label: Text(f, style: const TextStyle(fontSize: 11)),
                 onPressed: () {
@@ -392,7 +392,7 @@ class _DesignerState extends State<_Designer> {
                   tooltip: 'افزودن فیلد',
                   icon: const Icon(Icons.data_object_rounded),
                   itemBuilder: (_) => [
-                    for (final f in [...invoiceFields, ...rowFields]) PopupMenuItem(value: f, child: Text(f)),
+                    for (final f in fieldsFor(l.type)) PopupMenuItem(value: f, child: Text(f)),
                   ],
                   onSelected: (f) => _add('text', text: '{$f}'),
                 ),

@@ -1076,13 +1076,14 @@ class ChequeLeaf {
 // ---------------------------------------------------------------------------
 
 /// Kinds of printouts chosen from «تعیین نوع چاپ».
-enum PrintDocType { invoice, warehouse, barcode }
+enum PrintDocType { invoice, warehouse, barcode, ledger }
 
 extension PrintDocTypeX on PrintDocType {
   String get label => switch (this) {
         PrintDocType.invoice => 'چاپ فاکتور',
         PrintDocType.warehouse => 'چاپ حواله انبار',
         PrintDocType.barcode => 'چاپ بارکد',
+        PrintDocType.ledger => 'پرینت حساب',
       };
 }
 
@@ -1430,7 +1431,15 @@ class DocMeta {
   String center;
   String archive;
 
+  /// مشخصه of the document (shown in «مشاهده اسناد»).
+  String spec;
+
+  /// مرکز هزینه (رکورد).
+  String costCenter;
+
   DocMeta({
+    this.spec = '',
+    this.costCenter = '',
     this.number = 0,
     this.fixed = 0,
     this.locked = false,
@@ -1454,6 +1463,8 @@ class DocMeta {
         if (followDesc.isNotEmpty) 'fs': followDesc,
         if (center.isNotEmpty) 'ce': center,
         if (archive.isNotEmpty) 'a': archive,
+        if (spec.isNotEmpty) 'sp': spec,
+        if (costCenter.isNotEmpty) 'cc': costCenter,
       };
 
   factory DocMeta.fromJson(Map<String, dynamic> j) => DocMeta(
@@ -1467,5 +1478,7 @@ class DocMeta {
         followDesc: _s(j['fs']),
         center: _s(j['ce']),
         archive: _s(j['a']),
+        spec: _s(j['sp']),
+        costCenter: _s(j['cc']),
       );
 }

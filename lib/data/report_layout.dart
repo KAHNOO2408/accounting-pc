@@ -301,4 +301,56 @@ ReportLayout defaultWarehouseLayout() {
   );
 }
 
-ReportLayout defaultLayoutFor(PrintDocType t) => t == PrintDocType.warehouse ? defaultWarehouseLayout() : defaultInvoiceLayout();
+ReportLayout defaultLayoutFor(PrintDocType t) => switch (t) {
+      PrintDocType.warehouse => defaultWarehouseLayout(),
+      PrintDocType.ledger => defaultLedgerLayout(),
+      _ => defaultInvoiceLayout(),
+    };
+
+/// Placeholders of «پرینت حساب».
+const ledgerFields = ['نام حساب', 'کد حساب', 'عنوان کل', 'عنوان معین', 'نام فروشگاه', 'تاریخ', 'از تاریخ', 'تا تاریخ', 'صفحه', 'جمع بدهکار', 'جمع بستانکار', 'مانده', 'تشخیص'];
+const ledgerRowFields = ['ردیف', 'ش س', 'تاریخ سند', 'شرح سند', 'بدهکار', 'بستانکار', 'مانده ردیف', 'ت', 'شماره ثابت'];
+
+/// Fields offered by the designer for a layout type.
+List<String> fieldsFor(PrintDocType t) => t == PrintDocType.ledger ? [...ledgerFields, ...ledgerRowFields] : [...invoiceFields, ...rowFields];
+
+/// «گزارش حساب» as Sakan prints it (A4).
+ReportLayout defaultLedgerLayout() {
+  const h = BandKind.header, c = BandKind.columns, d = BandKind.data, f1 = BandKind.footer1, f2 = BandKind.footer2;
+  // content width 194, columns from right to left
+  const cols = [
+    (184.0, 10.0, 'ردیف', '{ردیف}'),
+    (164.0, 20.0, 'تاریخ', '{تاریخ سند}'),
+    (98.0, 66.0, 'شرح سند', '{شرح سند}'),
+    (72.0, 26.0, 'بدهکار', '{بدهکار}'),
+    (46.0, 26.0, 'بستانکار', '{بستانکار}'),
+    (12.0, 34.0, 'مانده', '{مانده ردیف}'),
+    (0.0, 12.0, 'ت', '{ت}'),
+  ];
+  return ReportLayout(
+    id: 'builtin-ledger',
+    type: PrintDocType.ledger,
+    name: 'طرح ۱',
+    pageW: 210,
+    pageH: 297,
+    margin: 8,
+    bandHeights: {h: 26, c: 8, d: 9, f1: 9, f2: 6},
+    items: [
+      _t(h, 0, 0, 194, 24, '', border: Sides.all),
+      _t(h, 80, 2, 112, 8, 'گزارش حساب:   {نام حساب}', fs: 13, bold: true),
+      _t(h, 120, 11, 72, 6, 'Page {صفحه}', fs: 11, align: 'right'),
+      _t(h, 2, 2, 70, 7, '{نام فروشگاه}', fs: 12, align: 'left'),
+      _t(h, 2, 10, 70, 6, 'تاریخ: {تاریخ}', fs: 9, align: 'left'),
+      _t(h, 80, 17, 112, 6, '{عنوان کل} / {عنوان معین}   کد: {کد حساب}', fs: 9),
+      for (final col in cols) _t(c, col.$1, 0, col.$2, 8, col.$3, fs: 10, bold: true, align: 'center', border: Sides.all),
+      for (final col in cols)
+        _t(d, col.$1, 0, col.$2, 9, col.$4,
+            fs: col.$3 == 'شرح سند' ? 8 : 9, align: col.$3 == 'شرح سند' ? 'right' : 'center', border: Sides.all),
+      _t(f1, 98, 0, 96, 9, 'جمع', fs: 10, bold: true, align: 'center', border: Sides.all),
+      _t(f1, 72, 0, 26, 9, '{جمع بدهکار}', fs: 9, bold: true, align: 'center', border: Sides.all),
+      _t(f1, 46, 0, 26, 9, '{جمع بستانکار}', fs: 9, bold: true, align: 'center', border: Sides.all),
+      _t(f1, 12, 0, 34, 9, '{مانده}', fs: 9, bold: true, align: 'center', border: Sides.all),
+      _t(f1, 0, 0, 12, 9, '{تشخیص}', fs: 9, bold: true, align: 'center', border: Sides.all),
+    ],
+  );
+}
