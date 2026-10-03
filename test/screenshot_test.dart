@@ -74,5 +74,20 @@ void main() {
     await tester.tap(find.text('رویت حساب'));
     await tester.pumpAndSettle();
     await shot(tester, '09-account-ledger');
+
+    Future<void> win(String tab, String item, String name) async {
+      await open(AppPage.home, name, tab: tab);
+      await tester.ensureVisible(find.text(item).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(item).first);
+      await tester.pumpAndSettle();
+      await shot(tester, name);
+    }
+
+    await win('متفرقه', 'کدبندی دفاتر کل و معین', '10-chart-coding');
+    await win('متفرقه', 'سطل بازیافت', '11-recycle-bin');
+    await win('متفرقه', 'معرفی دفاتر مالی', '12-books');
+    await win('گزارشات', 'مدیریت گزارشات', '13-report-files');
+    await win('گزارشات', 'گزارش از گروه مراکز دفتر', '14-center-report');
   });
 }
