@@ -11,6 +11,7 @@ import 'package:taraz/data/storage.dart';
 import 'package:taraz/data/store.dart';
 import 'package:taraz/main.dart';
 import 'package:taraz/ui/dialogs/composite_dialogs.dart';
+import 'package:taraz/ui/dialogs/invoice_editor.dart';
 import 'package:taraz/ui/dialogs/price_dialog.dart';
 import 'package:taraz/ui/print_designer.dart';
 import 'package:taraz/ui/shell.dart';
@@ -1082,5 +1083,32 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('گزارش پویا — اخطارهای ورودی'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('F5 in the invoice form saves and prints without the financial window', (tester) async {
+    tester.view.physicalSize = const Size(1600, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final s = _tempStore();
+    s.completeSetup(ownerName: 'Ali');
+    final p = Person(id: newId(), name: 'Reza');
+    s.upsertPerson(p);
+    final prod = Product(id: newId(), name: 'Cable', sellPrice: 50, openingQty: 5);
+    s.upsertProduct(prod);
+    final inv = Invoice(id: newId(), kind: InvoiceKind.sale, number: 7, date: DateTime.now(), personId: p.id,
+        lines: [InvoiceLine(productId: prod.id, qty: 1, unitPrice: 50)]);
+    s.saveInvoice(inv);
+    await tester.pumpWidget(TarazApp(store: s));
+    await tester.pumpAndSettle();
+    final ctx = tester.element(find.text('خرید و فروش').first);
+    showInvoiceEditor(ctx, edit: inv);
+    await tester.pumpAndSettle();
+    expect(find.text('تعیین نوع چاپ'), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.f5);
+    await tester.pumpAndSettle();
+    expect(find.text('بدهی قبلی'), findsNothing);
+    expect(find.text('تعیین نوع چاپ'), findsNothing);
+    expect(tester.takeException(), isNull);
+    expect(s.invoices.length, 1);
   });
 }

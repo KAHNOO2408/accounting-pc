@@ -554,7 +554,9 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   /// تایید و چاپ — save, then show the printout.
   Future<void> _saveAndPrint(List<PrintDocType> types) async {
     final nav = Navigator.of(context);
-    final inv = await _save(close: false);
+    // تایید و چاپ only saves and prints; the financial window opens only for
+    // a متفرقه invoice, which must be settled before it can be saved.
+    final inv = await _save(close: false, settle: _person == null);
     if (inv == null || !mounted) return;
     nav.pop();
     for (final t in types) {
