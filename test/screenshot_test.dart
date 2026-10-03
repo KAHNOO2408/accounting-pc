@@ -66,5 +66,13 @@ void main() {
     await tester.tap(find.text('فاکتور فروش').first);
     await tester.pumpAndSettle();
     await shot(tester, '06-sale-invoice');
+
+    await open(AppPage.home, '07-finance-tab', tab: 'مالی');
+    await tester.tap(find.text('جدول و مشاهده حساب‌ها').first);
+    await tester.pumpAndSettle();
+    await shot(tester, '08-accounts-selector');
+    await tester.tap(find.text('رویت حساب'));
+    await tester.pumpAndSettle();
+    await shot(tester, '09-account-ledger');
   });
 }
