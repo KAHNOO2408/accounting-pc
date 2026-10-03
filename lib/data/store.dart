@@ -8,6 +8,7 @@ import '../core/hash.dart';
 import '../core/jalali.dart';
 import 'chart.dart';
 import 'models.dart';
+import 'report_layout.dart';
 import 'storage.dart';
 
 class MonthTotals {
@@ -54,6 +55,11 @@ class AppStore extends ChangeNotifier {
   List<Voucher> vouchers = [];
   List<ChequeBook> chequeBooks = [];
   List<PrintTemplate> printTemplates = [];
+  List<ReportLayout> reportLayouts = [];
+
+  /// «لیست اسناد» data keyed by `v:<id>`, `inv:<id>` or `txn:<id>`.
+  Map<String, DocMeta> docMeta = {};
+  Map<String, String> defaultLayouts = {};
   List<Warehouse> warehouses = [_mainWarehouse()];
 
   static Warehouse _mainWarehouse() => Warehouse(id: 'main', code: 1, name: 'انبار ۱', keeper: 'انباردار');
@@ -138,6 +144,11 @@ class AppStore extends ChangeNotifier {
     vouchers = list('vouchers').map(Voucher.fromJson).toList();
     chequeBooks = list('chequeBooks').map(ChequeBook.fromJson).toList();
     printTemplates = list('printTemplates').map(PrintTemplate.fromJson).toList();
+    reportLayouts = list('reportLayouts').map(ReportLayout.fromJson).toList();
+    final dm = j['docMeta'];
+    docMeta = dm is Map ? {for (final e in dm.entries) if (e.value is Map<String, dynamic>) '${e.key}': DocMeta.fromJson(e.value as Map<String, dynamic>)} : {};
+    final dl = j['defaultLayouts'];
+    defaultLayouts = dl is Map ? {for (final e in dl.entries) '${e.key}': '${e.value}'} : {};
     warehouses = list('warehouses').map(Warehouse.fromJson).toList();
     if (warehouses.isEmpty) warehouses.add(_mainWarehouse());
     transfers = list('transfers').map(WarehouseTransfer.fromJson).toList();
@@ -151,6 +162,7 @@ class AppStore extends ChangeNotifier {
     final st = j['settings'];
     settings = st is Map<String, dynamic> ? AppSettings.fromJson(st) : AppSettings();
     _sortTxns();
+    _ensureDocNumbers();
   }
 
   Map<String, dynamic> toJson() => {
@@ -169,6 +181,9 @@ class AppStore extends ChangeNotifier {
         'vouchers': vouchers.map((e) => e.toJson()).toList(),
         'chequeBooks': chequeBooks.map((e) => e.toJson()).toList(),
         'printTemplates': printTemplates.map((e) => e.toJson()).toList(),
+        'reportLayouts': reportLayouts.map((e) => e.toJson()).toList(),
+        'docMeta': {for (final e in docMeta.entries) e.key: e.value.toJson()},
+        'defaultLayouts': defaultLayouts,
         'warehouses': warehouses.map((e) => e.toJson()).toList(),
         'transfers': transfers.map((e) => e.toJson()).toList(),
         'assets': assets.map((e) => e.toJson()).toList(),
@@ -506,6 +521,7 @@ class AppStore extends ChangeNotifier {
   }
 
   void upsertTxn(Txn t) {
+    if (t.invoiceId == null) _touchDoc('txn:${t.id}');
     _log(txn(t.id) == null ? 'ثبت' : 'ویرایش', '${t.type.label} ${groupDigits(t.amount)}', docDate: t.date);
     if (t.type != TxnType.transfer) t.toAccountId = null;
     if (!t.type.hasCategory) t.categoryId = null;
@@ -531,6 +547,7 @@ class AppStore extends ChangeNotifier {
       }
     }
     txns.removeWhere((e) => e.id == id);
+    docMeta.remove('txn:$id');
     final l = loan(t.loanId);
     if (l != null && l.closed && loanPaidCount(l.id) < l.installments) l.closed = false;
     _commit();
@@ -1129,6 +1146,7 @@ class AppStore extends ChangeNotifier {
 
   /// Saves an invoice and regenerates its ledger entries.
   void saveInvoice(Invoice inv) {
+    if (!inv.proforma) _touchDoc('inv:${inv.id}');
     _log(invoices.any((e) => e.id == inv.id) ? 'ویرایش' : 'ثبت', '${inv.proforma ? 'پیش‌فاکتور' : inv.kind.label} ${inv.number}',
         docDate: inv.date, docNo: inv.number);
     final i = invoices.indexWhere((e) => e.id == inv.id);
@@ -1185,6 +1203,7 @@ class AppStore extends ChangeNotifier {
     if (inv != null) _log('حذف', '${inv.kind.label} ${inv.number}', docDate: inv.date, docNo: inv.number);
     vouchers.removeWhere((v) => v.kind == 'settle' && v.meta['invoice'] == id);
     invoices.removeWhere((i) => i.id == id);
+    docMeta.remove('inv:$id');
     txns.removeWhere((t) => t.invoiceId == id);
     _commit();
   }
@@ -1193,10 +1212,138 @@ class AppStore extends ChangeNotifier {
 
   List<Voucher> get vouchersSorted => [...vouchers]..sort((a, b) => a.number.compareTo(b.number));
 
-  int nextVoucherNumber() => vouchers.fold<int>(1, (n, v) => v.number >= n ? v.number + 1 : n);
-  int nextFixedNumber() => vouchers.fold<int>(1, (n, v) => v.fixedNumber >= n ? v.fixedNumber + 1 : n);
+  int nextVoucherNumber() {
+    var n = vouchers.fold<int>(1, (n, v) => v.number >= n ? v.number + 1 : n);
+    for (final e in docMeta.entries) {
+      if (!e.key.startsWith('v:') && e.value.number >= n) n = e.value.number + 1;
+    }
+    return n;
+  }
+
+  int nextFixedNumber() {
+    var n = vouchers.fold<int>(1, (n, v) => v.fixedNumber >= n ? v.fixedNumber + 1 : n);
+    for (final e in docMeta.entries) {
+      if (!e.key.startsWith('v:') && e.value.fixed >= n) n = e.value.fixed + 1;
+    }
+    return n;
+  }
+
+  // ---------------------------------------------------------------- document register
+
+  /// Keys of every document shown in «لیست اسناد».
+  Iterable<String> get docKeys sync* {
+    for (final v in vouchers) {
+      yield 'v:${v.id}';
+    }
+    for (final i in realInvoices) {
+      yield 'inv:${i.id}';
+    }
+    for (final t in txns) {
+      if (t.invoiceId == null) yield 'txn:${t.id}';
+    }
+  }
+
+  DocMeta meta(String key) => docMeta.putIfAbsent(key, () => DocMeta(userId: currentUserId));
+
+  int? docNumberOf(String key) {
+    if (key.startsWith('v:')) return vouchers.where((v) => 'v:${v.id}' == key).firstOrNull?.number;
+    return docMeta[key]?.number;
+  }
+
+  int? docFixedOf(String key) {
+    if (key.startsWith('v:')) return vouchers.where((v) => 'v:${v.id}' == key).firstOrNull?.fixedNumber;
+    return docMeta[key]?.fixed;
+  }
+
+  DateTime? docDateOf(String key) {
+    final id = key.substring(key.indexOf(':') + 1);
+    if (key.startsWith('v:')) return vouchers.where((v) => v.id == id).firstOrNull?.date;
+    if (key.startsWith('inv:')) return invoices.where((v) => v.id == id).firstOrNull?.date;
+    return txn(id)?.date;
+  }
+
+  int _createdOf(String key) {
+    final id = key.substring(key.indexOf(':') + 1);
+    if (key.startsWith('v:')) return vouchers.where((v) => v.id == id).firstOrNull?.createdAt ?? 0;
+    if (key.startsWith('inv:')) return invoices.where((v) => v.id == id).firstOrNull?.createdAt ?? 0;
+    return txn(id)?.createdAt ?? 0;
+  }
+
+  /// Gives a document number to a new invoice / operation and stamps the editor.
+  void _touchDoc(String key) {
+    final m = meta(key);
+    if (!key.startsWith('v:') && m.number == 0) {
+      m
+        ..number = nextVoucherNumber()
+        ..fixed = nextFixedNumber();
+    }
+    m
+      ..modifiedAt = DateTime.now().millisecondsSinceEpoch
+      ..userId = m.userId.isEmpty ? currentUserId : m.userId;
+  }
+
+  void _ensureDocNumbers() {
+    final missing = docKeys.where((k) => !k.startsWith('v:') && (docMeta[k]?.number ?? 0) == 0).toList()
+      ..sort((a, b) {
+        final c = (docDateOf(a) ?? DateTime(2000)).compareTo(docDateOf(b) ?? DateTime(2000));
+        return c != 0 ? c : _createdOf(a).compareTo(_createdOf(b));
+      });
+    for (final k in missing) {
+      final m = meta(k);
+      m
+        ..number = nextVoucherNumber()
+        ..fixed = nextFixedNumber()
+        ..modifiedAt = _createdOf(k);
+    }
+  }
+
+  void _setDocNumber(String key, int n) {
+    if (key.startsWith('v:')) {
+      final v = vouchers.where((v) => 'v:${v.id}' == key).firstOrNull;
+      if (v != null) v.number = n;
+    } else {
+      meta(key).number = n;
+    }
+  }
+
+  List<String> get _docsByNumber => docKeys.toList()..sort((a, b) => (docNumberOf(a) ?? 0).compareTo(docNumberOf(b) ?? 0));
+
+  /// مرتب سازی — renumbers all documents by date.
+  void sortDocuments() {
+    final keys = docKeys.toList()
+      ..sort((a, b) {
+        final c = (docDateOf(a) ?? DateTime(2000)).compareTo(docDateOf(b) ?? DateTime(2000));
+        if (c != 0) return c;
+        final n = (docNumberOf(a) ?? 0).compareTo(docNumberOf(b) ?? 0);
+        return n != 0 ? n : _createdOf(a).compareTo(_createdOf(b));
+      });
+    for (var i = 0; i < keys.length; i++) {
+      _setDocNumber(keys[i], i + 1);
+    }
+    _commit();
+  }
+
+  /// برش و چسباندن — moves [cut] right after [after] and renumbers.
+  void moveDocument(String cut, String after) {
+    if (cut == after) return;
+    final keys = _docsByNumber..remove(cut);
+    final i = keys.indexOf(after);
+    keys.insert(i < 0 ? keys.length : i + 1, cut);
+    for (var j = 0; j < keys.length; j++) {
+      _setDocNumber(keys[j], j + 1);
+    }
+    _commit();
+  }
+
+  void updateDocMeta(String key, void Function(DocMeta m) fn) {
+    fn(meta(key));
+    _commit();
+  }
+
+  bool isLocked(String key) => docMeta[key]?.locked ?? false;
 
   void saveVoucher(Voucher v) {
+    _touchDoc('v:${v.id}');
     final i = vouchers.indexWhere((e) => e.id == v.id);
     _log(i >= 0 ? 'ویرایش' : 'ثبت', '${v.kindLabel} ${v.desc}'.trim(), docDate: v.date, docNo: v.number);
     if (i >= 0) {
@@ -1247,6 +1394,41 @@ class AppStore extends ChangeNotifier {
 
   void setDefaultTemplate(PrintTemplate t) {
     defaultTemplates[t.type.name] = t.id;
+    _commit();
+  }
+
+  // ---------------------------------------------------------------- report layouts
+
+  /// Layouts of a print type; the built-in Sakan-like layout is used when none were saved.
+  List<ReportLayout> layoutsOf(PrintDocType t) {
+    final list = reportLayouts.where((x) => x.type == t).toList();
+    if (!list.any((x) => x.id == 'builtin-${t.name}')) list.insert(0, defaultLayoutFor(t));
+    return list;
+  }
+
+  ReportLayout defaultLayout(PrintDocType t) {
+    final list = layoutsOf(t);
+    return list.where((x) => x.id == defaultLayouts[t.name]).firstOrNull ?? list.first;
+  }
+
+  void saveLayout(ReportLayout l) {
+    final i = reportLayouts.indexWhere((x) => x.id == l.id);
+    if (i >= 0) {
+      reportLayouts[i] = l;
+    } else {
+      reportLayouts.add(l);
+    }
+    _commit();
+  }
+
+  void removeLayout(String id) {
+    reportLayouts.removeWhere((x) => x.id == id);
+    defaultLayouts.removeWhere((_, v) => v == id);
+    _commit();
+  }
+
+  void setDefaultLayout(ReportLayout l) {
+    defaultLayouts[l.type.name] = l.id;
     _commit();
   }
 
@@ -1320,6 +1502,7 @@ class AppStore extends ChangeNotifier {
       }
     }
     vouchers.removeWhere((v) => v.id == id);
+    docMeta.remove('v:$id');
     _commit();
   }
 

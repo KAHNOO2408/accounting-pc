@@ -10,6 +10,9 @@ import '../data/storage.dart';
 import '../data/store.dart';
 import 'dialogs/invoice_editor.dart' show fmtQty;
 import 'print.dart' show openFile;
+import 'report/report_designer.dart';
+import 'report/report_render.dart';
+import '../data/report_layout.dart';
 import 'theme.dart';
 import 'widgets/common.dart';
 
@@ -497,8 +500,175 @@ Future<void> showPrintTypeMenu(BuildContext anchor, Future<Invoice?> Function() 
 
 // =================================================================== گزارش سازی
 
-Future<void> showReportBuilder(BuildContext context, Invoice inv, PrintDocType type) =>
-    showDialog<void>(context: context, builder: (_) => _ReportBuilder(inv: inv, type: type));
+Future<void> showReportBuilder(BuildContext context, Invoice inv, PrintDocType type) => showDialog<void>(
+    context: context,
+    builder: (_) => type == PrintDocType.barcode ? _ReportBuilder(inv: inv, type: type) : _LayoutPicker(inv: inv, type: type));
+
+/// Opens the in-app «Report Preview» of an invoice with the default layout.
+Future<void> previewInvoice(BuildContext context, Invoice inv, PrintDocType type) {
+  final s = StoreScope.read(context);
+  return showReportPreview(context, s.defaultLayout(type), invoiceReportData(s, inv, type: type), fileName: '${type.name}-${inv.number}');
+}
+
+/// «گزارش سازی» for band layouts (فاکتور / حواله انبار).
+class _LayoutPicker extends StatefulWidget {
+  final Invoice inv;
+  final PrintDocType type;
+  const _LayoutPicker({required this.inv, required this.type});
+
+  @override
+  State<_LayoutPicker> createState() => _LayoutPickerState();
+}
+
+class _LayoutPickerState extends State<_LayoutPicker> {
+  String? _id;
+
+  ReportLayout _current(AppStore s) => s.layoutsOf(widget.type).where((x) => x.id == _id).firstOrNull ?? s.defaultLayout(widget.type);
+
+  ReportData _data(AppStore s) => invoiceReportData(s, widget.inv, type: widget.type);
+
+  Future<void> _design({required bool create}) async {
+    final s = StoreScope.read(context);
+    final cur = _current(s);
+    final base = create
+        ? (cur.copy()
+          ..id = newId()
+          ..name = 'طرح ${s.layoutsOf(widget.type).length + 1}')
+        : cur;
+    final r = await showReportDesigner(context, base, _data(s));
+    if (r != null && mounted) {
+      s.saveLayout(r);
+      setState(() => _id = r.id);
+    }
+  }
+
+  void _print() {
+    final s = StoreScope.read(context);
+    final l = _current(s);
+    s.setDefaultLayout(l);
+    try {
+      printReport(l, _data(s), fileName: '${widget.type.name}-${widget.inv.number}');
+    } catch (e) {
+      toast(context, 'چاپ ناموفق: $e', error: true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = StoreScope.of(context);
+    final th = Theme.of(context);
+    final list = s.layoutsOf(widget.type);
+    final l = _current(s);
+    final size = MediaQuery.of(context).size;
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.f12): _print,
+        const SingleActivator(LogicalKeyboardKey.f10): () => Navigator.pop(context),
+      },
+      child: Focus(
+        autofocus: true,
+        child: Dialog(
+          insetPadding: const EdgeInsets.all(20),
+          clipBehavior: Clip.antiAlias,
+          child: SizedBox(
+            width: 980,
+            height: (size.height * 0.9).clamp(420.0, 900.0),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              HeaderBand(
+                padding: const EdgeInsets.fromLTRB(20, 10, 10, 10),
+                child: Row(children: [
+                  const Icon(Icons.print_rounded),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text('گزارش سازی — ${widget.type.label}',
+                        style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.white)),
+                  ),
+                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded)),
+                ]),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
+                child: Row(children: [
+                  Text('فیلتر گزارش', style: th.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
+                  const SizedBox(width: 16),
+                  SizedBox(
+                    width: 260,
+                    child: FieldDropdown<String>(
+                      label: 'گزارش',
+                      value: l.id,
+                      items: [
+                        for (final x in list)
+                          DropdownMenuItem(
+                            value: x.id,
+                            child: Text('${x.name}${s.defaultLayout(widget.type).id == x.id ? '  (پیش‌فرض)' : ''}'),
+                          ),
+                      ],
+                      onChanged: (v) => setState(() => _id = v),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  FilledButton.tonalIcon(
+                    onPressed: () => _design(create: true),
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text('ساخت گزارش'),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.tonalIcon(
+                    style: FilledButton.styleFrom(backgroundColor: AppColors.loan.withValues(alpha: 0.18), foregroundColor: AppColors.loan),
+                    onPressed: () => _design(create: false),
+                    icon: const Icon(Icons.edit_outlined, size: 18),
+                    label: const Text('ویرایش'),
+                  ),
+                  const SizedBox(width: 8),
+                  if (s.reportLayouts.any((x) => x.id == l.id))
+                    TextButton.icon(
+                      onPressed: () async {
+                        final builtin = l.id.startsWith('builtin-');
+                        final ok = await confirm(context, builtin ? 'بازگشت به طرح اصلی' : 'حذف طرح',
+                            builtin ? 'تغییرات طرح ۱ پاک شود و طرح اصلی برگردد؟' : 'طرح «${l.name}» حذف شود؟',
+                            ok: builtin ? 'بازگشت' : 'حذف');
+                        if (!ok) return;
+                        s.removeLayout(l.id);
+                        setState(() => _id = null);
+                      },
+                      icon: Icon(l.id.startsWith('builtin-') ? Icons.restore_rounded : Icons.delete_outline_rounded, color: th.colorScheme.error),
+                      label: Text(l.id.startsWith('builtin-') ? 'بازگشت به طرح اصلی' : 'حذف طرح', style: TextStyle(color: th.colorScheme.error)),
+                    ),
+                ]),
+              ),
+              Expanded(
+                child: Container(
+                  color: const Color(0xFFB8BFC9),
+                  padding: const EdgeInsets.all(16),
+                  child: SingleChildScrollView(
+                    child: Center(child: Column(children: reportPages(l, _data(s), 3.0))),
+                  ),
+                ),
+              ),
+              const Divider(),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 10, 18, 12),
+                child: Row(children: [
+                  Text('کاغذ ${l.pageW.round()}×${l.pageH.round()} میلی‌متر', style: th.textTheme.bodySmall?.copyWith(color: th.hintColor)),
+                  const Spacer(),
+                  OutlinedButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف (F10)')),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: () => showReportPreview(context, l, _data(s), fileName: '${widget.type.name}-${widget.inv.number}'),
+                    icon: const Icon(Icons.visibility_outlined, size: 18),
+                    label: const Text('مشاهده پویا'),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.icon(onPressed: _print, icon: const Icon(Icons.print_rounded, size: 18), label: const Text('چاپ F12')),
+                ]),
+              ),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class _ReportBuilder extends StatefulWidget {
   final Invoice inv;

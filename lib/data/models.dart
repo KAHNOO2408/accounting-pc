@@ -626,7 +626,14 @@ class Invoice {
   bool proforma;
   int createdAt;
 
+  /// Extra header fields (تحویل گیرنده، منطقه، آدرس، بابت، شماره حواله انبار…).
+  Map<String, String> info;
+
+  /// شماره حواله انبار
+  int get warehouseNo => int.tryParse(info['warehouseNo'] ?? '') ?? 0;
+
   Invoice({
+    Map<String, String>? info,
     required this.id,
     required this.kind,
     required this.number,
@@ -642,6 +649,7 @@ class Invoice {
     this.proforma = false,
     int? createdAt,
   })  : lines = lines ?? [],
+        info = info ?? {},
         createdAt = createdAt ?? DateTime.now().millisecondsSinceEpoch;
 
   int get subtotal => lines.fold(0, (s, l) => s + l.total);
@@ -663,9 +671,11 @@ class Invoice {
         'note': note,
         'proforma': proforma,
         'createdAt': createdAt,
+        if (info.isNotEmpty) 'info': info,
       };
 
   factory Invoice.fromJson(Map<String, dynamic> j) => Invoice(
+        info: j['info'] is Map ? {for (final e in (j['info'] as Map).entries) '${e.key}': '${e.value}'} : null,
         id: _s(j['id']),
         kind: _enum(InvoiceKind.values, j['kind'], InvoiceKind.sale),
         number: _i(j['number']),
@@ -1383,5 +1393,61 @@ class AuditEntry {
         desc: _s(j['t']),
         computer: _s(j['c']),
         docNo: j['n'] == null ? null : _i(j['n']),
+      );
+}
+
+// ---------------------------------------------------------------------------
+
+/// Bookkeeping data of a document in «لیست اسناد» (invoices and financial
+/// operations get a shared document number like vouchers).
+class DocMeta {
+  int number;
+  int fixed;
+  bool locked;
+  int color;
+  String userId;
+  int modifiedAt;
+  DateTime? followDate;
+  String followDesc;
+  String center;
+  String archive;
+
+  DocMeta({
+    this.number = 0,
+    this.fixed = 0,
+    this.locked = false,
+    this.color = 0,
+    this.userId = 'owner',
+    int? modifiedAt,
+    this.followDate,
+    this.followDesc = '',
+    this.center = '',
+    this.archive = '',
+  }) : modifiedAt = modifiedAt ?? DateTime.now().millisecondsSinceEpoch;
+
+  Map<String, dynamic> toJson() => {
+        'n': number,
+        'f': fixed,
+        if (locked) 'l': true,
+        if (color != 0) 'c': color,
+        'u': userId,
+        'm': modifiedAt,
+        if (followDate != null) 'fd': _d(followDate!),
+        if (followDesc.isNotEmpty) 'fs': followDesc,
+        if (center.isNotEmpty) 'ce': center,
+        if (archive.isNotEmpty) 'a': archive,
+      };
+
+  factory DocMeta.fromJson(Map<String, dynamic> j) => DocMeta(
+        number: _i(j['n']),
+        fixed: _i(j['f']),
+        locked: j['l'] == true,
+        color: _i(j['c']),
+        userId: _s(j['u']).isEmpty ? 'owner' : _s(j['u']),
+        modifiedAt: _i(j['m']),
+        followDate: j['fd'] == null ? null : _p(j['fd']),
+        followDesc: _s(j['fs']),
+        center: _s(j['ce']),
+        archive: _s(j['a']),
       );
 }
