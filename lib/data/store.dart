@@ -59,6 +59,12 @@ class AppStore extends ChangeNotifier {
 
   /// «لیست اسناد» data keyed by `v:<id>`, `inv:<id>` or `txn:<id>`.
   Map<String, DocMeta> docMeta = {};
+
+  /// دفترچه یادداشت of each account («مشاهده اسناد» F7), keyed by account key.
+  Map<String, String> notebooks = {};
+
+  /// Rows marked in «مشاهده اسناد» (علامت گذاری شده ها), keyed by account key.
+  Map<String, Set<String>> marks = {};
   Map<String, String> defaultLayouts = {};
   List<Warehouse> warehouses = [_mainWarehouse()];
 
@@ -147,6 +153,10 @@ class AppStore extends ChangeNotifier {
     reportLayouts = list('reportLayouts').map(ReportLayout.fromJson).toList();
     final dm = j['docMeta'];
     docMeta = dm is Map ? {for (final e in dm.entries) if (e.value is Map<String, dynamic>) '${e.key}': DocMeta.fromJson(e.value as Map<String, dynamic>)} : {};
+    final nb = j['notebooks'];
+    notebooks = nb is Map ? {for (final e in nb.entries) '${e.key}': '${e.value}'} : {};
+    final mk = j['marks'];
+    marks = mk is Map ? {for (final e in mk.entries) if (e.value is List) '${e.key}': {for (final x in e.value as List) '$x'}} : {};
     final dl = j['defaultLayouts'];
     defaultLayouts = dl is Map ? {for (final e in dl.entries) '${e.key}': '${e.value}'} : {};
     warehouses = list('warehouses').map(Warehouse.fromJson).toList();
@@ -163,6 +173,41 @@ class AppStore extends ChangeNotifier {
     settings = st is Map<String, dynamic> ? AppSettings.fromJson(st) : AppSettings();
     _sortTxns();
     _ensureDocNumbers();
+    _ensureTafsiliCodes();
+  }
+
+  /// Next free کد حساب تفصیلی (persons and products share one range, from 7001).
+  int nextTafsiliCode() {
+    var n = 7000;
+    for (final p in people) {
+      if (p.code > n) n = p.code;
+    }
+    for (final p in products) {
+      final v = int.tryParse(normalizeDigits(p.code));
+      if (v != null && v > n && v < 1000000) n = v;
+    }
+    return n + 1;
+  }
+
+  void _ensureTafsiliCodes() {
+    for (final p in people) {
+      if (p.code == 0) p.code = nextTafsiliCode();
+    }
+  }
+
+  void saveNotebook(String key, String text) {
+    if (text.trim().isEmpty) {
+      notebooks.remove(key);
+    } else {
+      notebooks[key] = text;
+    }
+    _commit();
+  }
+
+  void toggleMark(String account, String row) {
+    final m = marks.putIfAbsent(account, () => <String>{});
+    if (!m.remove(row)) m.add(row);
+    _commit();
   }
 
   Map<String, dynamic> toJson() => {
@@ -183,6 +228,8 @@ class AppStore extends ChangeNotifier {
         'printTemplates': printTemplates.map((e) => e.toJson()).toList(),
         'reportLayouts': reportLayouts.map((e) => e.toJson()).toList(),
         'docMeta': {for (final e in docMeta.entries) e.key: e.value.toJson()},
+        'notebooks': notebooks,
+        'marks': {for (final e in marks.entries) if (e.value.isNotEmpty) e.key: e.value.toList()},
         'defaultLayouts': defaultLayouts,
         'warehouses': warehouses.map((e) => e.toJson()).toList(),
         'transfers': transfers.map((e) => e.toJson()).toList(),
@@ -498,6 +545,7 @@ class AppStore extends ChangeNotifier {
   }
 
   void upsertPerson(Person p) {
+    if (p.code == 0) p.code = nextTafsiliCode();
     final i = people.indexWhere((e) => e.id == p.id);
     if (i >= 0) {
       people[i] = p;
@@ -1882,6 +1930,22 @@ class AppStore extends ChangeNotifier {
     }
     out.sort((a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()));
     return out;
+  }
+
+  /// Writes any table as CSV for Excel («خروجی به اکسل»); returns the file path.
+  String exportTableCsv(List<String> headers, List<List<String>> rows, {String name = 'export'}) {
+    String esc(String s) => '"${s.replaceAll('"', '""')}"';
+    final b = StringBuffer('\uFEFF');
+    b.writeln(headers.map(esc).join(','));
+    for (final r in rows) {
+      b.writeln(r.map(esc).join(','));
+    }
+    final n = DateTime.now();
+    final j = Jalali.fromDateTime(n);
+    final f = File(
+        '${Storage.userFolder.path}${Storage.sep}$name-${j.format(sep: '-')}-${n.hour}${n.minute.toString().padLeft(2, '0')}.csv');
+    f.writeAsStringSync(b.toString(), flush: true);
+    return f.path;
   }
 
   /// Writes a CSV (UTF-8 with BOM so Excel shows Persian correctly).

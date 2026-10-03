@@ -6,6 +6,7 @@ import '../../data/store.dart';
 import '../dialogs/simple_dialogs.dart';
 import '../dialogs/txn_dialog.dart';
 import '../theme.dart';
+import '../dialogs/ledger_dialogs.dart' show debtorBlue, creditorRed;
 import '../widgets/common.dart';
 import '../widgets/txn_table.dart';
 
@@ -75,7 +76,7 @@ class _PeoplePageState extends State<PeoplePage> {
                   label: 'جمع طلب‌ها (دیگران به شما)',
                   value: store.totalReceivable,
                   icon: Icons.call_made_rounded,
-                  color: AppColors.income,
+                  color: debtorBlue,
                 ),
               ),
               const SizedBox(width: 16),
@@ -84,7 +85,7 @@ class _PeoplePageState extends State<PeoplePage> {
                   label: 'جمع بدهی‌ها (شما به دیگران)',
                   value: store.totalPayable,
                   icon: Icons.call_received_rounded,
-                  color: AppColors.expense,
+                  color: creditorRed,
                 ),
               ),
               const SizedBox(width: 16),
@@ -168,7 +169,7 @@ class _PeoplePageState extends State<PeoplePage> {
                                         subtitle: Text(
                                           b == 0 ? 'تسویه' : (b > 0 ? 'طلبکار هستید' : 'بدهکار هستید'),
                                           style: th.textTheme.bodySmall?.copyWith(
-                                            color: b == 0 ? th.hintColor : (b > 0 ? AppColors.income : AppColors.expense),
+                                            color: b == 0 ? null : (b > 0 ? debtorBlue : creditorRed),
                                           ),
                                         ),
                                         trailing: Money(b.abs(), style: const TextStyle(fontWeight: FontWeight.w700)),
@@ -206,7 +207,7 @@ class _PeoplePageState extends State<PeoplePage> {
       bal += t.type.personSign * t.amount;
       running[t.id] = bal;
     }
-    final color = bal == 0 ? th.hintColor : (bal > 0 ? AppColors.income : AppColors.expense);
+    final color = bal == 0 ? th.hintColor : (bal > 0 ? debtorBlue : creditorRed);
     final pendingCheques = store.cheques.where((c) => c.personId == p.id && c.status == ChequeStatus.pending).toList();
 
     return Card(

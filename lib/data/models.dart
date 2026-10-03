@@ -154,9 +154,12 @@ class Person {
   /// Opening balance from the opening voucher (positive = they owe me).
   int opening;
 
-  Person({required this.id, required this.name, this.phone = '', this.note = '', this.opening = 0});
+  /// کد حساب تفصیلی (shared numbering with products, like Sakan).
+  int code;
 
-  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'phone': phone, 'note': note, 'opening': opening};
+  Person({required this.id, required this.name, this.phone = '', this.note = '', this.opening = 0, this.code = 0});
+
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'phone': phone, 'note': note, 'opening': opening, 'code': code};
 
   factory Person.fromJson(Map<String, dynamic> j) => Person(
         id: _s(j['id']),
@@ -164,6 +167,7 @@ class Person {
         phone: _s(j['phone']),
         note: _s(j['note']),
         opening: _i(j['opening']),
+        code: _i(j['code']),
       );
 }
 

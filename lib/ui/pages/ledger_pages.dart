@@ -6,6 +6,7 @@ import '../../data/models.dart';
 import '../../data/store.dart';
 import '../shell.dart';
 import '../theme.dart';
+import '../dialogs/ledger_dialogs.dart' show debtorBlue, creditorRed;
 import '../widgets/common.dart';
 
 // ============================================================ balance sheet
@@ -232,7 +233,7 @@ class _AccountsTablePageState extends State<AccountsTablePage> {
                             itemBuilder: (context, i) {
                               final r = shown[i];
                               final status = r.$3 > 0 ? 'بدهکار' : (r.$4 > 0 ? 'بستانکار' : 'تسویه');
-                              final c = r.$3 > 0 ? AppColors.income : (r.$4 > 0 ? AppColors.expense : th.hintColor);
+                              final c = r.$3 > 0 ? debtorBlue : (r.$4 > 0 ? creditorRed : th.hintColor);
                               return InkWell(
                                 onTap: r.$5,
                                 child: Padding(

@@ -17,7 +17,11 @@ class Posting {
   final int credit;
   final int order;
 
+  /// Key of the source document in «لیست اسناد» ('v:id', 'inv:id', 'txn:id'); null for opening rows.
+  final String? docKey;
+
   const Posting({
+    this.docKey,
     required this.date,
     required this.moeen,
     this.tafsiliId,
@@ -39,6 +43,7 @@ class Posting {
 List<Posting> buildJournal(AppStore s) {
   final out = <Posting>[];
   final openDate = s.settings.openingDate ?? DateTime(2000);
+  String? key; // document currently being posted
 
   void pair(
     DateTime d,
@@ -57,8 +62,8 @@ List<Posting> buildJournal(AppStore s) {
       pair(d, label, desc, -amount, drM: crM, drT: crT, crM: drM, crT: drT, no: no, order: order);
       return;
     }
-    out.add(Posting(date: d, moeen: drM, tafsiliId: drT, docLabel: label, docNo: no, desc: desc, debit: amount, order: order));
-    out.add(Posting(date: d, moeen: crM, tafsiliId: crT, docLabel: label, docNo: no, desc: desc, credit: amount, order: order));
+    out.add(Posting(date: d, moeen: drM, tafsiliId: drT, docLabel: label, docNo: no, desc: desc, debit: amount, order: order, docKey: key));
+    out.add(Posting(date: d, moeen: crM, tafsiliId: crT, docLabel: label, docNo: no, desc: desc, credit: amount, order: order, docKey: key));
   }
 
   String accM(String? id) {
@@ -115,6 +120,7 @@ List<Posting> buildJournal(AppStore s) {
   // --------------------------------------------------------- transactions
   for (final t in s.txns) {
     if (t.invoiceId != null && t.type.isInvoice) continue; // handled per invoice below
+    key = t.invoiceId != null ? 'inv:${t.invoiceId}' : 'txn:${t.id}';
     final cat = t.categoryId;
     final person = t.personId;
     final pM = person == null ? mDebtorsOther : mDebtorsTrade;
@@ -151,6 +157,7 @@ List<Posting> buildJournal(AppStore s) {
 
   // ------------------------------------------------------------- invoices
   for (final inv in s.realInvoices) {
+    key = 'inv:${inv.id}';
     final label = '${inv.kind.label} ${inv.number}';
     final p = inv.personId;
     final pM = p == null ? mDebtorsOther : mDebtorsTrade;
@@ -210,6 +217,7 @@ List<Posting> buildJournal(AppStore s) {
   }
 
   // ------------------------------------------------------- stock adjustments
+  key = null;
   for (final a in s.adjusts) {
     final v = (a.qty * s.avgCost(a.productId)).round();
     pair(a.date, a.reason.label, a.note, v, drM: mStock, drT: a.productId, crM: mStockLoss, crT: a.productId, order: a.createdAt);
@@ -224,6 +232,7 @@ List<Posting> buildJournal(AppStore s) {
         tafsiliId: l.tafsiliId,
         docLabel: 'سند ${v.number}',
         docNo: v.number,
+        docKey: 'v:${v.id}',
         isVoucher: true,
         desc: l.desc.isEmpty ? v.desc : l.desc,
         debit: l.debit,

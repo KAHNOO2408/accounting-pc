@@ -49,7 +49,7 @@ class _ProductDialogState extends State<_ProductDialog> {
     super.initState();
     final e = widget.edit;
     final s = StoreScope.read(context);
-    c('code').text = e?.code ?? _nextCode(s);
+    c('code').text = e?.code ?? '${s.nextTafsiliCode()}';
     c('name').text = e?.name ?? '';
     c('unit').text = e?.unit ?? 'عدد';
     String money(int v) => v == 0 ? '0' : groupDigits(v);
@@ -71,15 +71,6 @@ class _ProductDialogState extends State<_ProductDialog> {
     _image = e?.info['image'] ?? '';
   }
 
-  String _nextCode(AppStore s) {
-    var n = 7001;
-    for (final p in s.products) {
-      final v = int.tryParse(normalizeDigits(p.code));
-      if (v != null && v >= n) n = v + 1;
-    }
-    return '$n';
-  }
-
   @override
   void dispose() {
     for (final x in _c.values) {
@@ -95,7 +86,7 @@ class _ProductDialogState extends State<_ProductDialog> {
       return;
     }
     final code = c('code').text.trim();
-    if (code.isNotEmpty && s.products.any((p) => p.id != widget.edit?.id && p.code == code)) {
+    if (code.isNotEmpty && (s.products.any((p) => p.id != widget.edit?.id && p.code == code) || s.people.any((p) => '${p.code}' == normalizeDigits(code)))) {
       setState(() => _err = 'کد حساب تفصیلی $code تکراری است');
       return;
     }

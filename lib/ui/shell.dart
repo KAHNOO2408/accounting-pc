@@ -28,6 +28,7 @@ import 'pages/ledger_reports.dart';
 import 'pages/people_page.dart';
 import 'pages/products_page.dart';
 import 'dialogs/stock_dialogs.dart';
+import 'dialogs/ledger_dialogs.dart';
 import 'pages/profit_page.dart';
 import 'pages/reports_page.dart';
 import 'pages/settings_page.dart';
@@ -126,7 +127,7 @@ String? _firstOf(AppStore s, AccountType t) {
 }
 
 final _accTable = _Item('جدول و مشاهده حساب‌ها', Icons.table_view_outlined, _slate,
-    shortcut: 'Ctrl+A', activator: _k(LogicalKeyboardKey.keyA, ctrl: true), run: _page(AppPage.accountsTable));
+    shortcut: 'Ctrl+A', activator: _k(LogicalKeyboardKey.keyA, ctrl: true), run: (c, _) => showAccountSelector(c));
 
 /// Tabs and button labels of the ribbon (used by «دسترسی دکمه ها»).
 List<(String, List<String>)> ribbonCatalog() => [
@@ -368,8 +369,8 @@ final List<_Tab> _tabs = [
       _Item('گزارشات فروش', Icons.sell_outlined, _green, run: _page(AppPage.invoices, kind: InvoiceKind.sale)),
       _Item('گزارشات مالی', Icons.bar_chart_rounded, _blue, run: _page(AppPage.reports)),
       _Item('گزارشات کالا و انبار', Icons.inventory_2_outlined, _amber, run: _page(AppPage.products)),
-      _Item('جدول اشخاص', Icons.people_alt_outlined, _violet, run: _page(AppPage.accountsTable)),
-      const _Item('جدول سرمایه‌داران', Icons.diamond_outlined, _slate),
+      _Item('جدول اشخاص', Icons.people_alt_outlined, _violet, run: (c, _) => showAccountSelector(c)),
+      _Item('جدول سرمایه‌داران', Icons.diamond_outlined, _violet, run: (c, _) => showAccountSelector(c, category: 'صاحبان سهام')),
       const _Item('جدول اشخاص ارزی', Icons.currency_exchange_rounded, _slate),
       const _Item('مدیریت گزارشات', Icons.dashboard_customize_outlined, _slate),
       const _Item('گزارش از گروه مراکز دفتر', Icons.account_tree_outlined, _slate),

@@ -12,6 +12,7 @@ import '../dialogs/invoice_editor.dart';
 import '../dialogs/opening_dialog.dart';
 import '../dialogs/txn_dialog.dart';
 import '../dialogs/voucher_dialog.dart';
+import '../dialogs/ledger_dialogs.dart' show DateFilter, showDocDateFilter;
 import '../print.dart';
 import '../shell.dart' show Nav, AppPage;
 import '../theme.dart';
@@ -45,7 +46,8 @@ class _Doc {
   });
 }
 
-const _rowColors = [0, 0xFFFFF59D, 0xFFA5D6A7, 0xFF90CAF9, 0xFFFFAB91, 0xFFCE93D8];
+/// Row colors of documents («رنگ»); the index is the color number.
+const docRowColors = [0, 0xFFFFF59D, 0xFFA5D6A7, 0xFF90CAF9, 0xFFFFAB91, 0xFFCE93D8];
 
 String _stamp(int ms) {
   if (ms <= 0) return '';
@@ -57,6 +59,30 @@ String _stamp(int ms) {
 }
 
 /// لیست اسناد — every document of the ledger, laid out like Sakan.
+/// Opens the editor of a document of «لیست اسناد» ('v:id', 'inv:id', 'txn:id').
+void openDocument(BuildContext context, String key) {
+  final s = StoreScope.read(context);
+  final id = key.substring(key.indexOf(':') + 1);
+  if (key.startsWith('v:')) {
+    final v = s.vouchers.where((v) => v.id == id).firstOrNull;
+    if (v == null) return;
+    switch (v.kind) {
+      case 'chequeMove':
+        showChequeMoveDialog(context, edit: v);
+      case 'manual' || 'composite' || 'expense':
+        showVoucherDialog(context, edit: v);
+      default:
+        showYearEndVoucher(context, v);
+    }
+  } else if (key.startsWith('inv:')) {
+    final inv = s.invoices.where((i) => i.id == id).firstOrNull;
+    if (inv != null) showInvoiceEditor(context, edit: inv);
+  } else {
+    final t = s.txn(id);
+    if (t != null) showTxnDialog(context, edit: t);
+  }
+}
+
 class VouchersPage extends StatefulWidget {
   const VouchersPage({super.key});
 
@@ -71,7 +97,7 @@ class _VouchersPageState extends State<VouchersPage> {
   String? _sel = VouchersPage.focusKey;
   String? _cut;
   String _centerFilter = '*';
-  DateTime? _from, _to;
+  DateFilter _dates = const DateFilter();
   String _searchText = '';
   int _searchField = 0; // 0 all, 1 number, 2 desc, 3 amount
   final _scroll = ScrollController();
@@ -153,8 +179,9 @@ class _VouchersPageState extends State<VouchersPage> {
       if (_centerFilter == '-' && d.center.isNotEmpty && d.center != 'اصلی') return false;
       if (_centerFilter == '+' && (d.center.isEmpty || d.center == 'اصلی')) return false;
       if (!{'*', '-', '+'}.contains(_centerFilter) && d.center != _centerFilter) return false;
-      if (_from != null && d.date.isBefore(_from!)) return false;
-      if (_to != null && d.date.isAfter(DateTime(_to!.year, _to!.month, _to!.day, 23, 59))) return false;
+      final when = _dates.onModified && d.meta.modifiedAt > 0 ? DateTime.fromMillisecondsSinceEpoch(d.meta.modifiedAt) : d.date;
+      if (!_dates.hasDate(when)) return false;
+      if (_dates.color != null && d.meta.color != (_dates.color! < docRowColors.length ? docRowColors[_dates.color!] : -1)) return false;
       return true;
     }).toList();
   }
@@ -237,42 +264,17 @@ class _VouchersPageState extends State<VouchersPage> {
   }
 
   Future<void> _dateRange() async {
-    DateTime? from = _from, to = _to;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, set) => FormDialog(
-          title: 'محدوده تاریخی',
-          width: 460,
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('انصراف')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('تایید')),
-          ],
-          child: Row(children: [
-            Expanded(child: DateField(label: 'از تاریخ', value: from, clearable: true, onChanged: (d) => set(() => from = d))),
-            const SizedBox(width: 10),
-            Expanded(child: DateField(label: 'تا تاریخ', value: to, clearable: true, onChanged: (d) => set(() => to = d))),
-          ]),
-        ),
-      ),
-    );
-    if (ok == true) {
-      setState(() {
-        _from = from;
-        _to = to;
-      });
-    }
+    final r = await showDocDateFilter(context, current: _dates, modifiedOption: true);
+    if (r != null) setState(() => _dates = r);
   }
 
   void _clearFilter() => setState(() {
-        _from = null;
-        _to = null;
+        _dates = const DateFilter();
         _centerFilter = '*';
         _searchText = '';
       });
 
   void _open(AppStore s, _Doc d, {bool view = false}) {
-    final id = d.key.substring(d.key.indexOf(':') + 1);
     if (!view && d.meta.locked) {
       toast(context, 'سند ${d.number} قفل است', error: true);
       return;
@@ -281,22 +283,7 @@ class _VouchersPageState extends State<VouchersPage> {
       _showPostings(s, d);
       return;
     }
-    if (d.key.startsWith('v:')) {
-      final v = s.vouchers.firstWhere((v) => v.id == id);
-      switch (v.kind) {
-        case 'chequeMove':
-          showChequeMoveDialog(context, edit: v);
-        case 'manual' || 'composite' || 'expense':
-          showVoucherDialog(context, edit: v);
-        default:
-          showYearEndVoucher(context, v);
-      }
-    } else if (d.key.startsWith('inv:')) {
-      showInvoiceEditor(context, edit: s.invoices.firstWhere((i) => i.id == id));
-    } else {
-      final t = s.txn(id);
-      if (t != null) showTxnDialog(context, edit: t);
-    }
+    openDocument(context, d.key);
   }
 
   void _showPostings(AppStore s, _Doc d) {
@@ -307,7 +294,7 @@ class _VouchersPageState extends State<VouchersPage> {
       rows = [for (final l in v.lines) (l.moeen, accountName(s, '${l.moeen}|${l.tafsiliId ?? ''}'), l.debit, l.credit)];
     } else {
       rows = [
-        for (final p in buildJournal(s).where((p) => p.order == d.created && !p.isVoucher))
+        for (final p in buildJournal(s).where((p) => p.docKey == d.key))
           (p.moeen, accountName(s, '${p.moeen}|${p.tafsiliId ?? ''}'), p.debit, p.credit),
       ];
     }
@@ -584,7 +571,7 @@ class _VouchersPageState extends State<VouchersPage> {
                               onChanged: (v) => setState(() => _centerFilter = v ?? '*'),
                             ),
                           ),
-                          btn(_from == null && _to == null ? 'محدوده تاریخی' : 'محدوده تاریخی ✓', 'F1', _dateRange),
+                          btn(_dates.isEmpty ? 'محدوده تاریخی' : 'محدوده تاریخی ✓', 'F1', _dateRange),
                         ]),
                         group('جستجو', [
                           btn('گزینه های جستجو', 'F7', () => _searchOptions(list), icon: Icons.search_rounded),
@@ -607,7 +594,7 @@ class _VouchersPageState extends State<VouchersPage> {
                           btn('پیگرد سند', '', cur == null ? null : () => _follow(s, cur), icon: Icons.event_note_outlined),
                           const SizedBox(width: 6),
                           const Text('رنگ: '),
-                          for (final c in _rowColors)
+                          for (final c in docRowColors)
                             InkWell(
                               onTap: cur == null ? null : () => s.updateDocMeta(cur.key, (m) => m.color = c),
                               child: Container(
@@ -692,7 +679,7 @@ class _VouchersPageState extends State<VouchersPage> {
                                           ),
                                         ),
                                       ),
-                                      cell(1, Text('${_rowColors.indexOf(d.meta.color).clamp(0, 9)}', textAlign: TextAlign.center)),
+                                      cell(1, Text('${docRowColors.indexOf(d.meta.color).clamp(0, 9)}', textAlign: TextAlign.center)),
                                       cell(2, Text('${d.fixed}', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w700))),
                                       cell(3, Text(groupDigits(d.number), textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w700))),
                                       cell(4, Text(jFormat(d.date), textAlign: TextAlign.center)),

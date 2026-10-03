@@ -12,6 +12,7 @@ import 'package:taraz/data/store.dart';
 import 'package:taraz/main.dart';
 import 'package:taraz/ui/dialogs/composite_dialogs.dart';
 import 'package:taraz/ui/dialogs/invoice_editor.dart';
+import 'package:taraz/ui/dialogs/ledger_dialogs.dart';
 import 'package:taraz/ui/dialogs/price_dialog.dart';
 import 'package:taraz/ui/print_designer.dart';
 import 'package:taraz/ui/shell.dart';
@@ -1121,6 +1122,91 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('بدهی قبلی'), findsNothing);
     expect(find.textContaining('فاکتور متفرقه باید کامل تسویه شود'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  test('account table rows: persons share codes and keep their balance side', () {
+    final s = _tempStore();
+    final ali = Person(id: newId(), name: 'Ali');
+    final reza = Person(id: newId(), name: 'Reza');
+    final zero = Person(id: newId(), name: 'Zero');
+    for (final p in [ali, reza, zero]) {
+      s.upsertPerson(p);
+    }
+    expect(ali.code, 7001);
+    expect(zero.code, 7003);
+    s.upsertProduct(Product(id: newId(), name: 'Item', code: '${s.nextTafsiliCode()}', sellPrice: 10));
+    expect(s.products.first.code, '7004');
+    final prod = s.products.first;
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: DateTime(2025, 1, 1), personId: ali.id,
+        lines: [InvoiceLine(productId: prod.id, qty: 2, unitPrice: 100)]));
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.purchase, number: 1, date: DateTime(2025, 1, 2), personId: reza.id,
+        lines: [InvoiceLine(productId: prod.id, qty: 3, unitPrice: 50)]));
+    final people = accCategories.expand((r) => r).firstWhere((c) => c.label == 'اشخاص');
+    final j = buildJournal(s);
+    expect(j.where((p) => p.docKey != null && p.docKey!.startsWith('inv:')), isNotEmpty);
+    final bal = <String, int>{};
+    for (final p in j) {
+      final k = '${p.moeen}|${p.tafsiliId ?? ''}';
+      bal[k] = (bal[k] ?? 0) + p.debit - p.credit;
+      bal[p.moeen] = (bal[p.moeen] ?? 0) + p.debit - p.credit;
+    }
+    final rows = {for (final r in accountRows(s, people, bal)) r.name: r};
+    expect(rows['Ali']!.balance, 200);
+    expect(rows['Reza']!.balance, -150);
+    expect(rows['Zero']!.balance, 0);
+    expect(balanceColor(200), debtorBlue);
+    expect(balanceColor(-150), creditorRed);
+    expect(balanceColor(0), isNull);
+    expect(const DateFilter(from: null, to: null).isEmpty, isTrue);
+    expect(DateFilter(from: DateTime(2025, 1, 2)).hasDate(DateTime(2025, 1, 1)), isFalse);
+  });
+
+  testWidgets('accounts selector and account ledger windows', (tester) async {
+    tester.view.physicalSize = const Size(1600, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final s = _tempStore();
+    s.completeSetup(ownerName: 'Ali');
+    final p = Person(id: newId(), name: 'Reza');
+    s.upsertPerson(p);
+    final prod = Product(id: newId(), name: 'Cable', sellPrice: 50, openingQty: 5);
+    s.upsertProduct(prod);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 3, date: DateTime.now(), personId: p.id,
+        lines: [InvoiceLine(productId: prod.id, qty: 2, unitPrice: 50)]));
+    await tester.pumpWidget(TarazApp(store: s));
+    await tester.pumpAndSettle();
+    showAccountSelector(tester.element(find.text('خرید و فروش').first));
+    await tester.pumpAndSettle();
+    expect(find.text('انتخاب دفتر تفصیلی'), findsOneWidget);
+    expect(find.text('Reza'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('Reza'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('رویت حساب'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('مشاهده اسناد'), findsOneWidget);
+    expect(find.text('بد'), findsWidgets);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('محدوده تاریخی'));
+    await tester.pumpAndSettle();
+    expect(find.text('فیلتر تاریخ سند'), findsOneWidget);
+    await tester.tap(find.text('از ابتدا تا انتها'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('گزینه های جستجو'));
+    await tester.pumpAndSettle();
+    expect(find.text('جستجو بر اساس:'), findsOneWidget);
+    await tester.enterText(find.byType(TextField).last, 'فاکتور');
+    await tester.tap(find.text('تایید').last);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('بازگشت').last);
+    await tester.pumpAndSettle();
+    // other groups render too
+    await tester.tap(find.text('صندوق').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('سایر کل ها F8'));
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
 }
