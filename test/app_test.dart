@@ -1104,8 +1104,12 @@ void main() {
     showInvoiceEditor(ctx, edit: inv);
     await tester.pumpAndSettle();
     expect(find.text('تعیین نوع چاپ'), findsOneWidget);
+    // ignore: avoid_print
+    print('page: focus before F5 = ${FocusManager.instance.primaryFocus}');
     await tester.sendKeyEvent(LogicalKeyboardKey.f5);
     await tester.pumpAndSettle();
+    // ignore: avoid_print
+    print('page: after F5 dialogs=${find.byType(Dialog).evaluate().length} texts=${find.byType(Text).evaluate().map((e) => (e.widget as Text).data).where((t) => t != null && t.length > 12).take(12).toList()}');
     expect(find.text('بدهی قبلی'), findsNothing);
     expect(find.text('تعیین نوع چاپ'), findsNothing);
     expect(tester.takeException(), isNull);
