@@ -145,12 +145,6 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     super.didChangeDependencies();
     if (_inited) return;
     _inited = true;
-    // keep the F-key shortcuts working even when no field has the focus
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final f = FocusManager.instance.primaryFocus;
-      if (f == null || f is FocusScopeNode) _keys.requestFocus();
-    });
     final store = StoreScope.read(context);
     final e = widget.edit;
     _proforma = e?.proforma ?? widget.proforma;
@@ -725,8 +719,10 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     final headerBg = const Color(0xFFC9DCF2);
     return CallbackShortcuts(
       bindings: bindings,
+      // keeps the F-key shortcuts working even when no field has the focus
       child: Focus(
         focusNode: _keys,
+        autofocus: true,
         child: Dialog(
         insetPadding: const EdgeInsets.all(10),
         clipBehavior: Clip.antiAlias,
