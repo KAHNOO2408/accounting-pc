@@ -30,7 +30,7 @@ const creditorRed = Color(0xFFD32F2F);
 
 Color? balanceColor(int debitPositive) => debitPositive > 0 ? debtorBlue : (debitPositive < 0 ? creditorRed : null);
 
-Widget _kb(String label, VoidCallback? onTap, {String key = '', IconData? icon, Color? color, double? height}) {
+Widget _kb(String label, VoidCallback? onTap, {String key = '', IconData? icon, Color? color, double? height, int lines = 1}) {
   final b = OutlinedButton(
     style: OutlinedButton.styleFrom(
       backgroundColor: color ?? Colors.white,
@@ -46,7 +46,11 @@ Widget _kb(String label, VoidCallback? onTap, {String key = '', IconData? icon, 
         const SizedBox(width: 4),
       ],
       if (icon != null) ...[Icon(icon, size: 16), const SizedBox(width: 4)],
-      Flexible(child: FittedBox(fit: BoxFit.scaleDown, child: Text(label, textAlign: TextAlign.center, maxLines: 1))),
+      Flexible(
+        child: lines > 1
+            ? Text(label, textAlign: TextAlign.center, maxLines: lines, overflow: TextOverflow.ellipsis)
+            : FittedBox(fit: BoxFit.scaleDown, child: Text(label, textAlign: TextAlign.center, maxLines: 1)),
+      ),
     ]),
   );
   return height == null ? b : SizedBox(height: height, child: b);
@@ -1470,7 +1474,7 @@ class _LedgerState extends State<_Ledger> {
     Widget tall(String label, String key, VoidCallback? on, {Color? color}) => SizedBox(
           width: 104,
           height: 88,
-          child: _kb(label, on, key: key, color: color, height: 88),
+          child: _kb(label, on, key: key, color: color, height: 88, lines: 3),
         );
 
     Widget sumBox(int v, {Color? color}) => Container(
