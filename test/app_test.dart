@@ -1344,7 +1344,7 @@ void main() {
       ..name = 'قدیمی';
     final j = s.toJson();
     (j['reportLayouts'] as List).add(legacy.toJson());
-    j['defaultLayouts'] = {'invoice': 'old'};
+    j['defaultLayouts'] = {...(j['defaultLayouts'] as Map), 'invoice': 'old'};
     final dir = Directory.systemTemp.createTempSync('lay');
     final st = Storage(dir)..save(j);
     final re = AppStore.open(st);
