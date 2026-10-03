@@ -5,6 +5,7 @@ import 'package:taraz/core/hash.dart';
 import 'package:taraz/core/jalali.dart';
 import 'package:taraz/data/chart.dart';
 import 'package:taraz/data/journal.dart';
+import 'package:taraz/data/kardex.dart';
 import 'package:taraz/data/models.dart';
 import 'package:taraz/data/storage.dart';
 import 'package:taraz/data/store.dart';
@@ -981,5 +982,105 @@ void main() {
     await tester.tap(find.text('ذخیره (Ctrl+S)'));
     await tester.pumpAndSettle();
     expect(s.txns.where((t) => t.amount == 25000).length, 1);
+  });
+
+  test('kardex: moving average, negative control and contra nature', () {
+    final s = _tempStore();
+    final p = Person(id: newId(), name: 'Buyer');
+    s.upsertPerson(p);
+    final prod = Product(id: newId(), name: 'Holder', code: '7020', sellPrice: 300, weight: 0.5);
+    s.upsertProduct(prod);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.purchase, number: 1, date: DateTime(2025, 1, 1), personId: p.id,
+        lines: [InvoiceLine(productId: prod.id, qty: 2, unitPrice: 100)]));
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.purchase, number: 2, date: DateTime(2025, 1, 2), personId: p.id,
+        lines: [InvoiceLine(productId: prod.id, qty: 2, unitPrice: 200)]));
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: DateTime(2025, 1, 3), personId: p.id,
+        lines: [InvoiceLine(productId: prod.id, qty: 3, unitPrice: 300)]));
+    final k = buildKardex(s, prod.id);
+    expect(k.length, 3);
+    expect(k[2].fi, 150);
+    expect(k[2].total, -450);
+    expect(k.last.balance, 1);
+    expect(k.last.value, 150);
+    expect(negativeKardexes(s), isEmpty);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 2, date: DateTime(2025, 1, 4), personId: p.id,
+        lines: [InvoiceLine(productId: prod.id, qty: 5, unitPrice: 300)]));
+    expect(negativeKardexes(s).length, 1);
+    expect(checkKardex(s, all: true), isNotEmpty);
+    expect(contraNature(s, includeStock: true).any((r) => r.tafsiliId == prod.id), isTrue);
+    expect(contraNature(s, includeStock: false).any((r) => r.tafsiliId == prod.id), isFalse);
+    // product extra info round-trips
+    prod.info['barcode'] = '6260001';
+    final back = Product.fromJson(prod.toJson());
+    expect(back.weight, 0.5);
+    expect(back.info['barcode'], '6260001');
+  });
+
+  testWidgets('stock list, kardex, product form and document controls', (tester) async {
+    tester.view.physicalSize = const Size(1600, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final s = _tempStore();
+    final prod = Product(id: newId(), name: 'Cable', code: '7001', sellPrice: 50, openingQty: 5);
+    s.upsertProduct(prod);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: DateTime.now(),
+        lines: [InvoiceLine(productId: prod.id, qty: 2, unitPrice: 50)]));
+    await tester.pumpWidget(TarazApp(store: s));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('خرید و فروش').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('جدول کالا').first);
+    await tester.pumpAndSettle();
+    expect(find.text('لیست اقلام موجودی'), findsOneWidget);
+    expect(find.text('7001'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('رویت کاردکس'));
+    await tester.pumpAndSettle();
+    expect(find.text('کاردکس کالا — Cable'), findsOneWidget);
+    expect(find.text('میانگین_متحرک'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('بازگشت').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('اطلاعات کالا').last);
+    await tester.pumpAndSettle();
+    expect(find.text('اطلاعات دفتر تفصیلی موجودی کالا'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('تایید').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('انصراف').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('کنترل اسناد').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('کنترل کاردکس').first);
+    await tester.pumpAndSettle();
+    expect(find.text('مایل به کنترل کاردکس های منفی هستید؟'), findsOneWidget);
+    await tester.tap(find.text('بله'));
+    await tester.pumpAndSettle();
+    expect(find.text('کاردکس منفی وجود ندارد'), findsOneWidget);
+    await tester.tap(find.text('تایید').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('چک کاردکس').first);
+    await tester.pumpAndSettle();
+    expect(find.text('شماره مبنا در سند'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('برگشت').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('گزارش خلاف ماهیت').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('بله'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pumpAndSettle();
+    expect(find.text('لیست دفاتری که ماهیت غیر مجاز دارند'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('تایید').last);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('نمایش اخطارهای ورودی').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('نمایش اخطارهای ورودی').first);
+    await tester.pumpAndSettle();
+    expect(find.text('گزارش پویا — اخطارهای ورودی'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

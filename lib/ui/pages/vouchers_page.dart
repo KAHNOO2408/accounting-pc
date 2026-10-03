@@ -60,12 +60,15 @@ String _stamp(int ms) {
 class VouchersPage extends StatefulWidget {
   const VouchersPage({super.key});
 
+  /// Document to select when the page opens next («رویت در لیست اسناد»).
+  static String? focusKey;
+
   @override
   State<VouchersPage> createState() => _VouchersPageState();
 }
 
 class _VouchersPageState extends State<VouchersPage> {
-  String? _sel;
+  String? _sel = VouchersPage.focusKey;
   String? _cut;
   String _centerFilter = '*';
   DateTime? _from, _to;
@@ -408,10 +411,13 @@ class _VouchersPageState extends State<VouchersPage> {
     final s = StoreScope.of(context);
     final th = Theme.of(context);
     final list = _docs(s);
+    VouchersPage.focusKey = null;
+    if (_sel != null && !list.any((d) => d.key == _sel)) _sel = null;
     if (_sel == null && list.isNotEmpty) _sel = list.last.key;
     if (!_scrolled && list.isNotEmpty) {
       _scrolled = true;
-      _scrollTo(list.length - 1);
+      final i = list.indexWhere((d) => d.key == _sel);
+      _scrollTo(i < 0 ? list.length - 1 : i);
     }
     final cur = _current(list);
 

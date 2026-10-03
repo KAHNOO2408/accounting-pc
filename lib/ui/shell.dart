@@ -27,6 +27,7 @@ import 'pages/ledger_pages.dart';
 import 'pages/ledger_reports.dart';
 import 'pages/people_page.dart';
 import 'pages/products_page.dart';
+import 'dialogs/stock_dialogs.dart';
 import 'pages/profit_page.dart';
 import 'pages/reports_page.dart';
 import 'pages/settings_page.dart';
@@ -180,8 +181,8 @@ final List<_Tab> _tabs = [
   _Tab('خرید و فروش', [
     _Group('مشاهده', [
       _Item('کاردکس کالا', Icons.inventory_outlined, _amber,
-          shortcut: 'Ctrl+3', activator: _k(LogicalKeyboardKey.digit3, ctrl: true), run: _page(AppPage.products)),
-      _Item('جدول کالا', Icons.grid_on_rounded, _amber, run: _page(AppPage.products)),
+          shortcut: 'Ctrl+3', activator: _k(LogicalKeyboardKey.digit3, ctrl: true), run: (c, _) => pickAndShowKardex(c)),
+      _Item('جدول کالا', Icons.grid_on_rounded, _amber, run: (c, _) => showStockList(c)),
       _Item('جدول اموال', Icons.chair_outlined, _violet, run: (c, _) => showAssetsTable(c)),
     ]),
     _Group('فروش', [
@@ -401,18 +402,18 @@ final List<_Tab> _tabs = [
   ]),
   _Tab('کنترل اسناد', [
     _Group('کنترل', [
-      const _Item('کنترل کاردکس', Icons.rule_rounded, _slate),
-      const _Item('چک کاردکس', Icons.playlist_add_check_rounded, _slate),
+      _Item('کنترل کاردکس', Icons.rule_rounded, _amber, run: (c, _) => runKardexControl(c)),
+      _Item('چک کاردکس', Icons.playlist_add_check_rounded, _amber, run: (c, _) => showKardexCheck(c)),
       _Item('کنترل کالا', Icons.inventory_2_outlined, _amber,
           run: _page(AppPage.products, hint: 'کالاهای کم‌موجود یا منفی با رنگ قرمز/نارنجی مشخص‌اند')),
       _Item('محاسبه قیمت تمام شده', Icons.functions_rounded, _amber,
           run: _page(AppPage.products, hint: 'قیمت تمام‌شده خودکار با میانگین موزون خرید محاسبه می‌شود')),
       _Item('کنترل تراز اسناد', Icons.balance_rounded, _blue, run: (c, _) => showTrialBalanceFilter(c)),
-      const _Item('گزارش خلاف ماهیت', Icons.report_gmailerrorred_outlined, _slate),
+      _Item('گزارش خلاف ماهیت', Icons.report_gmailerrorred_outlined, _red, run: (c, _) => runNatureReport(c)),
       _Item('کنترل چک‌های ثبت شده', Icons.request_page_outlined, _cyan, run: _page(AppPage.cheques)),
       _Item('مرتب کردن اسناد', Icons.sort_rounded, _blue,
           run: (c, _) => toast(c, 'اسناد همیشه بر اساس تاریخ و ترتیب ثبت مرتب هستند')),
-      const _Item('نمایش اخطارهای ورودی', Icons.warning_amber_rounded, _slate),
+      _Item('نمایش اخطارهای ورودی', Icons.warning_amber_rounded, _amber, run: (c, _) => showIncomingWarnings(c)),
       const _Item('مدیریت گروه مراکز دفتر', Icons.hub_outlined, _slate),
     ]),
   ]),
