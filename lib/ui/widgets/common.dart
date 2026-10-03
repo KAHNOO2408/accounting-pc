@@ -546,8 +546,11 @@ class FormDialog extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
               child: Row(
                 children: [
-                  if (leading != null) leading!,
-                  const Spacer(),
+                  if (leading != null)
+                    Expanded(child: Align(alignment: AlignmentDirectional.centerStart, child: leading!))
+                  else
+                    const Spacer(),
+                  const SizedBox(width: 8),
                   ...actions.expand((w) => [const SizedBox(width: 8), w]).skip(1),
                 ],
               ),

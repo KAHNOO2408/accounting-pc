@@ -1315,17 +1315,18 @@ class _QtyDialogState extends State<_QtyDialog> {
       child: FormDialog(
         title: 'تعیین تعداد — ${p.name}',
         width: 640,
-        leading: Wrap(spacing: 6, children: [
-          OutlinedButton(onPressed: () => showComingSoon(context, 'وضعیت سفارش'), child: const Text('وضعیت سفارش')),
-          OutlinedButton(onPressed: () => showProductHistory(context, p, mode: 0), child: const Text('کل فروش ها F2')),
-          OutlinedButton(onPressed: () => showProductHistory(context, p, personId: widget.personId, mode: 1), child: const Text('کل فروش های طرف حساب F3')),
-          OutlinedButton(onPressed: () => showProductHistory(context, p, mode: 2), child: const Text('کل خرید ها F4')),
-        ]),
         actions: [
           OutlinedButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف F10')),
           FilledButton(onPressed: _ok, child: const Text('تایید F9')),
         ],
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Wrap(spacing: 6, runSpacing: 6, children: [
+          OutlinedButton(onPressed: () => showComingSoon(context, 'وضعیت سفارش'), child: const Text('وضعیت سفارش')),
+          OutlinedButton(onPressed: () => showProductHistory(context, p, mode: 0), child: const Text('کل فروش ها F2')),
+          OutlinedButton(onPressed: () => showProductHistory(context, p, personId: widget.personId, mode: 1), child: const Text('کل فروش های طرف حساب F3')),
+          OutlinedButton(onPressed: () => showProductHistory(context, p, mode: 2), child: const Text('کل خرید ها F4')),
+        ]),
+          const SizedBox(height: 12),
           Row(children: [const SizedBox(width: 150, child: Text('نام انبار:')), Text(wh?.name ?? '', style: const TextStyle(fontWeight: FontWeight.w800))]),
           const SizedBox(height: 8),
           Row(children: [
