@@ -45,7 +45,7 @@ jobs:
         run: |
           flutter test --reporter expanded 2>&1 | Tee-Object -FilePath test.log
           if ($LASTEXITCODE -ne 0) {
-            $lines = Get-Content test.log | Select-String -Pattern 'FAILED|Expected|Actual|Exception|Error|error|overflowed|\[E\]|test/app_test.dart|lib/' | Select-Object -First 80
+            $lines = Get-Content test.log | Select-String -Pattern 'FAILED|Expected|Actual|Exception|Error|error|overflowed|\[E\]|test/app_test.dart|lib/|creator|page:|Which' | Select-Object -First 80
             $msg = ($lines | ForEach-Object { $_.Line.Trim() }) -join '%0A'
             Write-Output "::error title=tests::$msg"
             exit 1

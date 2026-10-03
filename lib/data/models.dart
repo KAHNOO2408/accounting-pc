@@ -487,6 +487,12 @@ class Product {
   bool archived;
   String note;
 
+  /// وزن (کیلوگرم) هر واحد.
+  double weight;
+
+  /// سایر مشخصات فرم «اطلاعات دفتر تفصیلی موجودی کالا» (بارکد، شماره فنی، …).
+  Map<String, String> info;
+
   Product({
     required this.id,
     required this.name,
@@ -501,13 +507,17 @@ class Product {
     this.minQty = 0,
     this.archived = false,
     this.note = '',
-  });
+    this.weight = 0,
+    Map<String, String>? info,
+  }) : info = info ?? {};
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
         'code': code,
         'unit': unit,
+        'weight': weight,
+        'info': info,
         'buyPrice': buyPrice,
         'sellPrice': sellPrice,
         'sellPrice2': sellPrice2,
@@ -533,6 +543,10 @@ class Product {
         minQty: _dbl(j['minQty']),
         archived: j['archived'] == true,
         note: _s(j['note']),
+        weight: _dbl(j['weight']),
+        info: (j['info'] is Map)
+            ? (j['info'] as Map).map((k, v) => MapEntry('$k', '$v'))
+            : null,
       );
 }
 

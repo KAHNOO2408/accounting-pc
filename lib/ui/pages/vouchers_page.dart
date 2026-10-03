@@ -485,7 +485,7 @@ class _VouchersPageState extends State<VouchersPage> {
           padding: const EdgeInsets.symmetric(horizontal: 2),
           child: OutlinedButton(
             style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               foregroundColor: color,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
@@ -539,7 +539,7 @@ class _VouchersPageState extends State<VouchersPage> {
                 ),
                 Container(
                   color: Brand.of(context).accent.withValues(alpha: 0.06),
-                  height: 88,
+                  height: 102,
                   child: TabBarView(children: [
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,

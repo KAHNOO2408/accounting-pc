@@ -102,71 +102,8 @@ class _PriceDialogState extends State<_PriceDialog> {
     Navigator.pop(context, v);
   }
 
-  void _history(int mode) {
-    final s = StoreScope.read(context);
-    final kind = mode == 2 ? InvoiceKind.purchase : InvoiceKind.sale;
-    final title = switch (mode) {
-      0 => 'کل فروش ها',
-      1 => 'کل فروش های طرف حساب',
-      _ => 'کل خرید ها',
-    };
-    if (mode == 1 && widget.personId == null) {
-      toast(context, 'طرف حساب انتخاب نشده است', error: true);
-      return;
-    }
-    final rows = <(Invoice, InvoiceLine)>[];
-    for (final inv in s.realInvoices) {
-      if (inv.kind != kind) continue;
-      if (mode == 1 && inv.personId != widget.personId) continue;
-      for (final l in inv.lines) {
-        if (l.productId == widget.product.id) rows.add((inv, l));
-      }
-    }
-    rows.sort((a, b) => b.$1.date.compareTo(a.$1.date));
-    showDialog<void>(
-      context: context,
-      builder: (ctx) {
-        final th = Theme.of(ctx);
-        return FormDialog(
-          title: '$title — ${widget.product.name}',
-          width: 720,
-          actions: [FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('بستن'))],
-          child: rows.isEmpty
-              ? const Padding(padding: EdgeInsets.all(24), child: Center(child: Text('سابقه‌ای ثبت نشده')))
-              : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                  DefaultTextStyle(
-                    style: th.textTheme.labelMedium!.copyWith(fontWeight: FontWeight.w800, color: th.hintColor),
-                    child: const Row(children: [
-                      SizedBox(width: 100, child: Text('تاریخ')),
-                      SizedBox(width: 80, child: Text('شماره')),
-                      Expanded(child: Text('طرف حساب')),
-                      SizedBox(width: 70, child: Text('تعداد')),
-                      SizedBox(width: 130, child: Text('فی', textAlign: TextAlign.left)),
-                    ]),
-                  ),
-                  const Divider(),
-                  for (final (inv, l) in rows)
-                    InkWell(
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        setState(() => _prices[_sel].text = groupDigits(l.unitPrice));
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Row(children: [
-                          SizedBox(width: 100, child: Text(jFormat(inv.date))),
-                          SizedBox(width: 80, child: Text('${inv.number}')),
-                          Expanded(child: Text(s.person(inv.personId)?.name ?? '—', overflow: TextOverflow.ellipsis)),
-                          SizedBox(width: 70, child: Text(fmtQty(l.qty))),
-                          SizedBox(width: 130, child: Align(alignment: Alignment.centerLeft, child: Money(l.unitPrice))),
-                        ]),
-                      ),
-                    ),
-                ]),
-        );
-      },
-    );
-  }
+  void _history(int mode) => showProductHistory(context, widget.product,
+      personId: widget.personId, mode: mode, onPick: (price) => setState(() => _prices[_sel].text = groupDigits(price)));
 
   @override
   Widget build(BuildContext context) {
@@ -261,4 +198,73 @@ class _PriceDialogState extends State<_PriceDialog> {
       ),
     );
   }
+}
+
+/// «کل فروش ها» (0), «کل فروش های طرف حساب» (1) and «کل خرید ها» (2) of a product.
+void showProductHistory(BuildContext context, Product product, {String? personId, required int mode, ValueChanged<int>? onPick}) {
+  final s = StoreScope.read(context);
+  final kind = mode == 2 ? InvoiceKind.purchase : InvoiceKind.sale;
+  final title = switch (mode) {
+    0 => 'کل فروش ها',
+    1 => 'کل فروش های طرف حساب',
+    _ => 'کل خرید ها',
+  };
+  if (mode == 1 && personId == null) {
+    toast(context, 'طرف حساب انتخاب نشده است', error: true);
+    return;
+  }
+  final rows = <(Invoice, InvoiceLine)>[];
+  for (final inv in s.realInvoices) {
+    if (inv.kind != kind) continue;
+    if (mode == 1 && inv.personId != personId) continue;
+    for (final l in inv.lines) {
+      if (l.productId == product.id) rows.add((inv, l));
+    }
+  }
+  rows.sort((a, b) => b.$1.date.compareTo(a.$1.date));
+  showDialog<void>(
+    context: context,
+    builder: (ctx) {
+      final th = Theme.of(ctx);
+      return FormDialog(
+        title: '$title — ${product.name}',
+        width: 720,
+        actions: [FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('بستن'))],
+        child: rows.isEmpty
+            ? const Padding(padding: EdgeInsets.all(24), child: Center(child: Text('سابقه‌ای ثبت نشده')))
+            : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                DefaultTextStyle(
+                  style: th.textTheme.labelMedium!.copyWith(fontWeight: FontWeight.w800, color: th.hintColor),
+                  child: const Row(children: [
+                    SizedBox(width: 100, child: Text('تاریخ')),
+                    SizedBox(width: 80, child: Text('شماره')),
+                    Expanded(child: Text('طرف حساب')),
+                    SizedBox(width: 70, child: Text('تعداد')),
+                    SizedBox(width: 130, child: Text('فی', textAlign: TextAlign.left)),
+                  ]),
+                ),
+                const Divider(),
+                for (final (inv, l) in rows)
+                  InkWell(
+                    onTap: onPick == null
+                        ? null
+                        : () {
+                            Navigator.pop(ctx);
+                            onPick(l.unitPrice);
+                          },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Row(children: [
+                        SizedBox(width: 100, child: Text(jFormat(inv.date))),
+                        SizedBox(width: 80, child: Text('${inv.number}')),
+                        Expanded(child: Text(s.person(inv.personId)?.name ?? '—', overflow: TextOverflow.ellipsis)),
+                        SizedBox(width: 70, child: Text(fmtQty(l.qty))),
+                        SizedBox(width: 130, child: Align(alignment: Alignment.centerLeft, child: Money(l.unitPrice))),
+                      ]),
+                    ),
+                  ),
+              ]),
+      );
+    },
+  );
 }

@@ -722,7 +722,7 @@ void main() {
       await tester.pumpWidget(const SizedBox());
       await tester.pumpWidget(TarazApp(store: s, initialPage: page));
       await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull, reason: page.name);
+      expect(tester.takeException(), isNull, reason: 'page: ${page.name}');
     }
 
     for (final tab in ['خرید و فروش', 'عملیات کالا', 'مالی', 'مالی ویژه', 'هزینه و درآمد', 'گزارشات', 'متفرقه', 'کنترل اسناد', 'خروج و پشتیبان']) {
@@ -918,16 +918,24 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('فاکتور فروش').first);
     await tester.pumpAndSettle();
-    expect(find.text('تایید و تسویه (F9)'), findsOneWidget);
-    // type a product and quantity
-    final fields = find.byType(TextField);
-    await tester.enterText(find.descendant(of: find.byType(RawAutocomplete<Product>), matching: find.byType(TextField)), 'Cable');
+    expect(find.text('تعیین نوع چاپ'), findsOneWidget);
+    expect(find.text('اقلام کالا'), findsWidgets);
+    expect(tester.takeException(), isNull);
+    // type a product → «تعیین تعداد» → price window
+    await tester.enterText(find.descendant(of: find.byType(RawAutocomplete<Product>), matching: find.byType(TextField)).first, 'Cable');
     await tester.pumpAndSettle();
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
-    expect(fields, findsWidgets);
-    // print type menu → warehouse slip → report builder → new template
-    await tester.tap(find.text('تعیین نوع چاپ (F12)'));
+    expect(find.textContaining('تعیین تعداد'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('تایید F9').last);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('تایید F9').last);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    // print type menu → warehouse slip → report builder → new layout in the band designer
+    await tester.tap(find.text('تعیین نوع چاپ'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('چاپ حواله انبار').last);
     await tester.pumpAndSettle();
@@ -935,17 +943,18 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.tap(find.text('ساخت گزارش'));
     await tester.pumpAndSettle();
+    expect(find.text('Header1'), findsWidgets);
     expect(tester.takeException(), isNull);
-    await tester.tap(find.text('ذخیره طرح (F9)'));
+    await tester.tap(find.text('ذخیره طرح (F9)').last);
     await tester.pumpAndSettle();
-    expect(s.printTemplates.length, 1);
+    expect(s.reportLayouts.length, 1);
     await tester.tap(find.text('انصراف (F10)').last);
     await tester.pumpAndSettle();
     expect(s.invoices.length, 2);
 
     // settle in cash from the «نحوه دریافت» window
     final cashBefore = s.balance(s.accounts.first.id);
-    await tester.tap(find.text('تایید و تسویه (F9)'));
+    await tester.tap(find.text('تایید').first);
     await tester.pumpAndSettle();
     expect(find.text('بدهی قبلی'), findsOneWidget);
     await tester.tap(find.text('دریافت نقدی').last);
