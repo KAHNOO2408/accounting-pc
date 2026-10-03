@@ -95,7 +95,7 @@ class _AccountPicker extends StatelessWidget {
           value: moeen,
           items: [
             const DropdownMenuItem<String?>(value: null, child: Text('— همه —')),
-            if (k != null) for (final x in k.moeens) DropdownMenuItem<String?>(value: x.code, child: Text('${x.code}  ${x.name}')),
+            if (k != null) for (final x in k.ledgers) DropdownMenuItem<String?>(value: x.code, child: Text('${x.code}  ${x.name}')),
           ],
           onChanged: (v) => onChanged(kol, v, null),
         ),

@@ -591,7 +591,7 @@ class _LineDialogState extends State<_LineDialog> {
                     _moeen = null;
                     _tafsili = null;
                     final k = chart.firstWhere((k) => k.code == v);
-                    if (k.moeens.length == 1) _moeen = k.moeens.first.code;
+                    if (k.ledgers.length == 1) _moeen = k.ledgers.first.code;
                   }),
                 ),
               ),
@@ -602,7 +602,7 @@ class _LineDialogState extends State<_LineDialog> {
                   value: _moeen,
                   items: [
                     if (kol != null)
-                      for (final x in kol.moeens) DropdownMenuItem<String?>(value: x.code, child: Text('${x.code}  ${x.name}')),
+                      for (final x in kol.ledgers) DropdownMenuItem<String?>(value: x.code, child: Text('${x.code}  ${x.name}')),
                   ],
                   onChanged: (v) => setState(() {
                     _moeen = v;

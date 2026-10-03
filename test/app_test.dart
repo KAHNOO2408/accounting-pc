@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:taraz/core/format.dart';
 import 'package:taraz/core/hash.dart';
 import 'package:taraz/core/jalali.dart';
+import 'package:taraz/data/books.dart';
 import 'package:taraz/data/chart.dart';
 import 'package:taraz/data/journal.dart';
 import 'package:taraz/data/kardex.dart';
@@ -11,10 +12,12 @@ import 'package:taraz/data/report_layout.dart';
 import 'package:taraz/data/storage.dart';
 import 'package:taraz/data/store.dart';
 import 'package:taraz/main.dart';
+import 'package:taraz/ui/dialogs/books_dialogs.dart';
 import 'package:taraz/ui/dialogs/composite_dialogs.dart';
 import 'package:taraz/ui/dialogs/invoice_editor.dart';
 import 'package:taraz/ui/dialogs/ledger_dialogs.dart';
 import 'package:taraz/ui/dialogs/price_dialog.dart';
+import 'package:taraz/ui/dialogs/sakan_tools.dart';
 import 'package:taraz/ui/print_designer.dart';
 import 'package:taraz/ui/shell.dart';
 import 'package:taraz/ui/widgets/common.dart';
@@ -1229,5 +1232,92 @@ void main() {
     await tester.tap(find.text('سایر کل ها F8'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
+  });
+
+  test('recycle bin keeps deleted documents and restores them', () {
+    final s = _tempStore();
+    final p = Person(id: newId(), name: 'Ali');
+    s.upsertPerson(p);
+    final prod = Product(id: newId(), name: 'Cable', sellPrice: 50, openingQty: 5);
+    s.upsertProduct(prod);
+    final inv = Invoice(id: newId(), kind: InvoiceKind.sale, number: 9, date: DateTime(2025, 2, 2), personId: p.id,
+        lines: [InvoiceLine(productId: prod.id, qty: 2, unitPrice: 50)]);
+    s.saveInvoice(inv);
+    s.removeInvoice(inv.id);
+    expect(s.invoices, isEmpty);
+    expect(s.recycle.length, 1);
+    expect(s.restoreRecycled(s.recycle.first.id), isNull);
+    expect(s.invoices.length, 1);
+    expect(s.recycle, isEmpty);
+    expect(s.stock(prod.id), 3);
+    // permanent delete
+    s.removeInvoice(inv.id);
+    s.clearRecycle();
+    expect(s.recycle, isEmpty);
+    // user ledgers
+    final code = s.addMoeen('107', 'وام کارکنان');
+    expect(code, '10704');
+    expect(findMoeen(code)?.name, 'وام کارکنان');
+    expect(s.editMoeen(mCash, name: 'x'), isNotNull);
+    expect(s.editMoeen(code, remove: true), isNull);
+    expect(findMoeen(code), isNull);
+  });
+
+  test('financial books: create, copy master data and carry balances', () {
+    final dir = Directory.systemTemp.createTempSync('books');
+    final reg = BookRegistry(dir);
+    expect(reg.active.length, 1);
+    final main = reg.open('main');
+    main.completeSetup(ownerName: 'Ali');
+    final p = Person(id: newId(), name: 'Reza');
+    main.upsertPerson(p);
+    final prod = Product(id: newId(), name: 'Cable', sellPrice: 50, buyPrice: 30, openingQty: 4);
+    main.upsertProduct(prod);
+    main.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: DateTime.now(), personId: p.id,
+        lines: [InvoiceLine(productId: prod.id, qty: 1, unitPrice: 50)]));
+    final b = reg.create(BookInfo(id: '', title: 'دفتر مالی ۱۴۰۶'), main, copyOf: main);
+    expect(reg.active.length, 2);
+    final nb = reg.open(b.id);
+    expect(nb.people.length, 1);
+    expect(nb.invoices, isEmpty);
+    reg.transferBalances(main, b.id);
+    final after = reg.open(b.id);
+    expect(after.personBalance(p.id), 50);
+    expect(after.stock(prod.id), 3);
+    expect(BookRegistry.idOf(after.storage.dir), b.id);
+    expect(BookRegistry.baseOf(after.storage.dir).path, dir.path);
+  });
+
+  testWidgets('books, reports files, center report, recycle bin and chart coding windows open', (tester) async {
+    tester.view.physicalSize = const Size(1600, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final s = _tempStore();
+    s.completeSetup(ownerName: 'Ali');
+    final p = Person(id: newId(), name: 'Reza');
+    s.upsertPerson(p);
+    final inv = Invoice(id: newId(), kind: InvoiceKind.sale, number: 4, date: DateTime.now(), personId: p.id,
+        lines: [InvoiceLine(title: 'خدمت', qty: 1, unitPrice: 70)]);
+    s.saveInvoice(inv);
+    s.removeInvoice(inv.id);
+    await tester.pumpWidget(TarazApp(store: s));
+    await tester.pumpAndSettle();
+    final ctx = tester.element(find.text('خرید و فروش').first);
+    for (final (open, title) in [
+      (() => showTransferToBook(ctx), 'انتقال حسابهای دفتر به دفتر جدید'),
+      (() => showBooksManager(ctx), 'مدیریت دفاتر مالی'),
+      (() => showReportFiles(ctx), 'مدیریت فایل های گزارش'),
+      (() => showCenterGroupReport(ctx), 'تهیه گزارش از گروه مراکز دفتر'),
+      (() => showRecycleBin(ctx), 'سطل بازیافت'),
+      (() => showChartCoding(ctx), 'کدبندی دفاتر کل و معین'),
+    ]) {
+      open();
+      await tester.pumpAndSettle();
+      expect(find.text(title), findsWidgets, reason: 'page: $title');
+      expect(tester.takeException(), isNull, reason: 'page: $title');
+      Navigator.of(tester.element(find.text(title).last)).pop();
+      await tester.pumpAndSettle();
+    }
+    expect(s.recycle.length, 1);
   });
 }

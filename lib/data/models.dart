@@ -1382,6 +1382,75 @@ class AppUser {
       );
 }
 
+/// One entry of «مدیریت فایل های گزارش».
+class ReportFile {
+  String id;
+  String folder; // محل استقرار گزارش
+  String name; // نام گزارش
+  String file; // فایل گزارش
+  bool selected; // منتخب پیش فرض
+
+  ReportFile({required this.id, this.folder = '', required this.name, required this.file, this.selected = false});
+
+  Map<String, dynamic> toJson() => {'id': id, 'folder': folder, 'name': name, 'file': file, if (selected) 'sel': true};
+
+  factory ReportFile.fromJson(Map<String, dynamic> j) =>
+      ReportFile(id: _s(j['id']), folder: _s(j['folder']), name: _s(j['name']), file: _s(j['file']), selected: j['sel'] == true);
+}
+
+/// A deleted document kept in «سطل بازیافت».
+class RecycleItem {
+  String id;
+  String key; // 'v:id' / 'inv:id' / 'txn:id'
+  DateTime deletedAt;
+  String userId;
+  int number;
+  DateTime date;
+  String desc;
+  int amount;
+
+  /// Saved objects: {'doc': …, 'meta': …, 'vouchers': [...], 'txns': [...]}.
+  Map<String, dynamic> payload;
+
+  RecycleItem({
+    required this.id,
+    required this.key,
+    required this.deletedAt,
+    this.userId = 'owner',
+    this.number = 0,
+    required this.date,
+    this.desc = '',
+    this.amount = 0,
+    Map<String, dynamic>? payload,
+  }) : payload = payload ?? {};
+
+  String get kind => key.substring(0, key.indexOf(':'));
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'k': key,
+        'at': deletedAt.toIso8601String(),
+        'u': userId,
+        'n': number,
+        'd': _d(date),
+        't': desc,
+        'a': amount,
+        'p': payload,
+      };
+
+  factory RecycleItem.fromJson(Map<String, dynamic> j) => RecycleItem(
+        id: _s(j['id']),
+        key: _s(j['k']),
+        deletedAt: DateTime.tryParse(_s(j['at'])) ?? DateTime.now(),
+        userId: _s(j['u']).isEmpty ? 'owner' : _s(j['u']),
+        number: _i(j['n']),
+        date: _p(j['d']),
+        desc: _s(j['t']),
+        amount: _i(j['a']),
+        payload: j['p'] is Map<String, dynamic> ? j['p'] as Map<String, dynamic> : null,
+      );
+}
+
 /// One line of «ردپای کاربران».
 class AuditEntry {
   String userId;

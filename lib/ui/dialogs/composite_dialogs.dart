@@ -1183,7 +1183,7 @@ class _ExpenseDialogState extends State<_ExpenseDialog> with SingleTickerProvide
     final s = StoreScope.of(context);
     final th = Theme.of(context);
     final size = MediaQuery.of(context).size;
-    final liabMoeens = [for (final k in chart.where((k) => k.side == Side.liability || k.side == Side.asset || k.side == Side.expense)) ...k.moeens.where((m) => !m.hasEntity)];
+    final liabMoeens = [for (final k in chart.where((k) => k.side == Side.liability || k.side == Side.asset || k.side == Side.expense)) ...k.ledgers.where((m) => !m.hasEntity)];
     final remaining = _total - _allocated;
     return CallbackShortcuts(
       bindings: {

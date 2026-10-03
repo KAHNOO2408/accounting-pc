@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'data/store.dart';
 import 'ui/auth/auth_screens.dart';
+import 'ui/dialogs/books_dialogs.dart' show BookSwitch;
 import 'ui/shell.dart';
 import 'ui/theme.dart';
 
@@ -19,7 +20,28 @@ void main() {
     runApp(_ErrorApp(error: error));
     return;
   }
-  runApp(TarazApp(store: store));
+  runApp(BookRoot(store: store));
+}
+
+/// Holds the open financial book and swaps it («ورود به دفاتر دیگر»).
+class BookRoot extends StatefulWidget {
+  final AppStore store;
+  const BookRoot({super.key, required this.store});
+
+  @override
+  State<BookRoot> createState() => _BookRootState();
+}
+
+class _BookRootState extends State<BookRoot> {
+  late AppStore _store = widget.store;
+
+  void _switch(AppStore s) => setState(() => _store = s);
+
+  @override
+  Widget build(BuildContext context) => BookSwitch(
+        open: _switch,
+        child: TarazApp(key: ObjectKey(_store), store: _store),
+      );
 }
 
 class TarazApp extends StatelessWidget {

@@ -40,7 +40,7 @@ class _Grp {
 }
 
 List<_Grp> _groupsOf(Side side) => [
-      for (final k in chart.where((k) => k.side == side)) _Grp(k.name, [for (final m in k.moeens) m.code]),
+      for (final k in chart.where((k) => k.side == side)) _Grp(k.name, [for (final m in k.ledgers) m.code]),
     ];
 
 class OpeningDialog extends StatefulWidget {

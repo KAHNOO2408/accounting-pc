@@ -29,6 +29,8 @@ import 'pages/people_page.dart';
 import 'pages/products_page.dart';
 import 'dialogs/stock_dialogs.dart';
 import 'dialogs/ledger_dialogs.dart';
+import 'dialogs/books_dialogs.dart';
+import 'dialogs/sakan_tools.dart';
 import 'pages/profit_page.dart';
 import 'pages/reports_page.dart';
 import 'pages/settings_page.dart';
@@ -160,7 +162,7 @@ final List<_Tab> _tabs = [
           run: (c, _) => showProfitSplitDialog(c, shareholders: true)),
       _Item('سند اختتامیه', Icons.sports_score_rounded, _red, run: (c, _) => showClosingDialog(c)),
       _Item('انتقال تراز اختتامیه به تراز افتتاحیه', Icons.move_down_rounded, _green, run: (c, _) => showTransferClosingDialog(c)),
-      const _Item('انتقال حساب‌ها به دفتر', Icons.drive_file_move_outline, _slate),
+      _Item('انتقال حساب‌ها به دفتر', Icons.drive_file_move_outline, _violet, run: (c, _) => showTransferToBook(c)),
     ]),
     _Group('تسعیر نرخ', [
       const _Item('اعمال کاهش در قیمت تمام شده کالا', Icons.trending_down_rounded, _red),
@@ -372,18 +374,18 @@ final List<_Tab> _tabs = [
       _Item('جدول اشخاص', Icons.people_alt_outlined, _violet, run: (c, _) => showAccountSelector(c)),
       _Item('جدول سرمایه‌داران', Icons.diamond_outlined, _violet, run: (c, _) => showAccountSelector(c, category: 'صاحبان سهام')),
       const _Item('جدول اشخاص ارزی', Icons.currency_exchange_rounded, _slate),
-      const _Item('مدیریت گزارشات', Icons.dashboard_customize_outlined, _slate),
-      const _Item('گزارش از گروه مراکز دفتر', Icons.account_tree_outlined, _slate),
+      _Item('مدیریت گزارشات', Icons.dashboard_customize_outlined, _cyan, run: (c, _) => showReportFiles(c)),
+      _Item('گزارش از گروه مراکز دفتر', Icons.account_tree_outlined, _amber, run: (c, _) => showCenterGroupReport(c)),
     ]),
   ]),
   _Tab('متفرقه', [
     _Group('تنظیمات', [
       _Item('تنظیمات', Icons.tune_rounded, _blue, run: _page(AppPage.settings)),
-      const _Item('سطل بازیافت', Icons.delete_outline_rounded, _slate),
+      _Item('سطل بازیافت', Icons.delete_outline_rounded, _red, run: (c, _) => showRecycleBin(c)),
     ]),
     _Group('متفرقه', [
-      const _Item('کدبندی دفاتر کل و معین', Icons.account_tree_outlined, _slate),
-      const _Item('معرفی دفاتر مالی', Icons.library_add_outlined, _slate),
+      _Item('کدبندی دفاتر کل و معین', Icons.account_tree_outlined, _blue, run: (c, _) => showChartCoding(c)),
+      _Item('معرفی دفاتر مالی', Icons.library_add_outlined, _green, run: (c, _) => showBooksManager(c)),
       _Item('مرکز اسناد', Icons.home_work_outlined, _amber, run: (c, _) => showDocCentersDialog(c)),
       const _Item('مرکز دفاتر', Icons.domain_outlined, _slate),
       const _Item('بازاریابان', Icons.campaign_outlined, _slate),
@@ -420,7 +422,8 @@ final List<_Tab> _tabs = [
   ]),
   _Tab('خروج و پشتیبان', [
     _Group('خروج', [
-      const _Item('ورود به دفاتر دیگر', Icons.folder_open_outlined, _slate, shortcut: 'F12'),
+      _Item('ورود به دفاتر دیگر', Icons.folder_open_outlined, _violet,
+          shortcut: 'F12', activator: _k(LogicalKeyboardKey.f12), run: (c, _) => openOtherBook(c)),
       _Item('خروج', Icons.power_settings_new_rounded, _red,
           shortcut: 'Ctrl+F12', activator: _k(LogicalKeyboardKey.f12, ctrl: true), run: (c, _) => confirmExit(c)),
       _Item('تهیه کپی نسخه پشتیبان', Icons.backup_outlined, _green,

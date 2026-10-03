@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import '../core/format.dart' show groupDigits;
 import '../core/hash.dart';
 import '../core/jalali.dart';
+import 'books.dart';
 import 'chart.dart';
 import 'models.dart';
 import 'report_layout.dart';
@@ -77,6 +78,18 @@ class AppStore extends ChangeNotifier {
   List<AppUser> users = [];
   List<AuditEntry> audit = [];
 
+  /// سطل بازیافت — deleted documents.
+  List<RecycleItem> recycle = [];
+
+  /// مدیریت گزارشات — report files.
+  List<ReportFile> reportFiles = [];
+
+  /// Ledgers hidden in «کدبندی دفاتر کل و معین».
+  Set<String> hiddenMoeens = {};
+
+  /// Ledgers (معین) made in «کدبندی دفاتر کل و معین»: code -> name.
+  Map<String, String> customMoeens = {};
+
   /// The signed-in user (not saved).
   String currentUserId = 'owner';
 
@@ -89,13 +102,18 @@ class AppStore extends ChangeNotifier {
 
   // ---------------------------------------------------------------- loading
 
-  static AppStore load() => open(Storage.init());
+  static AppStore load() {
+    final base = Storage.init();
+    final reg = BookRegistry(base.dir);
+    return open(reg.storageOf(reg.current));
+  }
 
   /// Opens (or initialises) the data stored in [s].
   static AppStore open(Storage s) {
     final store = AppStore(s);
     final data = s.read();
     if (data == null) {
+      extraMoeens = [];
       store._seed();
       store._persist();
     } else {
@@ -165,6 +183,13 @@ class AppStore extends ChangeNotifier {
     assets = list('assets').map(Asset.fromJson).toList();
     users = list('users').map(AppUser.fromJson).toList();
     audit = list('audit').map(AuditEntry.fromJson).toList();
+    recycle = list('recycle').map(RecycleItem.fromJson).toList();
+    reportFiles = list('reportFiles').map(ReportFile.fromJson).toList();
+    final cm = j['customMoeens'];
+    customMoeens = cm is Map ? {for (final e in cm.entries) '${e.key}': '${e.value}'} : {};
+    _applyCustomMoeens();
+    final hm = j['hiddenMoeens'];
+    hiddenMoeens = hm is List ? {for (final x in hm) '$x'} : {};
     final dc = j['docCenters'];
     docCenters = dc is List && dc.isNotEmpty ? [for (final x in dc) '$x'] : ['اصلی'];
     final dt = j['defaultTemplates'];
@@ -193,6 +218,45 @@ class AppStore extends ChangeNotifier {
     for (final p in people) {
       if (p.code == 0) p.code = nextTafsiliCode();
     }
+  }
+
+  void _applyCustomMoeens() {
+    extraMoeens = [for (final e in customMoeens.entries) Moeen(e.key, e.value)];
+  }
+
+  /// ساخت دفتر — a new ledger (معین) under kol [kolCode]. Returns its code.
+  String addMoeen(String kolCode, String name) {
+    final k = chart.firstWhere((k) => k.code == kolCode);
+    var n = 1;
+    for (final m in k.ledgers) {
+      final v = int.tryParse(m.code.substring(3)) ?? 0;
+      if (v >= n) n = v + 1;
+    }
+    final code = '$kolCode${n.toString().padLeft(2, '0')}';
+    customMoeens[code] = name.trim();
+    _applyCustomMoeens();
+    _commit();
+    return code;
+  }
+
+  /// Renames or removes (when unused) a ledger made by the user.
+  String? editMoeen(String code, {String? name, bool remove = false}) {
+    if (!customMoeens.containsKey(code)) return 'دفاتر پیش فرض قابل تغییر نیستند';
+    if (remove) {
+      final used = vouchers.any((v) => v.lines.any((l) => l.moeen == code)) || settings.openingOther.containsKey(code);
+      if (used) return 'این دفتر در اسناد استفاده شده است';
+      customMoeens.remove(code);
+    } else if (name != null && name.trim().isNotEmpty) {
+      customMoeens[code] = name.trim();
+    }
+    _applyCustomMoeens();
+    _commit();
+    return null;
+  }
+
+  void toggleMoeenHidden(String code) {
+    if (!hiddenMoeens.remove(code)) hiddenMoeens.add(code);
+    _commit();
   }
 
   void saveNotebook(String key, String text) {
@@ -228,6 +292,10 @@ class AppStore extends ChangeNotifier {
         'printTemplates': printTemplates.map((e) => e.toJson()).toList(),
         'reportLayouts': reportLayouts.map((e) => e.toJson()).toList(),
         'docMeta': {for (final e in docMeta.entries) e.key: e.value.toJson()},
+        'recycle': recycle.map((e) => e.toJson()).toList(),
+        'reportFiles': reportFiles.map((e) => e.toJson()).toList(),
+        'hiddenMoeens': hiddenMoeens.toList(),
+        'customMoeens': customMoeens,
         'notebooks': notebooks,
         'marks': {for (final e in marks.entries) if (e.value.isNotEmpty) e.key: e.value.toList()},
         'defaultLayouts': defaultLayouts,
@@ -263,6 +331,9 @@ class AppStore extends ChangeNotifier {
     _persist();
     notifyListeners();
   }
+
+  /// Saves and notifies (used when another component edits fields directly).
+  void saveNow() => _commit();
 
   // ---------------------------------------------------------------- lookups
 
@@ -586,6 +657,9 @@ class AppStore extends ChangeNotifier {
   void removeTxn(String id) {
     final t = txn(id);
     if (t == null) return;
+    if (t.invoiceId == null) {
+      _recycle('txn:$id', number: docMeta['txn:$id']?.number ?? 0, date: t.date, desc: '${t.type.label} ${t.note}'.trim(), amount: t.amount, payload: {'doc': t.toJson()});
+    }
     _log('حذف', '${t.type.label} ${groupDigits(t.amount)}', docDate: t.date);
     if (t.chequeId != null) {
       final c = cheque(t.chequeId);
@@ -951,6 +1025,82 @@ class AppStore extends ChangeNotifier {
     }
   }
 
+  // ---------------------------------------------------------------- سطل بازیافت
+
+  void _recycle(String key, {required int number, required DateTime date, required String desc, required int amount, required Map<String, dynamic> payload}) {
+    final m = docMeta[key];
+    recycle.add(RecycleItem(
+      id: newId(),
+      key: key,
+      deletedAt: DateTime.now(),
+      userId: currentUserId,
+      number: number,
+      date: date,
+      desc: desc,
+      amount: amount,
+      payload: {...payload, if (m != null) 'meta': m.toJson()},
+    ));
+  }
+
+  /// Voucher kinds that change other records and so cannot simply be put back.
+  static const _noRestore = {'assetBuy', 'assetSell', 'depreciation', 'chequeMove', 'closing', 'reopen'};
+
+  /// بازیابی سند. Returns an error message, or null when restored.
+  String? restoreRecycled(String id) {
+    final r = recycle.where((x) => x.id == id).firstOrNull;
+    if (r == null) return 'سند پیدا نشد';
+    final doc = r.payload['doc'];
+    if (doc is! Map<String, dynamic>) return 'اطلاعات سند ناقص است';
+    final key = r.key;
+    switch (r.kind) {
+      case 'v':
+        final v = Voucher.fromJson(doc);
+        if (_noRestore.contains(v.kind)) return 'این نوع سند قابل بازیابی نیست';
+        if (vouchers.any((x) => x.id == v.id)) return 'این سند قبلاً بازیابی شده است';
+        if (vouchers.any((x) => x.number == v.number)) v.number = nextVoucherNumber();
+        vouchers.add(v);
+      case 'inv':
+        final inv = Invoice.fromJson(doc);
+        if (invoices.any((x) => x.id == inv.id)) return 'این سند قبلاً بازیابی شده است';
+        invoices.add(inv);
+        for (final x in (r.payload['vouchers'] as List? ?? const [])) {
+          if (x is Map<String, dynamic>) vouchers.add(Voucher.fromJson(x));
+        }
+        for (final x in (r.payload['txns'] as List? ?? const [])) {
+          if (x is Map<String, dynamic>) txns.add(Txn.fromJson(x));
+        }
+      default:
+        final t = Txn.fromJson(doc);
+        if (txns.any((x) => x.id == t.id)) return 'این سند قبلاً بازیابی شده است';
+        txns.add(t);
+    }
+    final m = r.payload['meta'];
+    if (m is Map<String, dynamic>) {
+      final meta = DocMeta.fromJson(m);
+      if (!key.startsWith('v:') && docMeta.values.any((x) => x.number == meta.number)) meta.number = 0;
+      docMeta[key] = meta;
+    }
+    _touchDoc(key);
+    recycle.remove(r);
+    _sortTxns();
+    _log('بازیابی', r.desc, docDate: r.date, docNo: r.number);
+    _commit();
+    return null;
+  }
+
+  /// حذف سند from the bin (permanent).
+  void purgeRecycled(String id) {
+    recycle.removeWhere((x) => x.id == id);
+    _commit();
+  }
+
+  /// پاک کردن سطل بازیافت
+  void clearRecycle() {
+    recycle.clear();
+    _log('حذف', 'پاک کردن سطل بازیافت');
+    _commit();
+  }
+
   void _log(String action, String desc, {DateTime? docDate, int? docNo}) {
     audit.add(AuditEntry(userId: currentUserId, at: DateTime.now(), docDate: docDate, action: action, desc: desc, computer: _computer, docNo: docNo));
     if (audit.length > 20000) audit.removeRange(0, audit.length - 20000);
@@ -1248,6 +1398,15 @@ class AppStore extends ChangeNotifier {
 
   void removeInvoice(String id) {
     final inv = invoices.where((i) => i.id == id).firstOrNull;
+    if (inv != null && !inv.proforma) {
+      final who = person(inv.personId)?.name ?? 'متفرقه';
+      _recycle('inv:$id', number: docMeta['inv:$id']?.number ?? inv.number, date: inv.date,
+          desc: '${inv.kind.label} ${inv.number}  ${inv.lines.length} قلم کالا  $who', amount: inv.total, payload: {
+        'doc': inv.toJson(),
+        'vouchers': [for (final v in vouchers.where((v) => v.kind == 'settle' && v.meta['invoice'] == id)) v.toJson()],
+        'txns': [for (final t in txns.where((t) => t.invoiceId == id)) t.toJson()],
+      });
+    }
     if (inv != null) _log('حذف', '${inv.kind.label} ${inv.number}', docDate: inv.date, docNo: inv.number);
     vouchers.removeWhere((v) => v.kind == 'settle' && v.meta['invoice'] == id);
     invoices.removeWhere((i) => i.id == id);
@@ -1522,8 +1681,11 @@ class AppStore extends ChangeNotifier {
     return v;
   }
 
-  void removeVoucher(String id) {
+  void removeVoucher(String id, {bool recycleIt = true}) {
     final v = vouchers.where((x) => x.id == id).firstOrNull;
+    if (v != null && recycleIt) {
+      _recycle('v:$id', number: v.number, date: v.date, desc: '${v.kindLabel} ${v.desc}'.trim(), amount: v.totalDebit, payload: {'doc': v.toJson()});
+    }
     if (v != null) _log('حذف', '${v.kindLabel} ${v.desc}'.trim(), docDate: v.date, docNo: v.number);
     if (v != null && v.kind == 'assetBuy') {
       final ids = {for (final a in assets.where((a) => a.buyVoucherId == id)) a.id};
@@ -1581,7 +1743,7 @@ class AppStore extends ChangeNotifier {
     int? number,
     String desc = '',
   }) {
-    if (edit != null) removeVoucher(edit.id);
+    if (edit != null) removeVoucher(edit.id, recycleIt: false);
     for (final id in chequeIds) {
       cheque(id)?.holderId = toId;
     }

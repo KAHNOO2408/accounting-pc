@@ -29,6 +29,9 @@ class Kol {
   final Side side;
   final List<Moeen> moeens;
   const Kol(this.code, this.name, this.side, this.moeens);
+
+  /// Built-in ledgers plus the ones made in «کدبندی دفاتر کل و معین».
+  List<Moeen> get ledgers => [...moeens, ...extraMoeens.where((m) => m.kolCode == code)];
 }
 
 // Codes used by app logic.
@@ -159,11 +162,14 @@ Kol kolOf(String moeenCode) => chart.firstWhere((k) => k.code == moeenCode.subst
 Moeen? findMoeen(String? code) {
   if (code == null || code.length < 3) return null;
   for (final k in chart) {
-    for (final m in k.moeens) {
+    for (final m in k.ledgers) {
       if (m.code == code) return m;
     }
   }
   return null;
 }
 
-Iterable<Moeen> get allMoeens => chart.expand((k) => k.moeens);
+Iterable<Moeen> get allMoeens => chart.expand((k) => k.ledgers);
+
+/// Ledgers (معین) the user added; loaded from the store.
+List<Moeen> extraMoeens = [];
