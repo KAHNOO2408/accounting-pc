@@ -137,7 +137,7 @@ class _BankDialogState extends State<_BankDialog> {
       child: SakanWindow(
         title: 'تفصیلی بانک',
         width: 900,
-        height: 470,
+        height: 580,
         body: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
