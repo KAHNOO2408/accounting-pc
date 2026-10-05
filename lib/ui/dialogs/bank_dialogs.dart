@@ -14,7 +14,109 @@ import '../../data/store.dart';
 import '../print.dart';
 import '../widgets/common.dart';
 import '../widgets/sakan.dart';
-import 'ledger_dialogs.dart' show showAccountSelector;
+import 'ledger_dialogs.dart' show showAccountSelector, balanceColor;
+
+/// Asks for the real balance an account has right now. Returns the signed
+/// value (negative = بستانکار / overdrawn) or null when cancelled.
+Future<int?> askRealBalance(BuildContext context, String name, int current) =>
+    showDialog<int>(context: context, builder: (_) => _RealBalance(name: name, current: current));
+
+class _RealBalance extends StatefulWidget {
+  final String name;
+  final int current;
+  const _RealBalance({required this.name, required this.current});
+
+  @override
+  State<_RealBalance> createState() => _RealBalanceState();
+}
+
+class _RealBalanceState extends State<_RealBalance> {
+  late final _c = TextEditingController(text: groupDigits(widget.current.abs()));
+  late bool _neg = widget.current < 0;
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  void _ok() => Navigator.pop(context, parseMoney(_c.text) * (_neg ? -1 : 1));
+
+  @override
+  Widget build(BuildContext context) {
+    final target = parseMoney(_c.text) * (_neg ? -1 : 1);
+    final diff = target - widget.current;
+    return CallbackShortcuts(
+      bindings: {const SingleActivator(LogicalKeyboardKey.f9): _ok},
+      child: SakanWindow(
+        title: 'اصلاح موجودی',
+        width: 520,
+        height: 330,
+        body: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Text(widget.name, style: const TextStyle(fontWeight: FontWeight.w800)),
+            const SizedBox(height: 8),
+            Row(children: [
+              const SizedBox(width: 150, child: Text('مانده فعلی در برنامه:', style: TextStyle(fontWeight: FontWeight.w700))),
+              Text('${groupDigits(widget.current.abs())}${widget.current < 0 ? ' (بستانکار)' : ''}',
+                  style: TextStyle(fontWeight: FontWeight.w800, color: balanceColor(widget.current))),
+            ]),
+            const SizedBox(height: 10),
+            Row(children: [
+              const SizedBox(width: 150, child: Text('موجودی واقعی بانک:', style: TextStyle(fontWeight: FontWeight.w700))),
+              Expanded(
+                child: TextField(
+                  key: const ValueKey('realBalance'),
+                  controller: _c,
+                  autofocus: true,
+                  textDirection: TextDirection.ltr,
+                  inputFormatters: [MoneyInputFormatter()],
+                  decoration: const InputDecoration(isDense: true, filled: true, fillColor: Color(0xFFFFF4B8)),
+                  onChanged: (_) => setState(() {}),
+                  onSubmitted: (_) => _ok(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () => setState(() => _neg = !_neg),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Checkbox(value: _neg, onChanged: (v) => setState(() => _neg = v ?? false)),
+                  const Text('منفی (بستانکار)'),
+                ]),
+              ),
+            ]),
+            const SizedBox(height: 10),
+            Text(
+              diff == 0 ? 'تفاوتی وجود ندارد.' : 'موجودی اول دوره ${groupDigits(diff.abs())} ${diff > 0 ? 'افزایش' : 'کاهش'} می‌یابد تا مانده برابر موجودی واقعی شود.',
+              style: TextStyle(color: diff == 0 ? Colors.black54 : sakanSkyDark, fontWeight: FontWeight.w600),
+            ),
+            const Spacer(),
+            Row(children: [
+              const Spacer(),
+              SizedBox(width: 150, child: sakanBtn('تایید', _ok, key: 'F9', icon: Icons.check_circle_rounded, color: sakanGreen)),
+              const SizedBox(width: 6),
+              SizedBox(width: 120, child: sakanBtn('انصراف', () => Navigator.pop(context), icon: Icons.cancel_rounded, color: sakanPink)),
+            ]),
+          ]),
+        ),
+      ),
+    );
+  }
+}
+
+/// «اصلاح موجودی» for a saved account: sets its opening balance so the
+/// current balance equals what the user says the bank really holds.
+Future<bool> fixAccountBalance(BuildContext context, Account a) async {
+  final s = StoreScope.read(context);
+  final cur = s.balance(a.id);
+  final target = await askRealBalance(context, a.name, cur);
+  if (target == null || target == cur) return false;
+  a.opening += target - cur;
+  s.upsertAccount(a);
+  if (context.mounted) toast(context, 'موجودی «${a.name}» اصلاح شد');
+  return true;
+}
 
 // ================================================================ اطلاعات دفتر تفصیلی بانک ها
 
@@ -34,7 +136,68 @@ class _BankDialogState extends State<_BankDialog> {
   final _c = <String, TextEditingController>{};
   bool _atm = false;
   bool _ask = false;
+  bool _cr = false; // موجودی اول دوره بستانکار (منفی)
   String? _err;
+
+  int get _opening => parseMoney(c('opening').text) * (_cr ? -1 : 1);
+
+  /// Current balance with the opening being edited in the form.
+  int _current(AppStore s) => _edit == null ? _opening : s.balance(_edit!.id) - _edit!.opening + _opening;
+
+  Future<void> _fix() async {
+    final s = StoreScope.read(context);
+    final cur = _current(s);
+    final target = await askRealBalance(context, c('bank').text.trim().isEmpty ? 'بانک' : c('bank').text.trim(), cur);
+    if (target == null || !mounted) return;
+    final op = _opening + target - cur;
+    setState(() {
+      c('opening').text = groupDigits(op.abs());
+      _cr = op < 0;
+    });
+  }
+
+  Widget _balanceBox(AppStore s) {
+    final cur = _current(s);
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(color: const Color(0xFFF3F9FF), border: Border.all(color: sakanSkyDark), borderRadius: BorderRadius.circular(6)),
+      child: Row(children: [
+        const SizedBox(width: 120, child: Text('موجودی اول دوره:', style: TextStyle(fontWeight: FontWeight.w700))),
+        Expanded(
+          child: TextField(
+            key: const ValueKey('bankOpening'),
+            controller: c('opening'),
+            textDirection: TextDirection.ltr,
+            inputFormatters: [MoneyInputFormatter()],
+            decoration: const InputDecoration(isDense: true, filled: true, fillColor: Color(0xFFFFF4B8)),
+            onChanged: (_) => setState(() {}),
+            onSubmitted: (_) => _save(),
+          ),
+        ),
+        const SizedBox(width: 6),
+        for (final cr in [false, true])
+          InkWell(
+            onTap: () => setState(() => _cr = cr),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Radio<bool>(value: cr, groupValue: _cr, onChanged: (v) => setState(() => _cr = v ?? false)),
+              Text(cr ? 'بستانکار' : 'بدهکار'),
+            ]),
+          ),
+        const SizedBox(width: 14),
+        const Text('مانده فعلی: ', style: TextStyle(fontWeight: FontWeight.w700)),
+        SizedBox(
+          width: 150,
+          child: Text(
+            groupDigits(cur.abs()) + (cur < 0 ? ' بس' : (cur > 0 ? ' بد' : '')),
+            key: const ValueKey('bankCurrent'),
+            textDirection: TextDirection.ltr,
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: balanceColor(cur)),
+          ),
+        ),
+        SizedBox(width: 150, child: sakanBtn('اصلاح موجودی', _fix, icon: Icons.edit_note_rounded)),
+      ]),
+    );
+  }
   Account? _edit;
   String? _lastId;
 
@@ -58,6 +221,8 @@ class _BankDialogState extends State<_BankDialog> {
     c('phone2').text = e?.info['phone2'] ?? '';
     c('fax').text = e?.info['fax'] ?? '';
     c('note').text = e?.note ?? '';
+    c('opening').text = groupDigits((e?.opening ?? 0).abs());
+    _cr = (e?.opening ?? 0) < 0;
     _atm = e?.info['atm'] == '1';
     _err = null;
   }
@@ -84,6 +249,7 @@ class _BankDialogState extends State<_BankDialog> {
       ..bank = bank
       ..number = number
       ..note = c('note').text.trim()
+      ..opening = _opening
       ..info = ({
         ...a.info,
         'code': c('code').text.trim(),
@@ -137,8 +303,8 @@ class _BankDialogState extends State<_BankDialog> {
       },
       child: SakanWindow(
         title: 'تفصیلی بانک',
-        width: 900,
-        height: 580,
+        width: 980,
+        height: 650,
         body: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -187,6 +353,8 @@ class _BankDialogState extends State<_BankDialog> {
                 ]),
               ),
             ),
+            const SizedBox(height: 8),
+            _balanceBox(StoreScope.of(context)),
             if (_err != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(_err!, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700))),
             const SizedBox(height: 8),
             Row(crossAxisAlignment: CrossAxisAlignment.end, children: [

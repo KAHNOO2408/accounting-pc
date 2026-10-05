@@ -1436,6 +1436,30 @@ void main() {
     expect(s.vouchers.where((x) => x.kind == 'bankDeposit').length, 1);
     expect(s.balance(bank.id), before + 1000);
 
+    // اصلاح موجودی: the wrongly entered balance is corrected from the bank form
+    showBankDialog(ctx, edit: bank);
+    await tester.pumpAndSettle();
+    expect(find.text('موجودی اول دوره:'), findsOneWidget);
+    await tester.tap(find.text('اصلاح موجودی'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const ValueKey('realBalance')), '5000');
+    await tester.pump();
+    await tester.tap(find.text('تایید').last);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('تایید').last);
+    await tester.pumpAndSettle();
+    expect(s.balance(bank.id), 5000);
+    expect(bank.opening, 4000);
+    // editing the opening directly
+    showBankDialog(ctx, edit: bank);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const ValueKey('bankOpening')), '0');
+    await tester.tap(find.text('تایید').last);
+    await tester.pumpAndSettle();
+    expect(bank.opening, 0);
+    expect(s.balance(bank.id), 1000);
+
     for (final (op, col) in [(BankOp.withdraw, 'سرفصل هزینه کارمزد'), (BankOp.between, 'حساب پرداخت کننده')]) {
       showBankOpsDialog(ctx, op);
       await tester.pumpAndSettle();

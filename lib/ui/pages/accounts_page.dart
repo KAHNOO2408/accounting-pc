@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/models.dart';
 import '../../data/store.dart';
+import '../dialogs/bank_dialogs.dart' show showBankDialog, fixAccountBalance;
 import '../dialogs/simple_dialogs.dart';
 import '../dialogs/txn_dialog.dart';
 import '../theme.dart';
@@ -185,7 +186,7 @@ class _AccountsPageState extends State<AccountsPage> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text('مانده فعلی', style: th.textTheme.bodySmall?.copyWith(color: th.hintColor)),
-                    Money(bal, showUnit: true, colorBySign: bal < 0, style: th.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+                    Money(store.balance(acc.id), showUnit: true, colorBySign: store.balance(acc.id) < 0, style: th.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
                   ],
                 ),
               ],
@@ -206,6 +207,12 @@ class _AccountsPageState extends State<AccountsPage> {
                   ),
                 ),
                 const SizedBox(width: 8),
+                OutlinedButton.icon(
+                  onPressed: () => fixAccountBalance(context, acc),
+                  icon: const Icon(Icons.edit_note_rounded, size: 18),
+                  label: const Text('اصلاح موجودی'),
+                ),
+                const SizedBox(width: 4),
                 Tooltip(
                   message: 'واریز / درآمد به این حساب',
                   child: IconButton.filledTonal(
@@ -231,7 +238,9 @@ class _AccountsPageState extends State<AccountsPage> {
                   tooltip: 'گزینه‌ها',
                   onSelected: (v) async {
                     if (v == 'edit') {
-                      await showAccountDialog(context, edit: acc);
+                      acc.type == AccountType.bank ? await showBankDialog(context, edit: acc) : await showAccountDialog(context, edit: acc);
+                    } else if (v == 'fix') {
+                      await fixAccountBalance(context, acc);
                     } else if (v == 'archive') {
                       acc.archived = !acc.archived;
                       store.upsertAccount(acc);
@@ -251,6 +260,7 @@ class _AccountsPageState extends State<AccountsPage> {
                   },
                   itemBuilder: (_) => [
                     const PopupMenuItem(value: 'edit', child: Text('ویرایش حساب')),
+                    const PopupMenuItem(value: 'fix', child: Text('اصلاح موجودی')),
                     PopupMenuItem(value: 'archive', child: Text(acc.archived ? 'خروج از بایگانی' : 'بایگانی')),
                     const PopupMenuItem(value: 'delete', child: Text('حذف')),
                   ],
