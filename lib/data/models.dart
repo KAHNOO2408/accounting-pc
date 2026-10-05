@@ -67,6 +67,9 @@ class Account {
   /// Savings target (only meaningful for savings accounts).
   int goal;
 
+  /// «اطلاعات دفتر تفصیلی بانک ها»: code, branch, kind, phone, phone2, fax, atm.
+  Map<String, String> info;
+
   Account({
     required this.id,
     required this.name,
@@ -78,12 +81,14 @@ class Account {
     this.archived = false,
     this.note = '',
     this.goal = 0,
-  });
+    Map<String, String>? info,
+  }) : info = info ?? {};
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
         'goal': goal,
+        if (info.isNotEmpty) 'info': info,
         'type': type.name,
         'bank': bank,
         'number': number,
@@ -104,6 +109,7 @@ class Account {
         archived: j['archived'] == true,
         note: _s(j['note']),
         goal: _i(j['goal']),
+        info: j['info'] is Map ? (j['info'] as Map).map((k, v) => MapEntry('$k', '$v')) : null,
       );
 }
 
@@ -229,6 +235,9 @@ class Voucher {
         'closing' => 'سند اختتامیه',
         'reopen' => 'افتتاحیه (انتقال تراز)',
         'settle' => 'تسویه فاکتور',
+        'bankDeposit' => 'واریز به بانک',
+        'bankWithdraw' => 'برداشت بانکی',
+        'bankTransfer' => 'دریافت پرداخت بین حسابها',
         _ => 'سند دستی',
       };
 

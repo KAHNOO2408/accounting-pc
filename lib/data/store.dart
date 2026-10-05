@@ -208,6 +208,10 @@ class AppStore extends ChangeNotifier {
     for (final p in people) {
       if (p.code > n) n = p.code;
     }
+    for (final a in accounts) {
+      final v = int.tryParse(a.info['code'] ?? '');
+      if (v != null && v > n && v < 1000000) n = v;
+    }
     for (final p in products) {
       final v = int.tryParse(normalizeDigits(p.code));
       if (v != null && v > n && v < 1000000) n = v;

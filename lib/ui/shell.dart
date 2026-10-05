@@ -29,6 +29,7 @@ import 'pages/people_page.dart';
 import 'pages/products_page.dart';
 import 'dialogs/stock_dialogs.dart';
 import 'dialogs/ledger_dialogs.dart';
+import 'dialogs/bank_dialogs.dart';
 import 'dialogs/books_dialogs.dart';
 import 'dialogs/sakan_tools.dart';
 import 'print_designer.dart' show showPrintForms;
@@ -251,25 +252,11 @@ final List<_Tab> _tabs = [
       _Item('واریز به بانک', Icons.south_west_rounded, _blue,
           shortcut: 'Ctrl+F1',
           activator: _k(LogicalKeyboardKey.f1, ctrl: true),
-          run: (c, _) {
-            final s = StoreScope.read(c);
-            showTxnDialog(c,
-                type: TxnType.transfer,
-                accountId: _firstOf(s, AccountType.cash),
-                toAccountId: _firstOf(s, AccountType.bank),
-                title: 'واریز به بانک');
-          }),
+          run: (c, _) => showBankOpsDialog(c, BankOp.deposit)),
       _Item('برداشت بانکی', Icons.north_east_rounded, _blue,
           shortcut: 'Ctrl+F2',
           activator: _k(LogicalKeyboardKey.f2, ctrl: true),
-          run: (c, _) {
-            final s = StoreScope.read(c);
-            showTxnDialog(c,
-                type: TxnType.transfer,
-                accountId: _firstOf(s, AccountType.bank),
-                toAccountId: _firstOf(s, AccountType.cash),
-                title: 'برداشت بانکی');
-          }),
+          run: (c, _) => showBankOpsDialog(c, BankOp.withdraw)),
     ]),
     _Group('عملیات چک', [
       _Item('دریافت چک', Icons.download_rounded, _green,
@@ -322,8 +309,7 @@ final List<_Tab> _tabs = [
           shortcut: 'Shift+F6',
           activator: _k(LogicalKeyboardKey.f6, shift: true),
           run: (c, _) => showTxnDialog(c, type: TxnType.transfer, title: 'مبادلات داخلی')),
-      _Item('دریافت پرداخت بین حساب‌ها', Icons.compare_arrows_rounded, _blue,
-          run: (c, _) => showTxnDialog(c, type: TxnType.transfer, title: 'دریافت و پرداخت بین حساب‌ها')),
+      _Item('دریافت پرداخت بین حساب‌ها', Icons.compare_arrows_rounded, _blue, run: (c, _) => showBankOpsDialog(c, BankOp.between)),
       _Item('جا به جایی چک', Icons.swap_horiz_rounded, _cyan, run: (c, _) => showChequeMoveDialog(c)),
       _Item('راس‌گیری چک', Icons.calculate_outlined, _cyan, run: (c, _) => showChequeAverageDialog(c)),
     ]),

@@ -6,6 +6,7 @@ import '../../core/jalali.dart';
 import '../../data/journal.dart';
 import '../../data/models.dart';
 import '../../data/store.dart';
+import '../dialogs/bank_dialogs.dart';
 import '../dialogs/chequebook_dialogs.dart';
 import '../dialogs/closing_dialogs.dart';
 import '../dialogs/invoice_editor.dart';
@@ -71,6 +72,8 @@ void openDocument(BuildContext context, String key) {
         showChequeMoveDialog(context, edit: v);
       case 'manual' || 'composite' || 'expense':
         showVoucherDialog(context, edit: v);
+      case 'bankDeposit' || 'bankWithdraw' || 'bankTransfer':
+        showBankOpsDialog(context, BankOpX.ofKind(v.kind)!, edit: v);
       default:
         showYearEndVoucher(context, v);
     }

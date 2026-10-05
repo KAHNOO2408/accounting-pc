@@ -13,6 +13,7 @@ import '../report/report_designer.dart';
 import '../report/report_render.dart';
 import '../shell.dart';
 import '../widgets/common.dart';
+import 'bank_dialogs.dart';
 import 'misc_dialogs.dart';
 import 'product_dialog.dart';
 import 'simple_dialogs.dart';
@@ -446,7 +447,7 @@ List<AccRow> accountRows(AppStore s, AccCat c, Map<String, int> bal) {
           if ((type == AccountType.cash) != isCash) continue;
           i++;
           out.add(AccRow(
-              key: 'a:${a.id}', code: '${m.kind == TafsiliKind.cash ? 100 + i : 200 + i}', kol: m.kol.name, moeen: m.name, name: a.name,
+              key: 'a:${a.id}', code: a.info['code'] ?? '${m.kind == TafsiliKind.cash ? 100 + i : 200 + i}', kol: isCash ? 'صندوق' : 'بانکها', moeen: isCash ? 'صندوق' : 'بانکها', name: a.name,
               balance: bal['$code|${a.id}'] ?? 0, moeens: {code}, tafsili: a.id, account: a));
         }
       case TafsiliKind.person:
@@ -565,7 +566,7 @@ class _AccountSelectorState extends State<_AccountSelector> {
     if (r.person != null) {
       await showPersonDialog(context, edit: r.person);
     } else if (r.account != null) {
-      await showAccountDialog(context, edit: r.account);
+      r.account!.type == AccountType.cash ? await showAccountDialog(context, edit: r.account) : await showBankDialog(context, edit: r.account);
     } else if (r.product != null) {
       await showProductDialog(context, edit: r.product);
     } else {
@@ -582,7 +583,7 @@ class _AccountSelectorState extends State<_AccountSelector> {
     } else if (m?.kind == TafsiliKind.cash) {
       await showAccountDialog(context, type: AccountType.cash);
     } else if (m?.kind == TafsiliKind.bank) {
-      await showAccountDialog(context);
+      await showBankDialog(context);
     } else {
       toast(context, 'برای این گروه دفتر جدید از «کدبندی دفاتر» اضافه می‌شود');
     }

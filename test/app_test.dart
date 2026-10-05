@@ -12,6 +12,7 @@ import 'package:taraz/data/report_layout.dart';
 import 'package:taraz/data/storage.dart';
 import 'package:taraz/data/store.dart';
 import 'package:taraz/main.dart';
+import 'package:taraz/ui/dialogs/bank_dialogs.dart';
 import 'package:taraz/ui/dialogs/books_dialogs.dart';
 import 'package:taraz/ui/dialogs/composite_dialogs.dart';
 import 'package:taraz/ui/dialogs/invoice_editor.dart';
@@ -1373,6 +1374,73 @@ void main() {
       expect(find.text(title), findsOneWidget, reason: 'page: $title');
       expect(tester.takeException(), isNull, reason: 'page: $title');
       await tester.tap(find.text('انصراف (F10)').last);
+      await tester.pumpAndSettle();
+    }
+  });
+
+  testWidgets('bank windows: deposit, withdraw with fee, between accounts and bank form', (tester) async {
+    tester.view.physicalSize = const Size(1600, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final s = _tempStore();
+    s.completeSetup(ownerName: 'Ali');
+    final cash = s.accounts.firstWhere((a) => a.type == AccountType.cash);
+    await tester.pumpWidget(TarazApp(store: s));
+    await tester.pumpAndSettle();
+    final ctx = tester.element(find.text('خرید و فروش').first);
+
+    // bank form
+    showBankDialog(ctx);
+    await tester.pumpAndSettle();
+    expect(find.text('اطلاعات دفتر تفصیلی بانک ها'), findsOneWidget);
+    final fields = find.byType(TextField);
+    await tester.enterText(fields.at(1), 'ملت');
+    await tester.enterText(fields.at(2), '5196043677');
+    await tester.enterText(fields.at(4), 'جاری');
+    await tester.tap(find.text('تایید').last);
+    await tester.pumpAndSettle();
+    final bank = s.accounts.firstWhere((a) => a.number == '5196043677');
+    expect(bank.name, 'جاری 5196043677 ملت');
+    expect(int.parse(bank.info['code']!), greaterThan(7000));
+
+    // واریز به بانک: a voucher moves the money
+    showBankOpsDialog(ctx, BankOp.deposit);
+    await tester.pumpAndSettle();
+    expect(find.text('بانک دریافت کننده'), findsOneWidget);
+    expect(find.text('خواندن از فایل اکسل'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('انصراف').last);
+    await tester.pumpAndSettle();
+
+    final before = s.balance(bank.id);
+    final cashBefore = s.balance(cash.id);
+    final v = Voucher(id: newId(), number: s.nextVoucherNumber(), fixedNumber: s.nextFixedNumber(), date: DateTime.now(), kind: 'bankDeposit', lines: [
+      VoucherLine(moeen: mBank, tafsiliId: bank.id, debit: 1000),
+      VoucherLine(moeen: mCash, tafsiliId: cash.id, credit: 1000),
+    ], meta: {
+      'babat': '',
+      'rows': [
+        {'to': bank.id, 'from': cash.id, 'amount': 1000, 'ref': '12', 'babat': '', 'feeCat': null, 'fee': 0},
+      ],
+    });
+    s.saveVoucher(v);
+    expect(s.balance(bank.id), before + 1000);
+    expect(s.balance(cash.id), cashBefore - 1000);
+    // re-open from the documents list
+    showBankOpsDialog(ctx, BankOp.deposit, edit: v);
+    await tester.pumpAndSettle();
+    expect(find.text('1,000'), findsWidgets);
+    await tester.tap(find.text('تایید').last);
+    await tester.pumpAndSettle();
+    expect(s.vouchers.where((x) => x.kind == 'bankDeposit').length, 1);
+    expect(s.balance(bank.id), before + 1000);
+
+    for (final (op, col) in [(BankOp.withdraw, 'سرفصل هزینه کارمزد'), (BankOp.between, 'حساب پرداخت کننده')]) {
+      showBankOpsDialog(ctx, op);
+      await tester.pumpAndSettle();
+      expect(find.text(col), findsOneWidget, reason: 'page: ${op.title}');
+      expect(tester.takeException(), isNull, reason: 'page: ${op.title}');
+      await tester.tap(find.text('انصراف').last);
       await tester.pumpAndSettle();
     }
   });
