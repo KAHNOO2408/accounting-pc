@@ -1385,6 +1385,7 @@ void main() {
     final s = _tempStore();
     s.completeSetup(ownerName: 'Ali');
     final cash = s.accounts.firstWhere((a) => a.type == AccountType.cash);
+    s.upsertPerson(Person(id: newId(), name: 'Reza'));
     await tester.pumpWidget(TarazApp(store: s));
     await tester.pumpAndSettle();
     final ctx = tester.element(find.text('خرید و فروش').first);
@@ -1440,6 +1441,15 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text(col), findsOneWidget, reason: 'page: ${op.title}');
       expect(tester.takeException(), isNull, reason: 'page: ${op.title}');
+      // the account columns pick a person in «انتخاب دفتر تفصیلی»
+      await tester.tap(find.text('انتخاب شخص').first);
+      await tester.pumpAndSettle();
+      expect(find.text('انتخاب دفتر تفصیلی'), findsOneWidget);
+      await tester.tap(find.text('Reza'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('تایید').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Reza'), findsOneWidget, reason: 'page: ${op.title}');
       await tester.tap(find.text('انصراف').last);
       await tester.pumpAndSettle();
     }

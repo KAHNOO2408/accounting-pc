@@ -14,6 +14,7 @@ import '../../data/store.dart';
 import '../print.dart';
 import '../widgets/common.dart';
 import '../widgets/sakan.dart';
+import 'ledger_dialogs.dart' show showAccountSelector;
 
 // ================================================================ اطلاعات دفتر تفصیلی بانک ها
 
@@ -345,9 +346,14 @@ class _BankOpsState extends State<_BankOps> {
   int get _total => _rows.fold(0, (a, r) => a + r.a);
 
   List<Account> _banks(AppStore s) => s.activeAccounts.where((a) => a.type != AccountType.cash).toList();
-  List<Account> _all(AppStore s) => s.activeAccounts.toList();
 
-  String _moeenOf(AppStore s, String id) => s.account(id)?.type == AccountType.cash ? mCash : mBank;
+  /// Ledger of a row party: persons go to بدهکاران تجاری, accounts to صندوق / بانک.
+  String _moeenOf(AppStore s, String ref) {
+    if (ref.startsWith('p:')) return mDebtorsTrade;
+    return s.account(_tafsili(ref))?.type == AccountType.cash ? mCash : mBank;
+  }
+
+  String _tafsili(String ref) => ref.startsWith('p:') || ref.startsWith('a:') ? ref.substring(2) : ref;
 
   // ---------------------------------------------------------------- columns
 
@@ -384,22 +390,47 @@ class _BankOpsState extends State<_BankOps> {
     InputDecoration deco() => const InputDecoration(isDense: true, border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 10));
     switch (kind) {
       case 'to' || 'from':
-        final list = _bankOnly(kind) ? _banks(s) : _all(s);
         final v = kind == 'to' ? r.to : r.from;
-        return DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            value: list.any((a) => a.id == v) ? v : null,
-            isExpanded: true,
-            hint: Text(_bankOnly(kind) ? 'انتخاب بانک' : 'انتخاب حساب', style: const TextStyle(color: Colors.black38)),
-            items: [for (final a in list) DropdownMenuItem(value: a.id, child: Text(a.name, overflow: TextOverflow.ellipsis))],
-            onChanged: (x) => setState(() {
+        void set(String? x) => setState(() {
               if (kind == 'to') {
                 r.to = x;
               } else {
                 r.from = x;
               }
-            }),
-          ),
+            });
+        if (_bankOnly(kind)) {
+          final list = _banks(s);
+          return DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: list.any((a) => a.id == v) ? v : null,
+              isExpanded: true,
+              hint: const Text('انتخاب بانک', style: TextStyle(color: Colors.black38)),
+              items: [for (final a in list) DropdownMenuItem(value: a.id, child: Text(a.name, overflow: TextOverflow.ellipsis))],
+              onChanged: set,
+            ),
+          );
+        }
+        // حساب دریافت/پرداخت کننده: a person (picked in «انتخاب دفتر تفصیلی»)
+        return InkWell(
+          onTap: () async {
+            final acc = await showAccountSelector(context, pick: true);
+            if (acc == null || !mounted) return;
+            if (acc.person != null) {
+              set('p:${acc.person!.id}');
+            } else if (acc.account != null) {
+              set('a:${acc.account!.id}');
+            } else {
+              toast(context, 'یک شخص (یا صندوق و بانک) انتخاب کنید', error: true);
+            }
+          },
+          child: Row(children: [
+            Expanded(
+              child: Text(v == null ? 'انتخاب شخص' : partyName(s, v),
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: v == null ? Colors.black38 : null, fontWeight: v == null ? null : FontWeight.w600)),
+            ),
+            const Icon(Icons.more_horiz_rounded, size: 18, color: Colors.black45),
+          ]),
         );
       case 'feeCat':
         final cats = s.categoriesOf(CategoryKind.expense);
@@ -558,11 +589,11 @@ class _BankOpsState extends State<_BankOps> {
     final lines = <VoucherLine>[];
     for (final r in rows) {
       final note = r.babat.text.trim().isNotEmpty ? r.babat.text.trim() : (r.ref.text.trim().isEmpty ? op.title : '${op.title} ${r.ref.text.trim()}');
-      lines.add(VoucherLine(moeen: _moeenOf(s, r.to!), tafsiliId: r.to, desc: note, debit: r.a));
-      lines.add(VoucherLine(moeen: _moeenOf(s, r.from!), tafsiliId: r.from, desc: note, credit: r.a));
+      lines.add(VoucherLine(moeen: _moeenOf(s, r.to!), tafsiliId: _tafsili(r.to!), desc: note, debit: r.a));
+      lines.add(VoucherLine(moeen: _moeenOf(s, r.from!), tafsiliId: _tafsili(r.from!), desc: note, credit: r.a));
       if (r.f > 0) {
         lines.add(VoucherLine(moeen: mExpense, tafsiliId: r.feeCat, desc: 'کارمزد $note', debit: r.f));
-        lines.add(VoucherLine(moeen: _moeenOf(s, r.from!), tafsiliId: r.from, desc: 'کارمزد $note', credit: r.f));
+        lines.add(VoucherLine(moeen: _moeenOf(s, r.from!), tafsiliId: _tafsili(r.from!), desc: 'کارمزد $note', credit: r.f));
       }
     }
     final babat = _babat.text.trim();
@@ -589,7 +620,7 @@ class _BankOpsState extends State<_BankOps> {
   void _print(AppStore s, Voucher v) {
     final cols = _cols;
     String cell(Map<String, dynamic> r, String k) => switch (k) {
-          'to' || 'from' => s.account(r[k] as String?)?.name ?? '',
+          'to' || 'from' => r[k] == null ? '' : partyName(s, r[k] as String),
           'amount' || 'fee' => groupDigits((r[k] as num?)?.toInt() ?? 0),
           'feeCat' => s.category(r['feeCat'] as String?)?.name ?? '',
           _ => '${r[k] ?? ''}',
@@ -811,4 +842,11 @@ class _Thousands extends TextInputFormatter {
     final t = groupDigits(int.parse(digits));
     return TextEditingValue(text: t, selection: TextSelection.collapsed(offset: t.length));
   }
+}
+
+/// Name of a row party: 'p:<person>', 'a:<account>' or a bare account id.
+String partyName(AppStore s, String ref) {
+  if (ref.startsWith('p:')) return s.person(ref.substring(2))?.name ?? '';
+  final id = ref.startsWith('a:') ? ref.substring(2) : ref;
+  return s.account(id)?.name ?? '';
 }
