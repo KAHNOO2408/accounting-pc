@@ -83,7 +83,7 @@ class _BankDialogState extends State<_BankDialog> {
       ..bank = bank
       ..number = number
       ..note = c('note').text.trim()
-      ..info = {
+      ..info = ({
         ...a.info,
         'code': c('code').text.trim(),
         'branch': c('branch').text.trim(),
@@ -92,7 +92,7 @@ class _BankDialogState extends State<_BankDialog> {
         'phone2': c('phone2').text.trim(),
         'fax': c('fax').text.trim(),
         'atm': _atm ? '1' : '',
-      }..removeWhere((_, v) => v.isEmpty);
+      }..removeWhere((_, v) => v.isEmpty));
     if (a.type == AccountType.cash) a.type = AccountType.bank;
     s.upsertAccount(a);
     _lastId = a.id;
