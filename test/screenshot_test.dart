@@ -89,5 +89,8 @@ void main() {
     await win('متفرقه', 'معرفی دفاتر مالی', '12-books');
     await win('گزارشات', 'مدیریت گزارشات', '13-report-files');
     await win('گزارشات', 'گزارش از گروه مراکز دفتر', '14-center-report');
+    await win('مالی', 'واریز به بانک', '15-bank-deposit');
+    await win('مالی', 'برداشت بانکی', '16-bank-withdraw');
+    await win('مالی ویژه', 'دریافت پرداخت بین حساب‌ها', '17-between-accounts');
   });
 }
