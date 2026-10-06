@@ -40,7 +40,7 @@ void main() {
     final s = AppStore.open(Storage(Directory.systemTemp.createTempSync('shots')));
     s.completeSetup(ownerName: 'بنیامین');
     s.updateSettings((x) => x.businessName = 'فروشگاه نمونه');
-    final p = Person(id: newId(), name: 'علی رضایی');
+    final p = Person(id: newId(), name: 'علی رضایی', phone: '09121234567');
     s.upsertPerson(p);
     s.upsertProduct(Product(id: newId(), name: 'هندزفری بلوتوثی', sellPrice: 850000, buyPrice: 600000, openingQty: 12));
 
@@ -96,5 +96,14 @@ void main() {
     await tester.tap(find.text('مشاهده تراز'));
     await tester.pumpAndSettle();
     await shot(tester, '19-trial-balance');
+
+    await win('متفرقه', 'ارسال پیام', '20-sms-people');
+    await tester.tap(find.text('علی رضایی').first);
+    await tester.pumpAndSettle();
+    await shot(tester, '20-sms-people');
+    await tester.tap(find.text('تنظیمات پنل پیامک'));
+    await tester.pumpAndSettle();
+    await shot(tester, '21-sms-settings');
+    await open(AppPage.settings, '22-settings-backup');
   });
 }
