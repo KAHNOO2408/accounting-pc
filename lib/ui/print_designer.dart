@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_selector/file_selector.dart' as fs;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -7,6 +8,7 @@ import '../core/format.dart';
 import '../core/jalali.dart';
 import '../core/qr.dart';
 import '../data/models.dart';
+import '../data/mrt_import.dart';
 import '../data/storage.dart';
 import '../data/store.dart';
 import 'dialogs/invoice_editor.dart' show fmtQty;
@@ -572,6 +574,45 @@ class _LayoutPickerState extends State<_LayoutPicker> {
     }
   }
 
+  /// «وارد کردن از سکان»: one layout per chosen .mrt file.
+  Future<void> _importMrt() async {
+    final s = StoreScope.read(context);
+    final files = await fs.openFiles(acceptedTypeGroups: const [
+      fs.XTypeGroup(label: 'گزارش سکان / استیمول', extensions: ['mrt', 'MRT']),
+    ]);
+    if (files.isEmpty || !mounted) return;
+    String? lastId;
+    final unknown = <String>{};
+    var ok = 0;
+    final errors = <String>[];
+    for (final f in files) {
+      try {
+        final text = await f.readAsString();
+        var name = f.name.replaceAll(RegExp(r'\.mrt$', caseSensitive: false), '').trim();
+        if (name.isEmpty) name = 'طرح سکان';
+        final r = importMrt(text, type: widget.type, variant: _v, name: name);
+        s.saveLayout(r.layout);
+        lastId = r.layout.id;
+        unknown.addAll(r.unknownFields);
+        ok++;
+      } catch (e) {
+        errors.add('${f.name}: $e');
+      }
+    }
+    if (!mounted) return;
+    if (lastId != null) setState(() => _id = lastId);
+    if (errors.isNotEmpty) {
+      toast(context, 'وارد نشد — ${errors.join('  ،  ')}', error: true);
+    } else {
+      toast(
+        context,
+        unknown.isEmpty
+            ? '$ok طرح از سکان وارد شد'
+            : '$ok طرح وارد شد؛ ${unknown.length} فیلد سکان معادل ندارد و خالی چاپ می‌شود (با «ویرایش» قابل اصلاح است)',
+      );
+    }
+  }
+
   void _print() {
     final s = StoreScope.read(context);
     final l = _current(s);
@@ -618,7 +659,9 @@ class _LayoutPickerState extends State<_LayoutPicker> {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
-                child: Row(children: [
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(children: [
                   Text('فیلتر گزارش', style: th.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
                   const SizedBox(width: 16),
                   SizedBox(
@@ -650,6 +693,15 @@ class _LayoutPickerState extends State<_LayoutPicker> {
                     label: const Text('ویرایش'),
                   ),
                   const SizedBox(width: 8),
+                  Tooltip(
+                    message: 'فایل گزارش سکان (‎.mrt‎) را به طرح این برنامه تبدیل می‌کند',
+                    child: OutlinedButton.icon(
+                      onPressed: _importMrt,
+                      icon: const Icon(Icons.file_open_outlined, size: 18),
+                      label: const Text('وارد کردن از سکان'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   if (s.reportLayouts.any((x) => x.id == l.id))
                     TextButton.icon(
                       onPressed: () async {
@@ -665,6 +717,7 @@ class _LayoutPickerState extends State<_LayoutPicker> {
                       label: Text(l.id.startsWith('builtin-') ? 'بازگشت به طرح اصلی' : 'حذف طرح', style: TextStyle(color: th.colorScheme.error)),
                     ),
                 ]),
+                ),
               ),
               Expanded(
                 child: Container(

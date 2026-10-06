@@ -85,6 +85,8 @@ ReportData invoiceReportData(AppStore s, Invoice inv, {PrintDocType type = Print
     'جمع اقلام': fmtQty(inv.lines.fold<double>(0, (a, l) => a + l.qty)),
     'جمع تخفیف': _money(inv.discount + lineDisc),
     'جمع اقلام با احتساب تخفیف': _money(inv.subtotal - inv.discount),
+    'جمع فاکتور بدون تخفیف': _money(inv.lines.fold<int>(0, (a, l) => a + (l.qty * l.unitPrice).round())),
+    'شماره درخواست': inv.info['requestNo'] ?? '',
     'هزینه حمل': _money(inv.extra),
     'جمع کل فاکتور': _money(inv.total),
     'مبلغ به حروف': '${amountInWords(inv.total)} ${st.currency}',
@@ -116,6 +118,7 @@ ReportData invoiceReportData(AppStore s, Invoice inv, {PrintDocType type = Print
       'فی': _money(l.unitPrice),
       'تخفیف': _money(l.discount),
       'جمع': _money(l.total),
+      'جمع بدون تخفیف': _money((l.qty * l.unitPrice).round()),
       'نام انبار': s.warehouse(l.warehouseId)?.name ?? '',
     });
   }

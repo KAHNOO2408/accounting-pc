@@ -9,6 +9,7 @@ import 'package:taraz/core/zip_backup.dart';
 import 'package:taraz/data/sms.dart';
 import 'package:taraz/ui/dialogs/sms_dialogs.dart';
 import 'package:taraz/data/books.dart';
+import 'package:taraz/data/mrt_import.dart';
 import 'package:taraz/data/chart.dart';
 import 'package:taraz/data/journal.dart';
 import 'package:taraz/data/kardex.dart';
@@ -1699,5 +1700,52 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byWidgetPredicate((w) => w is CustomPaint && w.painter is QrPainter), findsOneWidget);
     expect(reportHtml(l, d), contains('<svg'));
+  });
+  test('Sakan .mrt report files import as band layouts', () {
+    String text(String name, String rect, String t, {String extra = ''}) =>
+        '<$name Ref="9" type="Text" isKey="true"><Border>All;Black;1;Solid;False;4;Black</Border><Brush>Gainsboro</Brush>'
+        '<ClientRectangle>$rect</ClientRectangle><Font>David,12,Bold</Font><Text>$t</Text>$extra</$name>';
+    String band(String name, String type, String rect, String comps) =>
+        '<$name Ref="5" type="$type" isKey="true"><ClientRectangle>$rect</ClientRectangle>'
+        '<Components isList="true" count="1">$comps</Components></$name>';
+    final xml = '﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>\n'
+        '<StiSerializer version="1.0" application="StiReport"><Pages isList="true" count="1"><Page1 Ref="2" type="Page" isKey="true">'
+        '<Components isList="true" count="6">'
+        '${band('ReportTitle1', 'ReportTitleBand', '0,0.4,19,2', text('T1', '5,0.5,8,1', 'فاکتور {PrintInfoFrosh.ShFactor} &amp; {PrintInfoFrosh.Foo}', extra: '<HorAlignment>Center</HorAlignment>'))}'
+        '${band('Header1', 'HeaderBand', '0,3,19,0.8', text('T2', '0,0,19,0.8', 'شرح'))}'
+        '${band('Data1', 'DataBand', '0,4.2,19,0.6', text('T3', '17,0,2,0.6', '{Line}') + text('T4', '0,0,4,0.6', '{PrintKalaFrosh.Jam1System}', extra: '<TextOptions>RightToLeft=True, Angle=0</TextOptions>'))}'
+        '${band('Footer1', 'FooterBand', '0,5.2,19,1', text('T5', '0,0,19,1', '{Farsi.BeHorof(PrintInfoFrosh.JamFator_system)}'))}'
+        '${band('PageFooter1', 'PageFooterBand', '0,27,19,0.8', text('T6', '0,0,3,0.8', '{PageNofM}'))}'
+        '<Rectangle1 Ref="20" type="Stimulsoft.Report.Components.StiRectanglePrimitive" isKey="true"><ClientRectangle>0,0.4,19,1.5</ClientRectangle></Rectangle1>'
+        '</Components><Margins>1,1,1,1</Margins><PageHeight>29.7</PageHeight><PageWidth>21</PageWidth></Page1></Pages>'
+        '<ReportUnit>Centimeters</ReportUnit></StiSerializer>';
+    final r = importMrt(xml, type: PrintDocType.invoice, variant: 'sale', name: 'فروش');
+    final l = r.layout;
+    expect(l.pageW, closeTo(210, 0.01));
+    expect(l.margin, closeTo(10, 0.01));
+    expect(l.heightOf(BandKind.header), closeTo(20, 0.01));
+    expect(l.heightOf(BandKind.columns), closeTo(8, 0.01));
+    expect(l.heightOf(BandKind.data), closeTo(6, 0.01));
+    expect(l.heightOf(BandKind.footer1), closeTo(10, 0.01));
+    expect(l.heightOf(BandKind.footer2), closeTo(8, 0.01));
+    final title = l.itemsOf(BandKind.header).firstWhere((i) => i.text.contains('فاکتور'));
+    expect(title.text, 'فاکتور {شماره فاکتور} &');
+    expect(title.x, closeTo(50, 0.01));
+    expect(title.align, 'center');
+    expect(title.bold, isTrue);
+    expect(title.border, Sides.all);
+    expect(title.fill, isNot(0));
+    expect(l.itemsOf(BandKind.data).map((i) => i.text), containsAll(['{ردیف}', '{جمع بدون تخفیف}']));
+    expect(l.itemsOf(BandKind.data).firstWhere((i) => i.text == '{جمع بدون تخفیف}').align, 'right');
+    expect(l.itemsOf(BandKind.footer1).single.text, '{مبلغ به حروف}');
+    expect(l.itemsOf(BandKind.footer2).single.text, '{صفحه}');
+    // the page-level frame lands in the header band
+    expect(l.itemsOf(BandKind.header).where((i) => i.text.isEmpty && i.border == Sides.all), hasLength(1));
+    expect(r.unknownFields, ['PrintInfoFrosh.Foo']);
+    expect(mapSakanExpression('Sum(PrintKalaFrosh.TedadVahed1)', PrintDocType.invoice), '{جمع اقلام}');
+    expect(mapSakanExpression('BookMoein.Bed', PrintDocType.ledger), '{بدهکار}');
+    expect(() => importMrt('<html/>', type: PrintDocType.invoice), throwsFormatException);
+    // round trip through JSON
+    expect(ReportLayout.fromJson(l.toJson()).items.length, l.items.length);
   });
 }
