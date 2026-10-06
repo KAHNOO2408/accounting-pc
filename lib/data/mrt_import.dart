@@ -194,10 +194,12 @@ const _ledgerMap = {
   'Bes': 'بستانکار',
   'Remian': 'مانده ردیف',
   'Remain': 'مانده ردیف',
+  'endremain': 'مانده ردیف',
   'Date_x0020_Shamsi': 'تاریخ سند',
   'Date_Shamsi': 'تاریخ سند',
+  'Dte_Shamsi': 'تاریخ سند',
   'DocNum': 'ش س',
-  'DocMabnaNum': 'شماره ثابت',
+  'DocMabnaNum': 'ش س',
   'Type': 'ت',
   'BName': 'نام حساب',
   'BID': 'کد حساب',
@@ -207,6 +209,11 @@ const _ledgerMap = {
   'CompanyName': 'نام فروشگاه',
   'DateShamsi': 'تاریخ',
 };
+
+Map<String, String> _lower(Map<String, String> m) => {for (final e in m.entries) e.key.toLowerCase(): e.value};
+final _invoiceLc = _lower(_invoiceMap);
+final _rowLc = _lower(_rowMap);
+final _ledgerLc = _lower(_ledgerMap);
 
 /// Item-row data sources (one record per printed row).
 bool _isRowSource(String src) => RegExp(r'Kala|Aghlam|Khadamat|Servic|Book|Cardex|Havale', caseSensitive: false).hasMatch(src);
@@ -224,15 +231,15 @@ String mapSakanExpression(String expr, PrintDocType type) {
   e = e.replaceAll(RegExp(r'^\((double|decimal|int|long|string)\)\s*'), '');
   final sum = RegExp(r'^Sum\(([^()]+)\)$').firstMatch(e);
   if (sum != null) {
-    final col = sum[1]!.split('.').last.trim();
+    final col = sum[1]!.split('.').last.trim().toLowerCase();
     if (ledger) {
-      return switch (col) { 'Bed' => '{جمع بدهکار}', 'Bes' => '{جمع بستانکار}', _ => '' };
+      return switch (col) { 'bed' => '{جمع بدهکار}', 'bes' => '{جمع بستانکار}', _ => '' };
     }
     return switch (col) {
-      'TedadVahed1' || 'Tedad' => '{جمع اقلام}',
-      'Jam1System' || 'JamKol' => '{جمع فاکتور بدون تخفیف}',
-      'JamKalaKaridarSystem' || 'jamesatr' => '{جمع اقلام با احتساب تخفیف}',
-      'TakhfifSystem' => '{جمع تخفیف}',
+      'tedadvahed1' || 'tedad' => '{جمع اقلام}',
+      'jam1system' || 'jamkol' => '{جمع فاکتور بدون تخفیف}',
+      'jamkalakaridarsystem' || 'jamesatr' => '{جمع اقلام با احتساب تخفیف}',
+      'takhfifsystem' => '{جمع تخفیف}',
       _ => '',
     };
   }
@@ -246,12 +253,12 @@ String mapSakanExpression(String expr, PrintDocType type) {
   final m = RegExp(r'^([A-Za-z_][\w]*)\.([\w]+)$').firstMatch(e);
   if (m == null) return '';
   final src = m[1]!;
-  final col = m[2]!;
+  final col = m[2]!.toLowerCase();
   if (ledger) {
-    final f = _ledgerMap[col];
+    final f = _ledgerLc[col];
     return f == null ? '' : '{$f}';
   }
-  final f = _isRowSource(src) ? (_rowMap[col] ?? _invoiceMap[col]) : (_invoiceMap[col] ?? _rowMap[col]);
+  final f = _isRowSource(src) ? (_rowLc[col] ?? _invoiceLc[col]) : (_invoiceLc[col] ?? _rowLc[col]);
   return f == null ? '' : '{$f}';
 }
 
