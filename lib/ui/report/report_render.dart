@@ -33,21 +33,36 @@ ReportData invoiceReportData(AppStore s, Invoice inv, {PrintDocType type = Print
   final p = s.person(inv.personId);
   final title = inv.proforma ? 'پیش فاکتور فروش' : inv.kind.label;
 
-  // settlement of this invoice
-  var cash = 0, cheque = 0, discount = 0, settled = 0;
+  // settlement of this invoice («نحوه تسویه»)
+  var settled = 0;
   for (final v in s.settlementsOf(inv.id)) {
     for (final l in v.lines) {
-      if (l.moeen == mCash || l.moeen == mBank) cash += (l.debit - l.credit).abs();
-      if (l.moeen == mSaleDiscount || l.moeen == mPurchaseDiscount) discount += (l.debit - l.credit).abs();
       if (p != null && l.tafsiliId == p.id) settled += l.debit - l.credit;
     }
-    cheque += s.cheques.where((c) => c.note == v.desc).fold<int>(0, (a, c) => a + c.amount);
   }
-  if (inv.paid > 0) cash += inv.paid;
+  final summary = s.settlementSummary(inv);
+  var cash = 0, bank = 0, cheque = 0, discount = 0, advance = 0, other = 0;
+  summary.forEach((k, v) {
+    if (k.contains('چک')) {
+      cheque += v;
+    } else if (k.contains('تخفیف')) {
+      discount += v;
+    } else if (k.contains('بانک')) {
+      bank += v;
+    } else if (k.contains('پیش')) {
+      advance += v;
+    } else if (k.contains('نقد') || k.contains('صندوق') || k.contains('تنخواه')) {
+      cash += v;
+    } else {
+      other += v;
+    }
+  });
+  if (inv.paid > 0 && summary.isEmpty) cash += inv.paid;
+  String dot(int v) => v == 0 ? '.' : _money(v);
   final sign = inv.kind.txnType.personSign;
   final before = p == null ? 0 : s.personBalance(p.id, excludeInvoiceId: inv.id) - settled;
   final debt = before + sign * inv.total;
-  final received = p == null ? (cash + cheque + discount) : -settled + inv.paid;
+  final received = p == null ? (cash + bank + cheque + discount + advance + other) : -settled + inv.paid;
   final after = p == null ? 0 : s.personBalance(p.id);
   final lineDisc = inv.lines.fold<int>(0, (a, l) => a + l.discount);
 
@@ -75,9 +90,14 @@ ReportData invoiceReportData(AppStore s, Invoice inv, {PrintDocType type = Print
     'مانده بدهکاری': _money(debt),
     'جمع دریافتی': _money(received),
     'کل مانده حساب': _money(after),
-    'مبلغ دریافت چک': cheque == 0 ? '.' : _money(cheque),
-    'مبلغ دریافت نقدی': cash == 0 ? '.' : _money(cash),
-    'مبلغ تخفیف از فروش': discount == 0 ? '.' : _money(discount),
+    'مبلغ دریافت چک': dot(cheque),
+    'مبلغ دریافت نقدی': dot(cash),
+    'مبلغ تخفیف از فروش': dot(discount),
+    'مبلغ حواله بانکی': dot(bank),
+    'مبلغ کسر از پیش دریافت': dot(advance),
+    'نحوه تسویه': summary.isEmpty ? (inv.remaining > 0 ? 'نسیه' : '') : [for (final e in summary.entries) '${e.key}: ${_money(e.value)}'].join('  ،  '),
+    'هزینه حمل بعهده خریدار': _money(inv.extra),
+    'هزینه حمل بعهده فروشنده': dot(inv.shipBySeller),
     'توضیحات': inv.note,
   };
   final rows = <Map<String, String>>[];

@@ -19,7 +19,9 @@ import 'package:taraz/ui/dialogs/invoice_editor.dart';
 import 'package:taraz/ui/dialogs/ledger_dialogs.dart';
 import 'package:taraz/ui/dialogs/price_dialog.dart';
 import 'package:taraz/ui/dialogs/sakan_tools.dart';
+import 'package:taraz/ui/pages/ledger_reports.dart';
 import 'package:taraz/ui/print_designer.dart';
+import 'package:taraz/ui/report/report_render.dart';
 import 'package:taraz/ui/shell.dart';
 import 'package:taraz/ui/widgets/common.dart';
 import 'package:flutter/material.dart';
@@ -454,6 +456,91 @@ void main() {
     expect(s.profit(d, d).discountsGiven, 50);
     final j = buildJournal(s);
     expect(j.fold<int>(0, (a, p) => a + p.debit), j.fold<int>(0, (a, p) => a + p.credit));
+  });
+
+  test('Sakan reports: 6-column trial balance, seller shipping and «نحوه تسویه»', () {
+    final s = _tempStore();
+    final cash = s.accounts.firstWhere((a) => a.type == AccountType.cash);
+    cash.opening = 5000;
+    s.upsertAccount(cash);
+    final bank = Account(id: newId(), name: 'Bank', type: AccountType.bank);
+    s.upsertAccount(bank);
+    final ali = Person(id: newId(), name: 'Ali');
+    s.upsertPerson(ali);
+    final d = DateTime(2026, 10, 1);
+
+    // sale with shipping: 300 paid by the buyer, 200 paid by us from the cash box
+    final inv = Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: d, personId: ali.id, lines: [
+      InvoiceLine(title: 'Cable', qty: 2, unitPrice: 1000),
+    ], extra: 300, info: {'shipSeller': '200', 'shipAcc': cash.id});
+    s.saveInvoice(inv);
+    expect(inv.total, 2300);
+    expect(inv.shipBySeller, 200);
+    expect(s.balance(cash.id), 4800);
+    expect(s.personBalance(ali.id), 2300);
+    expect(s.categories.any((c) => c.name == 'هزینه حمل'), isTrue);
+
+    // settlement: 1000 cash, 800 bank, 500 cheque
+    saveInvoiceSettlement(s, inv, [
+      PayItem(PayMethod.cashIn, amount: 1000, accountId: cash.id),
+      PayItem(PayMethod.bankIn, amount: 800, accountId: bank.id),
+      PayItem(PayMethod.chequeReceive, amount: 500, due: d, serial: '9'),
+    ]);
+    final sum = s.settlementSummary(inv);
+    expect(sum['دریافت نقدی'], 1000);
+    expect(sum['واریز به بانک'], 800);
+    expect(sum['دریافت چک'], 500);
+    final data = invoiceReportData(s, inv);
+    expect(data.fields['مبلغ دریافت نقدی'], '1,000');
+    expect(data.fields['مبلغ حواله بانکی'], '800');
+    expect(data.fields['مبلغ دریافت چک'], '500');
+    expect(data.fields['هزینه حمل بعهده فروشنده'], '200');
+    expect(data.fields['نحوه تسویه'], contains('دریافت چک'));
+
+    // trial balance: the opening goes to «ابتدای دوره», documents to «طی دوره»
+    final j = buildJournal(s);
+    final rows = trialBalance(s, j, ReportFilter()..level = TbLevel.moeen, TbOptions());
+    final cashRow = rows.firstWhere((r) => r.code == mCash);
+    expect(cashRow.startDr, 5000);
+    expect(cashRow.turnDr, 1000);
+    expect(cashRow.turnCr, 200);
+    expect(cashRow.balDr, 5800);
+    expect(rows.fold<int>(0, (a, r) => a + r.balDr), rows.fold<int>(0, (a, r) => a + r.balCr));
+    expect(rows.firstWhere((r) => r.code == mSales).isPl, isTrue);
+    expect(cashRow.isPl, isFalse);
+    expect(j.where((p) => p.docKey == 'inv:${inv.id}').fold<int>(0, (a, p) => a + p.debit),
+        j.where((p) => p.docKey == 'inv:${inv.id}').fold<int>(0, (a, p) => a + p.credit));
+  });
+
+  testWidgets('6-column trial balance and the shipping dialog render', (tester) async {
+    tester.view.physicalSize = const Size(1600, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final s = _tempStore();
+    s.completeSetup(ownerName: 'Ali');
+    final cash = s.accounts.firstWhere((a) => a.type == AccountType.cash);
+    cash.opening = 7000;
+    s.upsertAccount(cash);
+    await tester.pumpWidget(TarazApp(store: s));
+    await tester.pumpAndSettle();
+    final ctx = tester.element(find.text('خرید و فروش').first);
+    showDialog<void>(context: ctx, builder: (_) => TrialBalanceView(filter: ReportFilter()..level = TbLevel.moeen, options: TbOptions()));
+    await tester.pumpAndSettle();
+    expect(find.text('بدهکار ابتدای دوره'), findsOneWidget);
+    expect(find.text('مانده دفاتر سود و زیانی'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    Navigator.of(tester.element(find.text('بدهکار ابتدای دوره'))).pop();
+    await tester.pumpAndSettle();
+
+    final f = showShippingDialog(ctx, buy: false);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.descendant(of: find.byKey(const ValueKey('shipSeller')), matching: find.byType(TextFormField)), '400');
+    await tester.tap(find.text('تایید (F9)'));
+    await tester.pumpAndSettle();
+    expect(find.text('حساب پرداخت هزینه حمل را انتخاب کنید'), findsOneWidget);
+    await tester.tap(find.text('انصراف').last);
+    await tester.pumpAndSettle();
+    expect(await f, isNull);
   });
 
   test('cheque books and moving cheques between boxes', () {

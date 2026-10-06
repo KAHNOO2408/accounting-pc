@@ -386,6 +386,11 @@ class _VouchersPageState extends State<VouchersPage> {
     c.dispose();
   }
 
+  void _printDoc(AppStore s, _Doc d) {
+    final path = printAccountingDoc(s, d.key, number: d.number, fixed: d.fixed, date: d.date, desc: d.desc);
+    if (path == null) toast(context, 'این سند ردیف حسابداری ندارد');
+  }
+
   void _printList(AppStore s, List<_Doc> list) => printTable(
         store: s,
         title: 'لیست اسناد',
@@ -611,7 +616,10 @@ class _VouchersPageState extends State<VouchersPage> {
                               ),
                             ),
                         ]),
-                        group('چاپ', [btn('چاپ لیست اسناد', '', () => _printList(s, list), icon: Icons.print_outlined)]),
+                        group('چاپ', [
+                          btn('چاپ لیست اسناد', '', () => _printList(s, list), icon: Icons.print_outlined),
+                          btn('چاپ سند حسابداری', '', cur == null ? null : () => _printDoc(s, cur), icon: Icons.receipt_long_outlined),
+                        ]),
                       ]),
                     ),
                   ]),

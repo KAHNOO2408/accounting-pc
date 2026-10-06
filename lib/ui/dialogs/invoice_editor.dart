@@ -114,6 +114,8 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   String _note = '';
   int _discount = 0;
   int _extra = 0;
+  int _shipSeller = 0; // هزینه حمل بعهده فروشنده
+  String? _shipAcc;
   int _decimals = 0;
   bool _fromBig = false;
   bool _fromSmall = true;
@@ -157,6 +159,8 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       _number.text = '${e.number}';
       _discount = e.discount;
       _extra = e.extra;
+      _shipSeller = e.shipBySeller;
+      _shipAcc = e.info['shipAcc'];
       _note = e.note;
       _warehouseNo.text = e.info['warehouseNo'] ?? '';
       _requestNo.text = e.info['requestNo'] ?? '';
@@ -345,8 +349,13 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   }
 
   Future<void> _costs() async {
-    final r = await _ask('هزینه ها', 'هزینه حمل و سایر هزینه‌های فاکتور', initial: _extra == 0 ? '' : groupDigits(_extra), number: true);
-    if (r != null) setState(() => _extra = parseMoney(r));
+    final r = await showShippingDialog(context, buy: _buy, buyerPart: _extra, sellerPart: _shipSeller, accountId: _shipAcc);
+    if (r == null || !mounted) return;
+    setState(() {
+      _extra = r.buyer;
+      _shipSeller = r.seller;
+      _shipAcc = r.accountId;
+    });
   }
 
   Future<void> _fromProforma() async {
@@ -537,6 +546,8 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
         'receiver': _receiver,
         'buyerName': _person == null ? _buyerName.text.trim() : '',
         'saleDate': _saleDate.toIso8601String(),
+        'shipSeller': _shipSeller == 0 ? '' : '$_shipSeller',
+        'shipAcc': _shipSeller == 0 || _buy ? '' : (_shipAcc ?? ''),
       }..removeWhere((_, v) => v.isEmpty));
     if (!_legacy) {
       inv
@@ -933,6 +944,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                   _sum('جمع اقلام کالا', groupDigits(_goodsTotal)),
                   _sum('جمع اقلام خدماتی', groupDigits(_servicesTotal)),
                   _sum('هزینه حمل', groupDigits(_extra), width: 110),
+                  if (_shipSeller > 0) _sum('حمل بعهده فروشنده', groupDigits(_shipSeller), width: 130),
                   _sum('جمع تخفیف', groupDigits(_discount + _lineDiscounts), width: 120),
                   _lbl('جمع فاکتور'),
                   Container(
@@ -1479,5 +1491,85 @@ class _ProductFieldState extends State<_ProductField> {
         },
       );
     });
+  }
+}
+
+
+// ================================================================ هزینه حمل
+
+typedef ShippingResult = ({int buyer, int seller, String? accountId});
+
+/// «هزینه ها»: shipping cost borne by the buyer (added to the invoice total) or
+/// by the seller. On a sale, a seller-paid cost is an expense paid from a cash
+/// box or bank; on a purchase it is just recorded on the invoice.
+Future<ShippingResult?> showShippingDialog(BuildContext context,
+        {required bool buy, int buyerPart = 0, int sellerPart = 0, String? accountId}) =>
+    showDialog<ShippingResult>(
+        context: context,
+        builder: (_) => _ShippingDialog(buy: buy, buyerPart: buyerPart, sellerPart: sellerPart, accountId: accountId));
+
+class _ShippingDialog extends StatefulWidget {
+  final bool buy;
+  final int buyerPart;
+  final int sellerPart;
+  final String? accountId;
+  const _ShippingDialog({required this.buy, required this.buyerPart, required this.sellerPart, this.accountId});
+
+  @override
+  State<_ShippingDialog> createState() => _ShippingDialogState();
+}
+
+class _ShippingDialogState extends State<_ShippingDialog> {
+  late final _buyer = TextEditingController(text: widget.buyerPart == 0 ? '' : groupDigits(widget.buyerPart));
+  late final _seller = TextEditingController(text: widget.sellerPart == 0 ? '' : groupDigits(widget.sellerPart));
+  late String? _acc = widget.accountId;
+  String? _err;
+
+  @override
+  void dispose() {
+    _buyer.dispose();
+    _seller.dispose();
+    super.dispose();
+  }
+
+  void _ok() {
+    final seller = parseMoney(_seller.text);
+    if (!widget.buy && seller > 0 && _acc == null) return setState(() => _err = 'حساب پرداخت هزینه حمل را انتخاب کنید');
+    Navigator.pop<ShippingResult>(context, (buyer: parseMoney(_buyer.text), seller: seller, accountId: widget.buy ? null : _acc));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = StoreScope.of(context);
+    final accs = s.accounts.where((a) => !a.archived && (a.type == AccountType.cash || a.type == AccountType.bank)).toList();
+    return CallbackShortcuts(
+      bindings: {const SingleActivator(LogicalKeyboardKey.f9): _ok},
+      child: FormDialog(
+        title: 'هزینه حمل بار و عوارض',
+        width: 520,
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
+          FilledButton(onPressed: _ok, child: const Text('تایید (F9)')),
+        ],
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          MoneyField(key: const ValueKey('shipBuyer'), controller: _buyer, label: 'بعهده خریدار (به جمع فاکتور اضافه می‌شود)', autofocus: true),
+          const SizedBox(height: 6),
+          MoneyField(key: const ValueKey('shipSeller'), controller: _seller, label: 'بعهده فروشنده'),
+          if (!widget.buy) ...[
+            const SizedBox(height: 6),
+            FieldDropdown<String?>(
+              label: 'پرداخت هزینه حمل فروشنده از',
+              value: accs.any((a) => a.id == _acc) ? _acc : null,
+              items: [for (final a in accs) DropdownMenuItem<String?>(value: a.id, child: Text(a.name))],
+              onChanged: (v) => setState(() => _acc = v),
+            ),
+            const SizedBox(height: 6),
+            Text('هزینه حمل بعهده فروشنده به جمع فاکتور اضافه نمی‌شود و به عنوان «هزینه حمل» از این حساب پرداخت می‌شود.',
+                style: TextStyle(fontSize: 12, color: Theme.of(context).hintColor)),
+          ],
+          if (_err != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_err!, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700))),
+        ]),
+      ),
+    );
   }
 }

@@ -313,10 +313,23 @@ class TbRow {
   final String key;
   final String code;
   final String name;
+  /// Turnover before the period (opening voucher and earlier documents) — «ابتدای دوره».
+  int startDr = 0;
+  int startCr = 0;
   int turnDr = 0;
   int turnCr = 0;
   int bal = 0; // debit positive
   TbRow(this.key, this.code, this.name);
+
+  /// Income and expense ledgers («دفاتر سود و زیانی»).
+  bool get isPl {
+    final side = kolOf('${code.substring(0, 3)}00').side;
+    return side == Side.income || side == Side.expense;
+  }
+
+  /// Turnover up to the end date («بدهکاری/بستانکاری تراز آزمایشی انتهای دوره»).
+  int get fullDr => startDr + turnDr;
+  int get fullCr => startCr + turnCr;
   int get balDr => bal > 0 ? bal : 0;
   int get balCr => bal < 0 ? -bal : 0;
 }
@@ -340,9 +353,12 @@ List<TbRow> trialBalance(AppStore s, List<Posting> journal, ReportFilter f, TbOp
     final k = f.keyOf(p);
     final r = rows.putIfAbsent(k, () => TbRow(k, accountCode(k), accountName(s, k)));
     r.bal += p.debit - p.credit;
-    if (f.inPeriod(p)) {
+    if (f.inPeriod(p) && !p.isOpening) {
       r.turnDr += p.debit;
       r.turnCr += p.credit;
+    } else {
+      r.startDr += p.debit;
+      r.startCr += p.credit;
     }
   }
   final list = rows.values.where((r) {

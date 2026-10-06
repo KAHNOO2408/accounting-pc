@@ -92,5 +92,9 @@ void main() {
     await win('مالی', 'واریز به بانک', '15-bank-deposit');
     await win('مالی', 'برداشت بانکی', '16-bank-withdraw');
     await win('مالی ویژه', 'دریافت پرداخت بین حساب‌ها', '17-between-accounts');
+    await win('گزارشات', 'تراز آزمایشی', '18-trial-filter');
+    await tester.tap(find.text('مشاهده تراز'));
+    await tester.pumpAndSettle();
+    await shot(tester, '19-trial-balance');
   });
 }

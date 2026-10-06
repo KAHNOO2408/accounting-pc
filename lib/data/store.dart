@@ -1388,6 +1388,22 @@ class AppStore extends ChangeNotifier {
         createdAt: inv.createdAt + 1,
       ));
     }
+    // هزینه حمل بعهده فروشنده — we pay the shipping of our own sale from a cash box / bank
+    final ship = inv.shipBySeller;
+    final shipAcc = account(inv.info['shipAcc']);
+    if (ship > 0 && shipAcc != null && !inv.kind.buySide) {
+      txns.add(Txn(
+        id: newId(),
+        type: TxnType.expense,
+        amount: ship,
+        date: inv.date,
+        accountId: shipAcc.id,
+        categoryId: shippingCategory().id,
+        note: 'هزینه حمل بعهده فروشنده — $title',
+        invoiceId: inv.id,
+        createdAt: inv.createdAt + 2,
+      ));
+    }
     // remember last prices on products
     for (final l in inv.lines) {
       final p = product(l.productId);
@@ -1396,6 +1412,57 @@ class AppStore extends ChangeNotifier {
       if (inv.kind == InvoiceKind.sale && p.sellPrice == 0) p.sellPrice = l.unitPrice;
     }
     _commit();
+  }
+
+  /// The expense category of seller-paid shipping («هزینه حمل»), created on first use.
+  TxnCategory shippingCategory() {
+    final c = categories.where((c) => c.kind == CategoryKind.expense && c.name == 'هزینه حمل').firstOrNull;
+    if (c != null) return c;
+    final n = TxnCategory(id: newId(), name: 'هزینه حمل', kind: CategoryKind.expense, color: 0xFF8D6E63);
+    categories.add(n);
+    return n;
+  }
+
+  /// «نحوه تسویه» of an invoice: amount per settlement method (cash, cheque, bank…).
+  Map<String, int> settlementSummary(Invoice inv) {
+    final out = <String, int>{};
+    void add(String k, int v) {
+      if (v != 0) out[k] = (out[k] ?? 0) + v;
+    }
+
+    for (final t in txns.where((t) => t.invoiceId == inv.id && (t.type == TxnType.collect || t.type == TxnType.repay))) {
+      final a = account(t.accountId);
+      add(a?.type == AccountType.cash ? (inv.kind.moneyIn ? 'دریافت نقدی' : 'پرداخت از صندوق') : (inv.kind.moneyIn ? 'دریافت حواله بانکی' : 'پرداخت بانکی'), t.amount);
+    }
+    for (final v in settlementsOf(inv.id)) {
+      final pays = v.meta['pays'];
+      if (pays is Map) {
+        pays.forEach((k, x) => add('$k', (x as num).toInt()));
+        continue;
+      }
+      // older settlements: group by ledger
+      for (final l in v.lines) {
+        if (l.tafsiliId != null && l.tafsiliId == inv.personId) continue;
+        if (l.moeen == mDebtorsOther) continue;
+        final v = (l.debit - l.credit).abs();
+        final inn = inv.kind.moneyIn;
+        switch (l.moeen) {
+          case mCash || mPettyCash:
+            add(inn ? 'دریافت نقدی' : 'پرداخت از صندوق', v);
+          case mBank:
+            add(inn ? 'واریز به بانک' : 'پرداخت بانکی', v);
+          case mChequesAtCash || mChequesAtBank || mChequesPayable:
+            add(inn ? 'دریافت چک' : 'صدور چک', v);
+          case mSaleDiscount:
+            add('تخفیف از فروش', v);
+          case mPurchaseDiscount:
+            add('تخفیف از خرید', v);
+          default:
+            add(findMoeen(l.moeen)?.name ?? l.moeen, v);
+        }
+      }
+    }
+    return out;
   }
 
   /// Settlement documents (تسویه) created for an invoice.

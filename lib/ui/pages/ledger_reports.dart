@@ -339,40 +339,48 @@ class TrialBalanceView extends StatelessWidget {
     final th = Theme.of(context);
     final journal = buildJournal(store);
     final rows = trialBalance(store, journal, filter, options);
-    final tDr = rows.fold<int>(0, (s, r) => s + r.turnDr);
-    final tCr = rows.fold<int>(0, (s, r) => s + r.turnCr);
-    final bDr = rows.fold<int>(0, (s, r) => s + r.balDr);
-    final bCr = rows.fold<int>(0, (s, r) => s + r.balCr);
+    int sum(int Function(TbRow) f, [bool Function(TbRow)? where]) => rows.where(where ?? (_) => true).fold<int>(0, (s, r) => s + f(r));
+    final sDr = sum((r) => r.startDr), sCr = sum((r) => r.startCr);
+    final tDr = sum((r) => r.turnDr), tCr = sum((r) => r.turnCr);
+    final bDr = sum((r) => r.balDr), bCr = sum((r) => r.balCr);
+    final plDr = sum((r) => r.balDr, (r) => r.isPl), plCr = sum((r) => r.balCr, (r) => r.isPl);
     final size = MediaQuery.of(context).size;
-    const w = 150.0;
+    const w = 128.0;
+    const heads = ['بدهکار ابتدای دوره', 'بستانکار ابتدای دوره', 'بدهکار طی دوره', 'بستانکار طی دوره', 'مانده بدهکار', 'مانده بستانکار'];
 
-    Widget num(int v, {bool bold = false}) => SizedBox(
+    Widget num(int v, {bool bold = false, Color? color}) => SizedBox(
           width: w,
           child: Align(
             alignment: Alignment.centerLeft,
-            child: v == 0 ? const Text('') : Money(v, style: TextStyle(fontWeight: bold ? FontWeight.w800 : FontWeight.w500)),
+            child: v == 0 ? const Text('') : Money(v, style: TextStyle(fontWeight: bold ? FontWeight.w800 : FontWeight.w500, color: color)),
           ),
         );
+    List<Widget> six(TbRow? r, List<int> v, {bool bold = false}) => [
+          num(v[0], bold: bold),
+          num(v[1], bold: bold),
+          num(v[2], bold: bold),
+          num(v[3], bold: bold),
+          num(v[4], bold: bold, color: v[4] == 0 ? null : debtorColor),
+          num(v[5], bold: bold, color: v[5] == 0 ? null : creditorColor),
+        ];
 
     void doPrint() => printTable(
           store: store,
           title: 'تراز آزمایشی ($_levelLabel)',
           subtitle: _rangeText(filter),
-          headers: const ['ردیف', 'کد', 'نام حساب', 'گردش بدهکار', 'گردش بستانکار', 'مانده بدهکار', 'مانده بستانکار'],
-          numeric: const {3, 4, 5, 6},
+          headers: const ['ردیف', 'کد', 'نام حساب', ...heads],
+          numeric: const {3, 4, 5, 6, 7, 8},
           rows: [
             for (var i = 0; i < rows.length; i++)
               [
                 '${i + 1}',
                 rows[i].code,
                 rows[i].name,
-                groupDigits(rows[i].turnDr),
-                groupDigits(rows[i].turnCr),
-                groupDigits(rows[i].balDr),
-                groupDigits(rows[i].balCr),
+                for (final v in [rows[i].startDr, rows[i].startCr, rows[i].turnDr, rows[i].turnCr, rows[i].balDr, rows[i].balCr]) v == 0 ? '' : groupDigits(v),
               ],
+            ['', '', 'مانده دفاتر سود و زیانی', '', '', '', '', groupDigits(plDr), groupDigits(plCr)],
           ],
-          footer: ['', '', 'جمع', groupDigits(tDr), groupDigits(tCr), groupDigits(bDr), groupDigits(bCr)],
+          footer: ['', '', 'جمع', groupDigits(sDr), groupDigits(sCr), groupDigits(tDr), groupDigits(tCr), groupDigits(bDr), groupDigits(bCr)],
           fileName: 'trial-balance',
         );
 
@@ -413,14 +421,11 @@ class TrialBalanceView extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: DefaultTextStyle(
                   style: th.textTheme.labelMedium!.copyWith(color: th.hintColor, fontWeight: FontWeight.w700),
-                  child: const Row(children: [
-                    SizedBox(width: 50, child: Text('ردیف')),
-                    SizedBox(width: 80, child: Text('کد')),
-                    Expanded(child: Text('نام حساب')),
-                    SizedBox(width: w, child: Text('گردش بدهکار', textAlign: TextAlign.left)),
-                    SizedBox(width: w, child: Text('گردش بستانکار', textAlign: TextAlign.left)),
-                    SizedBox(width: w, child: Text('مانده بدهکار', textAlign: TextAlign.left)),
-                    SizedBox(width: w, child: Text('مانده بستانکار', textAlign: TextAlign.left)),
+                  child: Row(children: [
+                    const SizedBox(width: 44, child: Text('ردیف')),
+                    const SizedBox(width: 70, child: Text('کد')),
+                    const Expanded(child: Text('نام حساب')),
+                    for (final h in heads) SizedBox(width: w, child: Text(h, textAlign: TextAlign.left)),
                   ]),
                 ),
               ),
@@ -454,13 +459,10 @@ class TrialBalanceView extends StatelessWidget {
                               color: i.isOdd ? th.colorScheme.surfaceContainerLow.withValues(alpha: 0.5) : null,
                               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
                               child: Row(children: [
-                                SizedBox(width: 50, child: Text('${i + 1}', style: TextStyle(color: th.hintColor))),
-                                SizedBox(width: 80, child: Text(r.code)),
+                                SizedBox(width: 44, child: Text('${i + 1}', style: TextStyle(color: th.hintColor))),
+                                SizedBox(width: 70, child: Text(r.code)),
                                 Expanded(child: Text(r.name, overflow: TextOverflow.ellipsis)),
-                                num(r.turnDr),
-                                num(r.turnCr),
-                                num(r.balDr),
-                                num(r.balCr),
+                                ...six(r, [r.startDr, r.startCr, r.turnDr, r.turnCr, r.balDr, r.balCr]),
                               ]),
                             ),
                           );
@@ -468,16 +470,21 @@ class TrialBalanceView extends StatelessWidget {
                       ),
               ),
               Container(
+                color: th.colorScheme.surfaceContainerLow,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Row(children: [
+                  const SizedBox(width: 114),
+                  Expanded(child: Text('مانده دفاتر سود و زیانی', style: TextStyle(fontWeight: FontWeight.w700, color: th.hintColor))),
+                  ...six(null, [0, 0, 0, 0, plDr, plCr]),
+                ]),
+              ),
+              Container(
                 color: th.colorScheme.primary.withValues(alpha: 0.07),
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 child: Row(children: [
-                  const SizedBox(width: 130),
-                  Expanded(child: Text('جمع (${rows.length} حساب) — برای دیدن دفتر هر حساب دوبار کلیک کنید',
-                      style: const TextStyle(fontWeight: FontWeight.w700))),
-                  num(tDr, bold: true),
-                  num(tCr, bold: true),
-                  num(bDr, bold: true),
-                  num(bCr, bold: true),
+                  const SizedBox(width: 114),
+                  Expanded(child: Text('جمع (${rows.length} حساب) — دوبار کلیک: دفتر حساب', style: const TextStyle(fontWeight: FontWeight.w700))),
+                  ...six(null, [sDr, sCr, tDr, tCr, bDr, bCr], bold: true),
                 ]),
               ),
             ],
@@ -487,6 +494,9 @@ class TrialBalanceView extends StatelessWidget {
     );
   }
 }
+
+const debtorColor = Color(0xFF1F3BB3);
+const creditorColor = Color(0xFFD32F2F);
 
 // ============================================================ general ledger
 

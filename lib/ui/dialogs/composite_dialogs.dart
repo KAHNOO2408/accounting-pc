@@ -213,7 +213,13 @@ Voucher? saveInvoiceSettlement(AppStore s, Invoice inv, List<PayItem> items) {
     desc: desc,
     lines: lines,
     kind: 'settle',
-    meta: {'invoice': inv.id},
+    meta: {
+      'invoice': inv.id,
+      // «نحوه تسویه» for the invoice print
+      'pays': <String, int>{
+        for (final m in {for (final i in items) i.method}) m.label: items.where((i) => i.method == m).fold<int>(0, (a, i) => a + i.amount),
+      },
+    },
   );
   s.saveVoucher(v);
   return v;

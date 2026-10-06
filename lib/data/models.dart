@@ -659,6 +659,10 @@ class Invoice {
   /// شماره حواله انبار
   int get warehouseNo => int.tryParse(info['warehouseNo'] ?? '') ?? 0;
 
+  /// هزینه حمل بعهده فروشنده (not part of the invoice total). [extra] is the
+  /// shipping the buyer pays («بعهده خریدار»).
+  int get shipBySeller => int.tryParse(info['shipSeller'] ?? '') ?? 0;
+
   Invoice({
     Map<String, String>? info,
     required this.id,
