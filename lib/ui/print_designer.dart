@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../core/format.dart';
 import '../core/jalali.dart';
+import '../core/qr.dart';
 import '../data/models.dart';
 import '../data/storage.dart';
 import '../data/store.dart';
@@ -241,7 +242,8 @@ String printDocHtml(PrintDoc d, PrintTemplate t, {bool autoPrint = true}) {
   if (t.type == PrintDocType.barcode) {
     b.writeln('<div class="labels" style="grid-template-columns: repeat(${t.labelCols.clamp(1, 8)}, 1fr)">');
     for (final l in d.labels) {
-      b.writeln('<div class="label"><div class="ln">${_esc(l.name)}</div>${_barcodeSvg(l.code)}'
+      final mark = t.labelQr ? '<div class="lq">${qrSvg(l.code)}</div>' : _barcodeSvg(l.code);
+      b.writeln('<div class="label"><div class="ln">${_esc(l.name)}</div>$mark'
           '<div class="lc">${_esc(l.code)}</div>${t.showPrice && l.price > 0 ? '<div class="lp">${groupDigits(l.price)}</div>' : ''}</div>');
     }
     b.writeln('</div>');
@@ -297,6 +299,7 @@ String printDocHtml(PrintDoc d, PrintTemplate t, {bool autoPrint = true}) {
   .label { border: 1px dashed #bbb; padding: 2mm; text-align: center; page-break-inside: avoid; }
   .ln { font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .lc { direction: ltr; font-family: monospace; letter-spacing: 1px; } .lp { font-weight: bold; }
+  .lq { width: 18mm; height: 18mm; margin: 1mm auto; }
   .noprint { margin: 10px; text-align: center; } @media print { .noprint { display: none; } }
 </style></head><body>
 <div class="noprint"><button onclick="window.print()">چاپ</button></div>
@@ -361,7 +364,10 @@ class PrintPreview extends StatelessWidget {
               decoration: BoxDecoration(border: Border.all(color: Colors.black26)),
               child: Column(mainAxisSize: MainAxisSize.min, children: [
                 Text(l.name, style: bold, maxLines: 1, overflow: TextOverflow.ellipsis),
-                SizedBox(height: 30, width: double.infinity, child: CustomPaint(painter: BarcodePainter(l.code))),
+                if (t.labelQr)
+                  SizedBox(height: 60, width: 60, child: CustomPaint(painter: QrPainter(l.code)))
+                else
+                  SizedBox(height: 30, width: double.infinity, child: CustomPaint(painter: BarcodePainter(l.code))),
                 Text(l.code, style: base.copyWith(fontFamily: 'monospace'), textDirection: TextDirection.ltr),
                 if (t.showPrice && l.price > 0) Text(groupDigits(l.price), style: bold),
               ]),
@@ -969,6 +975,7 @@ class _DesignerState extends State<_Designer> {
                         onChanged: (v) => setState(() => t.labelCols = v ?? t.labelCols),
                       ),
                       _check('نمایش قیمت روی برچسب', t.showPrice, (v) => t.showPrice = v),
+                      _check('QR کد به‌جای بارکد خطی', t.labelQr, (v) => t.labelQr = v),
                     ] else ...[
                       Text('بخش‌ها', style: th.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
                       _check('سربرگ (نام و مشخصات فروشگاه)', t.showHeader, (v) => t.showHeader = v),

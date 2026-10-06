@@ -4,6 +4,7 @@ import '../../core/format.dart';
 import '../../data/models.dart';
 import '../../data/store.dart';
 import '../dialogs/simple_dialogs.dart';
+import '../dialogs/sms_dialogs.dart';
 import '../dialogs/txn_dialog.dart';
 import '../theme.dart';
 import '../dialogs/ledger_dialogs.dart' show debtorBlue, creditorRed;
@@ -259,6 +260,12 @@ class _PeoplePageState extends State<PeoplePage> {
                 _act(context, 'قرض گرفتم', Icons.call_received_rounded, () => showTxnDialog(context, type: TxnType.borrow, personId: p.id)),
                 _act(context, 'طلب را گرفتم', Icons.download_rounded, () => showTxnDialog(context, type: TxnType.collect, personId: p.id)),
                 _act(context, 'بدهی را دادم', Icons.upload_rounded, () => showTxnDialog(context, type: TxnType.repay, personId: p.id)),
+                if (p.phone.trim().isNotEmpty)
+                  OutlinedButton.icon(
+                    onPressed: () => showPersonSms(context, p),
+                    icon: const Icon(Icons.sms_outlined, size: 18),
+                    label: const Text('ارسال پیامک'),
+                  ),
                 OutlinedButton.icon(
                   onPressed: () => showPersonDialog(context, edit: p),
                   icon: const Icon(Icons.edit_outlined, size: 18),

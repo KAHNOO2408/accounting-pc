@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/jalali.dart';
 import '../../data/models.dart';
-import '../../data/storage.dart';
+import '../print.dart' show openFile;
 import '../../data/store.dart';
 import '../theme.dart';
 import '../widgets/charts.dart';
@@ -105,9 +105,10 @@ class _ReportsPageState extends State<ReportsPage> {
               onPressed: () {
                 try {
                   final list = store.txns.where((t) => !t.date.isBefore(from) && !t.date.isAfter(to)).toList();
-                  final path = store.exportCsv(list, name: 'report');
-                  toast(context, 'ذخیره شد: $path');
-                  Storage.openFolder(Storage.userFolder.path);
+                  final path = store.exportTxnsXlsx(list,
+                      name: 'report', titleLines: ['گزارش تراکنش‌ها', 'از ${jFormat(from)} تا ${jFormat(to)}']);
+                  toast(context, 'فایل اکسل ذخیره شد: $path');
+                  openFile(path);
                 } catch (e) {
                   toast(context, 'خطا: $e', error: true);
                 }

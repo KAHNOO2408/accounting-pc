@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/format.dart';
 import '../../core/jalali.dart';
+import '../../core/xlsx.dart';
 import '../../data/chart.dart';
 import '../../data/models.dart';
 import '../../data/storage.dart';
@@ -709,17 +710,33 @@ class _BankOpsState extends State<_BankOps> {
     });
   }
 
-  /// خواندن از فایل اکسل — CSV rows: bank (name, number or code), amount, ref, babat.
+  /// خواندن از فایل اکسل — rows of an .xlsx (or CSV) file:
+  /// bank (name, number or code), amount, ref, babat.
   Future<void> _fromExcel() async {
     final s = StoreScope.read(context);
     final f = await fs.openFile(acceptedTypeGroups: const [
-      fs.XTypeGroup(label: 'CSV / Excel', extensions: ['csv', 'txt']),
+      fs.XTypeGroup(label: 'Excel', extensions: ['xlsx', 'csv', 'txt']),
     ]);
     if (f == null || !mounted) return;
     var added = 0;
-    final text = await f.readAsString();
-    for (final line in const LineSplitter().convert(text)) {
-      final cells = line.split(RegExp(r'[,;\t]')).map((x) => x.replaceAll('"', '').trim()).toList();
+    final List<List<String>> table;
+    try {
+      if (f.name.toLowerCase().endsWith('.xlsx')) {
+        table = readXlsx(await f.readAsBytes());
+      } else {
+        final text = await f.readAsString();
+        table = [
+          for (final line in const LineSplitter().convert(text))
+            line.split(RegExp(r'[,;\t]')).map((x) => x.replaceAll('"', '').trim()).toList()
+        ];
+      }
+    } catch (e) {
+      if (mounted) toast(context, 'خواندن فایل ناموفق: $e', error: true);
+      return;
+    }
+    if (!mounted) return;
+    for (final row in table) {
+      final cells = [for (final c in row) c.trim()];
       if (cells.length < 2) continue;
       final amount = parseMoney(cells[1]);
       if (amount <= 0) continue;

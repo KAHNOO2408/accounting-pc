@@ -6,6 +6,8 @@ import 'package:flutter/widgets.dart';
 import '../core/format.dart' show groupDigits;
 import '../core/hash.dart';
 import '../core/jalali.dart';
+import '../core/xlsx.dart';
+import '../core/zip_backup.dart';
 import 'books.dart';
 import 'chart.dart';
 import 'models.dart';
@@ -83,6 +85,9 @@ class AppStore extends ChangeNotifier {
 
   /// مدیریت گزارشات — report files.
   List<ReportFile> reportFiles = [];
+
+  /// گزارش پیام‌های ارسالی (newest first).
+  List<SmsLogEntry> smsLog = [];
 
   /// Ledgers hidden in «کدبندی دفاتر کل و معین».
   Set<String> hiddenMoeens = {};
@@ -185,6 +190,7 @@ class AppStore extends ChangeNotifier {
     audit = list('audit').map(AuditEntry.fromJson).toList();
     recycle = list('recycle').map(RecycleItem.fromJson).toList();
     reportFiles = list('reportFiles').map(ReportFile.fromJson).toList();
+    smsLog = list('smsLog').map(SmsLogEntry.fromJson).toList();
     final cm = j['customMoeens'];
     customMoeens = cm is Map ? {for (final e in cm.entries) '${e.key}': '${e.value}'} : {};
     _applyCustomMoeens();
@@ -299,6 +305,7 @@ class AppStore extends ChangeNotifier {
         'docMeta': {for (final e in docMeta.entries) e.key: e.value.toJson()},
         'recycle': recycle.map((e) => e.toJson()).toList(),
         'reportFiles': reportFiles.map((e) => e.toJson()).toList(),
+        'smsLog': smsLog.map((e) => e.toJson()).toList(),
         'hiddenMoeens': hiddenMoeens.toList(),
         'customMoeens': customMoeens,
         'notebooks': notebooks,
@@ -2145,22 +2152,55 @@ class AppStore extends ChangeNotifier {
     return r;
   }
 
+  // ---------------------------------------------------------------- sms
+
+  /// Records sent messages (keeps the last 1000).
+  void logSms(Iterable<SmsLogEntry> entries) {
+    smsLog.insertAll(0, entries);
+    if (smsLog.length > 1000) smsLog.removeRange(1000, smsLog.length);
+    _commit();
+  }
+
+  /// True when a message about [ref] was delivered to the panel.
+  bool smsSentFor(String ref) => smsLog.any((e) => e.ok && e.ref == ref);
+
+  void clearSmsLog() {
+    smsLog.clear();
+    _commit();
+  }
+
   // ---------------------------------------------------------------- backup
 
-  String exportBackup() {
+  /// «تهیه کپی نسخه پشتیبان»: a compressed .zip holding the data file
+  /// (AES-encrypted when a backup password is set in the settings).
+  String exportBackup({String? password}) {
     final n = DateTime.now();
     final j = Jalali.fromDateTime(n);
     final name =
-        'taraz-backup-${j.format(sep: '-')}-${n.hour.toString().padLeft(2, '0')}${n.minute.toString().padLeft(2, '0')}.json';
-    final f = File('${Storage.userFolder.path}${Storage.sep}$name');
-    f.writeAsStringSync(const JsonEncoder.withIndent(' ').convert(toJson()), flush: true);
+        'taraz-backup-${j.format(sep: '-')}-${n.hour.toString().padLeft(2, '0')}${n.minute.toString().padLeft(2, '0')}';
+    final f = File('${Storage.userFolder.path}${Storage.sep}$name.zip');
+    final pass = password ?? settings.backupPassword;
+    f.writeAsBytesSync(zipBackup(const JsonEncoder.withIndent(' ').convert(toJson()), password: pass), flush: true);
     return f.path;
   }
 
-  /// Replaces all data with the content of [path]. Throws on invalid file.
-  void importBackup(String path) {
-    final txt = File(path).readAsStringSync();
-    final j = jsonDecode(txt);
+  /// Replaces all data with the content of [path] (.zip or .json).
+  /// Throws [BackupPasswordException] when a protected backup needs its
+  /// password, [FormatException] on an invalid file.
+  void importBackup(String path, {String? password}) {
+    final file = File(path);
+    final String txt;
+    if (path.toLowerCase().endsWith('.zip')) {
+      txt = unzipBackup(file.readAsBytesSync(), password: password ?? (settings.backupPassword.isEmpty ? null : settings.backupPassword));
+    } else {
+      txt = file.readAsStringSync();
+    }
+    final Object? j;
+    try {
+      j = jsonDecode(txt);
+    } catch (_) {
+      throw const FormatException('فایل پشتیبان معتبر نیست');
+    }
     if (j is! Map<String, dynamic> || j['accounts'] is! List || j['txns'] is! List) {
       throw const FormatException('فایل پشتیبان معتبر نیست');
     }
@@ -2179,52 +2219,53 @@ class AppStore extends ChangeNotifier {
     final out = <File>[];
     for (final d in [Storage.userFolder, storage.backupDir]) {
       if (!d.existsSync()) continue;
-      out.addAll(d.listSync().whereType<File>().where((f) => f.path.toLowerCase().endsWith('.json')));
+      out.addAll(d.listSync().whereType<File>().where((f) {
+        final p = f.path.toLowerCase();
+        return p.endsWith('.json') || (p.endsWith('.zip') && p.contains('taraz'));
+      }));
     }
     out.sort((a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()));
     return out;
   }
 
-  /// Writes any table as CSV for Excel («خروجی به اکسل»); returns the file path.
-  String exportTableCsv(List<String> headers, List<List<String>> rows, {String name = 'export'}) {
-    String esc(String s) => '"${s.replaceAll('"', '""')}"';
-    final b = StringBuffer('\uFEFF');
-    b.writeln(headers.map(esc).join(','));
-    for (final r in rows) {
-      b.writeln(r.map(esc).join(','));
-    }
+  String _exportName(String name, String ext) {
     final n = DateTime.now();
     final j = Jalali.fromDateTime(n);
-    final f = File(
-        '${Storage.userFolder.path}${Storage.sep}$name-${j.format(sep: '-')}-${n.hour}${n.minute.toString().padLeft(2, '0')}.csv');
-    f.writeAsStringSync(b.toString(), flush: true);
+    return '${Storage.userFolder.path}${Storage.sep}$name-${j.format(sep: '-')}-${n.hour}${n.minute.toString().padLeft(2, '0')}${n.second.toString().padLeft(2, '0')}.$ext';
+  }
+
+  /// «خروجی به اکسل»: writes any table as a real Excel workbook (.xlsx);
+  /// returns the file path.
+  String exportTableXlsx(List<String> headers, List<List<String>> rows,
+      {String name = 'export', String sheet = 'گزارش', List<String> titleLines = const []}) {
+    final f = File(_exportName(name, 'xlsx'));
+    f.writeAsBytesSync(buildXlsx([XlsxSheet(sheet, headers, rows, titleLines: titleLines)]), flush: true);
     return f.path;
   }
 
-  /// Writes a CSV (UTF-8 with BOM so Excel shows Persian correctly).
-  String exportCsv(List<Txn> list, {String name = 'transactions'}) {
-    String esc(String s) => '"${s.replaceAll('"', '""')}"';
-    final b = StringBuffer('﻿');
-    b.writeln(['تاریخ', 'نوع', 'مبلغ', 'حساب', 'به حساب', 'دسته', 'شخص', 'سررسید', 'توضیحات'].map(esc).join(','));
-    for (final t in list) {
-      b.writeln([
-        jFormat(t.date),
-        t.type.label,
-        t.amount.toString(),
-        account(t.accountId)?.name ?? '',
-        account(t.toAccountId)?.name ?? '',
-        category(t.categoryId)?.name ?? '',
-        person(t.personId)?.name ?? '',
-        t.dueDate == null ? '' : jFormat(t.dueDate!),
-        t.note,
-      ].map(esc).join(','));
-    }
-    final n = DateTime.now();
-    final j = Jalali.fromDateTime(n);
-    final f = File(
-        '${Storage.userFolder.path}${Storage.sep}$name-${j.format(sep: '-')}-${n.hour}${n.minute.toString().padLeft(2, '0')}.csv');
-    f.writeAsStringSync(b.toString(), flush: true);
-    return f.path;
+  /// Transactions as an Excel workbook.
+  String exportTxnsXlsx(List<Txn> list, {String name = 'transactions', List<String> titleLines = const []}) {
+    final rows = [
+      for (final t in list)
+        [
+          jFormat(t.date),
+          t.type.label,
+          groupDigits(t.amount),
+          account(t.accountId)?.name ?? '',
+          account(t.toAccountId)?.name ?? '',
+          category(t.categoryId)?.name ?? '',
+          person(t.personId)?.name ?? '',
+          t.dueDate == null ? '' : jFormat(t.dueDate!),
+          t.note,
+        ]
+    ];
+    return exportTableXlsx(
+      ['تاریخ', 'نوع', 'مبلغ (${settings.currency})', 'حساب', 'به حساب', 'دسته', 'شخص', 'سررسید', 'توضیحات'],
+      rows,
+      name: name,
+      sheet: 'تراکنش‌ها',
+      titleLines: titleLines,
+    );
   }
 }
 

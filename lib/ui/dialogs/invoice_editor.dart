@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import '../../core/format.dart';
 import '../../core/jalali.dart';
 import '../../data/models.dart';
+import '../../data/sms.dart' show autoInvoiceSms;
 import '../../data/storage.dart';
 import '../../data/store.dart';
 import '../print_designer.dart';
@@ -16,6 +17,7 @@ import 'composite_dialogs.dart';
 import 'misc_dialogs.dart';
 import 'price_dialog.dart';
 import 'simple_dialogs.dart';
+import 'sms_dialogs.dart';
 
 String fmtQty(double q) {
   if (q == q.roundToDouble()) return q.toInt().toString();
@@ -556,6 +558,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     }
     store.saveInvoice(inv);
     if (items.isNotEmpty) saveInvoiceSettlement(store, inv, items);
+    if (!draft) autoInvoiceSms(store, inv);
     _preItems = null;
     if (close) {
       if (mounted) {
@@ -903,6 +906,11 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                     final inv = await _save(close: false, settle: false, draft: true);
                     if (inv != null && mounted) await showReportBuilder(context, inv, PrintDocType.barcode);
                   }, dropdown: true, icon: Icons.qr_code_2_rounded),
+                  const SizedBox(width: 6),
+                  _btn('ارسال پیامک', () async {
+                    final inv = await _save(close: false, settle: false, draft: true);
+                    if (inv != null && mounted) await showInvoiceSms(context, inv);
+                  }, icon: Icons.sms_outlined),
                   const SizedBox(width: 6),
                   _btn('تسویه امانی', () => showComingSoon(context, 'تسویه امانی')),
                   const SizedBox(width: 6),

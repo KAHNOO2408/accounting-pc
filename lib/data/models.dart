@@ -959,6 +959,12 @@ class AppSettings {
   int backgroundPreset;
   String backgroundImage;
 
+  /// پنل پیامک («ارسال پیام»).
+  SmsConfig sms;
+
+  /// Password of compressed backup files (empty = no password).
+  String backupPassword;
+
   AppSettings({
     this.themeMode = 'light',
     this.currency = 'تومان',
@@ -975,7 +981,10 @@ class AppSettings {
     Map<String, int>? openingOther,
     this.backgroundPreset = 0,
     this.backgroundImage = '',
-  }) : openingOther = openingOther ?? {};
+    SmsConfig? sms,
+    this.backupPassword = '',
+  })  : openingOther = openingOther ?? {},
+        sms = sms ?? SmsConfig();
 
   bool get hasPassword => passwordHash.isNotEmpty;
 
@@ -995,6 +1004,8 @@ class AppSettings {
         'openingOther': openingOther,
         'backgroundPreset': backgroundPreset,
         'backgroundImage': backgroundImage,
+        'sms': sms.toJson(),
+        if (backupPassword.isNotEmpty) 'backupPassword': backupPassword,
       };
 
   factory AppSettings.fromJson(Map<String, dynamic> j) => AppSettings(
@@ -1015,6 +1026,150 @@ class AppSettings {
             : <String, int>{},
         backgroundPreset: _i(j['backgroundPreset']),
         backgroundImage: _s(j['backgroundImage']),
+        sms: j['sms'] is Map<String, dynamic> ? SmsConfig.fromJson(j['sms'] as Map<String, dynamic>) : null,
+        backupPassword: _s(j['backupPassword']),
+      );
+}
+
+/// SMS web-service providers.
+enum SmsProvider { kavenegar, melipayamak, smsir, custom }
+
+extension SmsProviderX on SmsProvider {
+  String get label => switch (this) {
+        SmsProvider.kavenegar => 'کاوه‌نگار',
+        SmsProvider.melipayamak => 'ملی پیامک (پیامک پنل)',
+        SmsProvider.smsir => 'SMS.ir (اس‌ام‌اس دات آی‌آر)',
+        SmsProvider.custom => 'پنل دیگر (آدرس اینترنتی دلخواه)',
+      };
+}
+
+/// Settings of the SMS panel and the message templates.
+class SmsConfig {
+  SmsProvider provider;
+  String apiKey;
+  String username;
+  String password;
+
+  /// شماره خط ارسال
+  String sender;
+
+  /// For [SmsProvider.custom]: a URL with {to} {text} {from} {user} {pass} {key}.
+  String customUrl;
+
+  /// Sends the sale invoice text automatically when a sale invoice is saved.
+  bool autoInvoice;
+
+  /// Sends a reminder the day a received cheque falls due (when the app is open).
+  bool autoCheque;
+
+  String invoiceTemplate;
+  String chequeTemplate;
+  String debtTemplate;
+  String signature;
+
+  SmsConfig({
+    this.provider = SmsProvider.kavenegar,
+    this.apiKey = '',
+    this.username = '',
+    this.password = '',
+    this.sender = '',
+    this.customUrl = '',
+    this.autoInvoice = false,
+    this.autoCheque = false,
+    this.invoiceTemplate = defaultInvoiceSms,
+    this.chequeTemplate = defaultChequeSms,
+    this.debtTemplate = defaultDebtSms,
+    this.signature = '',
+  });
+
+  static const defaultInvoiceSms =
+      '{نام} عزیز\n{عنوان} شماره {شماره فاکتور} به مبلغ {مبلغ فاکتور} {واحد} در تاریخ {تاریخ} ثبت شد.\nمانده حساب شما: {مانده} {واحد}\n{فروشگاه}';
+  static const defaultChequeSms =
+      '{نام} عزیز\nچک شماره {شماره چک} به مبلغ {مبلغ چک} {واحد} در تاریخ {سررسید} سررسید می‌شود. لطفاً موجودی حساب را تأمین فرمایید.\n{فروشگاه}';
+  static const defaultDebtSms = '{نام} عزیز\nمانده حساب شما تا تاریخ {امروز}: {مانده} {واحد}\n{فروشگاه}';
+
+  bool get configured => switch (provider) {
+        SmsProvider.kavenegar => apiKey.trim().isNotEmpty,
+        SmsProvider.melipayamak => username.trim().isNotEmpty && password.isNotEmpty && sender.trim().isNotEmpty,
+        SmsProvider.smsir => apiKey.trim().isNotEmpty && sender.trim().isNotEmpty,
+        SmsProvider.custom => customUrl.trim().startsWith('http'),
+      };
+
+  Map<String, dynamic> toJson() => {
+        'provider': provider.name,
+        'apiKey': apiKey,
+        'username': username,
+        'password': password,
+        'sender': sender,
+        'customUrl': customUrl,
+        'autoInvoice': autoInvoice,
+        'autoCheque': autoCheque,
+        'invoiceTemplate': invoiceTemplate,
+        'chequeTemplate': chequeTemplate,
+        'debtTemplate': debtTemplate,
+        'signature': signature,
+      };
+
+  factory SmsConfig.fromJson(Map<String, dynamic> j) => SmsConfig(
+        provider: SmsProvider.values.firstWhere((p) => p.name == j['provider'], orElse: () => SmsProvider.kavenegar),
+        apiKey: _s(j['apiKey']),
+        username: _s(j['username']),
+        password: _s(j['password']),
+        sender: _s(j['sender']),
+        customUrl: _s(j['customUrl']),
+        autoInvoice: j['autoInvoice'] == true,
+        autoCheque: j['autoCheque'] == true,
+        invoiceTemplate: _s(j['invoiceTemplate']).isEmpty ? defaultInvoiceSms : _s(j['invoiceTemplate']),
+        chequeTemplate: _s(j['chequeTemplate']).isEmpty ? defaultChequeSms : _s(j['chequeTemplate']),
+        debtTemplate: _s(j['debtTemplate']).isEmpty ? defaultDebtSms : _s(j['debtTemplate']),
+        signature: _s(j['signature']),
+      );
+}
+
+/// One sent (or failed) SMS — «گزارش پیام‌های ارسالی».
+class SmsLogEntry {
+  String id;
+  DateTime date;
+  String to;
+  String name;
+  String text;
+  bool ok;
+  String result;
+
+  /// What the message was about, e.g. `inv:<id>`, `chq:<id>` (for «ارسال نشده‌ها»).
+  String ref;
+
+  SmsLogEntry({
+    required this.id,
+    required this.date,
+    required this.to,
+    this.name = '',
+    required this.text,
+    this.ok = false,
+    this.result = '',
+    this.ref = '',
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'date': date.toIso8601String(),
+        'to': to,
+        'name': name,
+        'text': text,
+        'ok': ok,
+        'result': result,
+        if (ref.isNotEmpty) 'ref': ref,
+      };
+
+  factory SmsLogEntry.fromJson(Map<String, dynamic> j) => SmsLogEntry(
+        id: _s(j['id']),
+        date: DateTime.tryParse(_s(j['date'])) ?? DateTime.now(),
+        to: _s(j['to']),
+        name: _s(j['name']),
+        text: _s(j['text']),
+        ok: j['ok'] == true,
+        result: _s(j['result']),
+        ref: _s(j['ref']),
       );
 }
 
@@ -1127,6 +1282,7 @@ class PrintTemplate {
   bool showNote;
   bool showSignatures;
   bool showPrice; // barcode labels
+  bool labelQr; // barcode labels: QR code instead of Code 128
   List<String> columns;
   int fontSize;
   int labelCols;
@@ -1145,6 +1301,7 @@ class PrintTemplate {
     this.showNote = true,
     this.showSignatures = true,
     this.showPrice = true,
+    this.labelQr = false,
     List<String>? columns,
     this.fontSize = 12,
     this.labelCols = 3,
@@ -1166,6 +1323,7 @@ class PrintTemplate {
         'showNote': showNote,
         'showSignatures': showSignatures,
         'showPrice': showPrice,
+        if (labelQr) 'labelQr': true,
         'columns': columns,
         'fontSize': fontSize,
         'labelCols': labelCols,
@@ -1185,6 +1343,7 @@ class PrintTemplate {
         showNote: j['showNote'] != false,
         showSignatures: j['showSignatures'] != false,
         showPrice: j['showPrice'] != false,
+        labelQr: j['labelQr'] == true,
         columns: j['columns'] is List ? [for (final c in j['columns'] as List) '$c'] : null,
         fontSize: j['fontSize'] == null ? 12 : _i(j['fontSize']),
         labelCols: j['labelCols'] == null ? 3 : _i(j['labelCols']),

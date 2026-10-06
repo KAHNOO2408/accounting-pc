@@ -32,6 +32,8 @@ import 'dialogs/ledger_dialogs.dart';
 import 'dialogs/bank_dialogs.dart';
 import 'dialogs/books_dialogs.dart';
 import 'dialogs/sakan_tools.dart';
+import 'dialogs/sms_dialogs.dart';
+import '../data/sms.dart' show autoChequeReminders;
 import 'print_designer.dart' show showPrintForms;
 import 'pages/profit_page.dart';
 import 'pages/reports_page.dart';
@@ -378,7 +380,8 @@ final List<_Tab> _tabs = [
       const _Item('لیست ارزها', Icons.attach_money_rounded, _slate),
       _Item('لیست انبارها', Icons.warehouse_outlined, _amber, run: (c, _) => showWarehousesWindow(c)),
       _Item('تصویر پس زمینه', Icons.wallpaper_rounded, _cyan, run: (c, _) => showBackgroundDialog(c)),
-      const _Item('ارسال پیام', Icons.sms_outlined, _slate, shortcut: 'Ctrl+F11'),
+      _Item('ارسال پیام', Icons.sms_outlined, _green,
+          shortcut: 'Ctrl+F11', activator: _k(LogicalKeyboardKey.f11, ctrl: true), run: (c, _) => showSmsWindow(c)),
     ]),
     _Group('کاربران', [
       _Item('کاربران', Icons.manage_accounts_outlined, _blue, run: (c, _) => showUsersWindow(c)),
@@ -440,6 +443,15 @@ class _ShellState extends State<Shell> {
   int _tab = 0;
   bool _ribbonOpen = true;
   final _searchFocus = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    // یادآوری سررسید چک (when enabled in the SMS settings)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) autoChequeReminders(StoreScope.read(context));
+    });
+  }
 
   @override
   void dispose() {

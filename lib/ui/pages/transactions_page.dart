@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/format.dart';
 import '../../core/jalali.dart';
 import '../../data/models.dart';
-import '../../data/storage.dart';
+import '../print.dart' show openFile;
 import '../../data/store.dart';
 import '../dialogs/txn_dialog.dart';
 import '../theme.dart';
@@ -139,9 +139,9 @@ class _TransactionsPageState extends State<TransactionsPage> {
                   ? null
                   : () {
                       try {
-                        final path = store.exportCsv(list);
-                        toast(context, 'فایل اکسل (CSV) ذخیره شد: $path');
-                        Storage.openFolder(Storage.userFolder.path);
+                        final path = store.exportTxnsXlsx(list);
+                        toast(context, 'فایل اکسل ذخیره شد: $path');
+                        openFile(path);
                       } catch (e) {
                         toast(context, 'خطا: $e', error: true);
                       }

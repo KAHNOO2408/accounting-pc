@@ -3,6 +3,11 @@ import 'dart:io';
 import 'package:taraz/core/format.dart';
 import 'package:taraz/core/hash.dart';
 import 'package:taraz/core/jalali.dart';
+import 'package:taraz/core/qr.dart';
+import 'package:taraz/core/xlsx.dart';
+import 'package:taraz/core/zip_backup.dart';
+import 'package:taraz/data/sms.dart';
+import 'package:taraz/ui/dialogs/sms_dialogs.dart';
 import 'package:taraz/data/books.dart';
 import 'package:taraz/data/chart.dart';
 import 'package:taraz/data/journal.dart';
@@ -1564,5 +1569,135 @@ void main() {
       await tester.tap(find.text('انصراف').last);
       await tester.pumpAndSettle();
     }
+  });
+  // ------------------------------------------------------------ Sakan libraries
+
+  test('xlsx export round-trips through the reader', () {
+    final bytes = buildXlsx([
+      XlsxSheet('گزارش', ['نام', 'مبلغ', 'کد'], [
+        ['علی & <رضا>', '1,250,000', '0912'],
+        ['مریم', '-۳۵۰', '7001'],
+      ], titleLines: ['عنوان گزارش']),
+    ]);
+    final rows = readXlsx(bytes);
+    expect(rows[0], ['عنوان گزارش']);
+    expect(rows[2], ['نام', 'مبلغ', 'کد']);
+    expect(rows[3], ['علی & <رضا>', '1250000', '0912']);
+    expect(rows[4], ['مریم', '-350', '7001']);
+    expect(xlsxNumber('0912'), isNull);
+    expect(xlsxNumber('12,500'), 12500);
+  });
+
+  test('store writes .xlsx exports', () {
+    final s = _tempStore();
+    s.completeSetup(ownerName: 'Ali');
+    final path = s.exportTableXlsx(['a', 'b'], [
+      ['x', '10'],
+    ], name: 'unit-test');
+    expect(path.endsWith('.xlsx'), isTrue);
+    final rows = readXlsx(File(path).readAsBytesSync());
+    expect(rows.last, ['x', '10']);
+    File(path).deleteSync();
+  });
+
+  test('QR codes are generated for Persian text', () {
+    final m = qrMatrix('فاکتور ۱۲ — 1,250,000');
+    expect(m, isNotNull);
+    expect(m!.length, greaterThanOrEqualTo(21));
+    expect(qrSvg('abc'), contains('<svg'));
+    expect(qrSvg(''), isEmpty);
+    final it = RItem(id: 'q', kind: 'qr', band: BandKind.header, x: 1, y: 1, w: 20, h: 20, text: '{شماره فاکتور}');
+    final back = RItem.fromJson(it.toJson());
+    expect(back.isQr, isTrue);
+  });
+
+  test('zip backups: plain, with password, wrong password', () {
+    final plain = zipBackup('{"a":1}');
+    expect(zipIsEncrypted(plain), isFalse);
+    expect(unzipBackup(plain), '{"a":1}');
+    final locked = zipBackup('{"a":2}', password: 'secret');
+    expect(zipIsEncrypted(locked), isTrue);
+    expect(() => unzipBackup(locked), throwsA(isA<BackupPasswordException>()));
+    expect(() => unzipBackup(locked, password: 'nope'), throwsA(isA<BackupPasswordException>()));
+    expect(unzipBackup(locked, password: 'secret'), '{"a":2}');
+  });
+
+  test('store backup is a zip and restores', () {
+    final s = _tempStore();
+    s.completeSetup(ownerName: 'Ali');
+    s.upsertPerson(Person(id: newId(), name: 'Reza'));
+    s.settings.backupPassword = 'p1';
+    final path = s.exportBackup();
+    expect(path.endsWith('.zip'), isTrue);
+    final t = _tempStore();
+    t.completeSetup(ownerName: 'Other');
+    expect(() => t.importBackup(path), throwsA(isA<BackupPasswordException>()));
+    t.importBackup(path, password: 'p1');
+    expect(t.people.any((p) => p.name == 'Reza'), isTrue);
+    expect(s.availableBackups().any((f) => f.path == path), isTrue);
+    File(path).deleteSync();
+  });
+
+  test('sms helpers: mobile numbers, templates and parts', () {
+    expect(normalizeMobile('+98 912 123 4567'), '09121234567');
+    expect(normalizeMobile('۰۹۱۲۱۲۳۴۵۶۷'), '09121234567');
+    expect(normalizeMobile('9121234567'), '09121234567');
+    expect(normalizeMobile('021-88776655'), '');
+    expect(fillSms('{نام} - {مانده} {x}', {'نام': 'علی', 'مانده': '10'}), 'علی - 10 {x}');
+    expect(smsParts('سلام'), 1);
+    expect(smsParts('س' * 71), 2);
+    final s = _tempStore();
+    s.completeSetup(ownerName: 'Ali');
+    final p = Person(id: newId(), name: 'Reza', phone: '09121234567');
+    s.upsertPerson(p);
+    final txt = debtSmsText(s, p);
+    expect(txt, contains('Reza'));
+    expect(s.settings.sms.configured, isFalse);
+    final cfg = SmsConfig.fromJson((SmsConfig()
+          ..provider = SmsProvider.melipayamak
+          ..username = 'u'
+          ..password = 'p'
+          ..sender = '3000')
+        .toJson());
+    expect(cfg.configured, isTrue);
+    expect(cfg.provider, SmsProvider.melipayamak);
+  });
+
+  testWidgets('SMS window opens with all tabs', (tester) async {
+    tester.view.physicalSize = const Size(1600, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final s = _tempStore();
+    s.completeSetup(ownerName: 'Ali');
+    s.upsertPerson(Person(id: newId(), name: 'Reza', phone: '09121234567'));
+    await tester.pumpWidget(TarazApp(store: s));
+    await tester.pumpAndSettle();
+    final ctx = tester.element(find.text('خرید و فروش').first);
+    showSmsWindow(ctx);
+    await tester.pumpAndSettle();
+    expect(find.text('Reza'), findsWidgets);
+    for (final t in ['یادآوری سررسید چک', 'پیام‌های ارسالی', 'تنظیمات پنل پیامک']) {
+      await tester.tap(find.text(t));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('متن پیامک فاکتور'), findsOneWidget);
+    await tester.tap(find.text('ذخیره تنظیمات (Ctrl+S)'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('report preview renders a QR element', (tester) async {
+    tester.view.physicalSize = const Size(1600, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final s = _tempStore();
+    s.completeSetup(ownerName: 'Ali');
+    final l = defaultInvoiceLayout()
+      ..items.add(RItem(id: 'qr1', kind: 'qr', band: BandKind.header, x: 20, y: 7, w: 20, h: 20, text: '{شماره فاکتور}'));
+    const d = ReportData(fields: {'شماره فاکتور': '12'}, rows: [], title: 't');
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: SingleChildScrollView(child: Column(children: reportPages(l, d, 3))))));
+    await tester.pumpAndSettle();
+    expect(find.byWidgetPredicate((w) => w is CustomPaint && w.painter is QrPainter), findsOneWidget);
+    expect(reportHtml(l, d), contains('<svg'));
   });
 }

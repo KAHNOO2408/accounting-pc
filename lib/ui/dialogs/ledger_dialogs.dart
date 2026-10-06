@@ -1414,7 +1414,7 @@ class _LedgerState extends State<_Ledger> {
 
   void _excel(AppStore s, List<_LRow> shown) {
     try {
-      final path = s.exportTableCsv(_cols, [for (final r in shown) _cells(s, r)], name: 'ledger');
+      final path = s.exportTableXlsx(_cols, [for (final r in shown) _cells(s, r)], name: 'ledger', sheet: 'گردش حساب');
       openFile(path);
       toast(context, 'فایل اکسل ساخته شد');
     } catch (e) {

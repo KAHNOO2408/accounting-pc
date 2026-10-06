@@ -45,6 +45,7 @@ class _DesignerState extends State<_Designer> {
       'hline' => RItem(id: _newId(), band: band, x: 10, y: 2, w: 60, h: 0.6, border: Sides.top),
       'vline' => RItem(id: _newId(), band: band, x: 30, y: 0, w: 0.6, h: 10, border: Sides.left),
       'box' => RItem(id: _newId(), band: band, x: 10, y: 1, w: 40, h: 12, border: Sides.all),
+      'qr' => RItem(id: _newId(), kind: 'qr', band: band, x: 2, y: 1, w: 22, h: 22, text: text.isEmpty ? defaultQrText(l.type) : text),
       _ => RItem(id: _newId(), band: band, x: 10, y: 1, w: 40, h: 6, text: text.isEmpty ? 'متن جدید' : text, fontSize: 9),
     };
     setState(() {
@@ -87,14 +88,22 @@ class _DesignerState extends State<_Designer> {
     final r = await showDialog<String>(
       context: context,
       builder: (ctx) => FormDialog(
-        title: 'ویرایش متن',
+        title: it.isQr ? 'محتوای QR کد' : 'ویرایش متن',
         width: 520,
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('انصراف')),
           FilledButton(onPressed: () => Navigator.pop(ctx, c.text), child: const Text('تایید')),
         ],
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          TextField(controller: c, autofocus: true, maxLines: 3, decoration: const InputDecoration(labelText: 'متن')),
+          TextField(
+            controller: c,
+            autofocus: true,
+            maxLines: 3,
+            decoration: InputDecoration(
+              labelText: it.isQr ? 'متنی که در QR کد قرار می‌گیرد' : 'متن',
+              helperText: it.isQr ? 'مثلاً آدرس سایت، شماره فاکتور و مبلغ — هنگام چاپ فیلدها با مقدار واقعی جایگزین می‌شوند' : null,
+            ),
+          ),
           const SizedBox(height: 10),
           Text('درج فیلد:', style: Theme.of(ctx).textTheme.labelMedium),
           const SizedBox(height: 6),
@@ -288,7 +297,7 @@ class _DesignerState extends State<_Designer> {
       InkWell(
         onTap: () => _editText(s),
         child: InputDecorator(
-          decoration: const InputDecoration(labelText: 'متن (برای ویرایش کلیک کنید)', isDense: true),
+          decoration: InputDecoration(labelText: s.isQr ? 'محتوای QR کد (برای ویرایش کلیک کنید)' : 'متن (برای ویرایش کلیک کنید)', isDense: true),
           child: Text(s.text.isEmpty ? '—' : s.text, maxLines: 3),
         ),
       ),
@@ -397,6 +406,7 @@ class _DesignerState extends State<_Designer> {
                   onSelected: (f) => _add('text', text: '{$f}'),
                 ),
                 _tool(Icons.crop_square_rounded, 'افزودن کادر', () => _add('box')),
+                _tool(Icons.qr_code_2_rounded, 'افزودن QR کد', () => _add('qr')),
                 _tool(Icons.horizontal_rule_rounded, 'خط افقی', () => _add('hline')),
                 _tool(Icons.more_vert_rounded, 'خط عمودی', () => _add('vline')),
                 const VerticalDivider(),

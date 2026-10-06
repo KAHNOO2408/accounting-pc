@@ -23,9 +23,10 @@ class Sides {
 }
 
 /// One element on the page: a text box (with `{field}` placeholders),
-/// a frame or a line.
+/// a frame, a line or a QR code ([kind] `qr`: [text] is the encoded content).
 class RItem {
   String id;
+  String kind; // '' = text / frame / line, 'qr' = QR code
   BandKind band;
   double x, y, w, h;
   String text;
@@ -39,6 +40,7 @@ class RItem {
 
   RItem({
     required this.id,
+    this.kind = '',
     required this.band,
     required this.x,
     required this.y,
@@ -54,10 +56,13 @@ class RItem {
     this.fill = 0,
   });
 
+  bool get isQr => kind == 'qr';
+
   RItem copy({String? id}) => RItem.fromJson(toJson())..id = id ?? this.id;
 
   Map<String, dynamic> toJson() => {
         'id': id,
+        if (kind.isNotEmpty) 'k': kind,
         'band': band.name,
         'x': x,
         'y': y,
@@ -77,6 +82,7 @@ class RItem {
 
   factory RItem.fromJson(Map<String, dynamic> j) => RItem(
         id: '${j['id'] ?? ''}',
+        kind: '${j['k'] ?? ''}',
         band: BandKind.values.firstWhere((b) => b.name == j['band'], orElse: () => BandKind.header),
         x: _d(j['x'], 0),
         y: _d(j['y'], 0),
@@ -343,6 +349,11 @@ ReportLayout defaultLayoutFor(PrintDocType t, [String variant = '']) {
 /// Placeholders of «پرینت حساب».
 const ledgerFields = ['نام حساب', 'کد حساب', 'عنوان کل', 'عنوان معین', 'نام فروشگاه', 'تاریخ', 'از تاریخ', 'تا تاریخ', 'صفحه', 'جمع بدهکار', 'جمع بستانکار', 'مانده', 'تشخیص'];
 const ledgerRowFields = ['ردیف', 'ش س', 'تاریخ سند', 'شرح سند', 'بدهکار', 'بستانکار', 'مانده ردیف', 'ت', 'شماره ثابت'];
+
+/// Starting content of a new QR code element.
+String defaultQrText(PrintDocType t) => t == PrintDocType.ledger
+    ? '{نام فروشگاه}\nحساب {نام حساب}\nمانده {مانده}'
+    : '{نام فروشگاه}\n{عنوان فاکتور} {شماره فاکتور}\nتاریخ {تاریخ}\nمبلغ {جمع کل فاکتور}';
 
 /// Fields offered by the designer for a layout type.
 List<String> fieldsFor(PrintDocType t) => t == PrintDocType.ledger ? [...ledgerFields, ...ledgerRowFields] : [...invoiceFields, ...rowFields];

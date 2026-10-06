@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/format.dart';
 import '../../core/jalali.dart';
+import '../../core/qr.dart';
 import '../../data/chart.dart';
 import '../../data/models.dart';
 import '../../data/report_layout.dart';
@@ -12,6 +13,7 @@ import '../../data/storage.dart';
 import '../../data/store.dart';
 import '../dialogs/invoice_editor.dart' show fmtQty;
 import '../print.dart' show openFile;
+import '../widgets/common.dart' show toast;
 
 /// Values that fill a layout: page fields and one map per data row.
 class ReportData {
@@ -155,6 +157,19 @@ class ReportItemView extends StatelessWidget {
     final b = item.border;
     final bw = (item.borderWidth * scale).cl(0.6, 6.0);
     BorderSide side(int bit) => b & bit != 0 ? BorderSide(color: Colors.black, width: bw) : BorderSide.none;
+    if (item.isQr) {
+      return Container(
+        width: item.w * scale,
+        height: item.h * scale,
+        decoration: BoxDecoration(
+          border: Border(top: side(Sides.top), right: side(Sides.right), bottom: side(Sides.bottom), left: side(Sides.left)),
+        ),
+        foregroundDecoration: selected ? BoxDecoration(border: Border.all(color: Colors.blue, width: 1.5)) : null,
+        child: text.trim().isEmpty
+            ? const Center(child: Icon(Icons.qr_code_2_rounded, color: Colors.black26))
+            : CustomPaint(painter: QrPainter(text)),
+      );
+    }
     Widget child = Text(
       text,
       maxLines: item.vertical ? 1 : null,
@@ -245,6 +260,11 @@ String _esc(String s) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').repl
 
 String _itemHtml(RItem it, String text) {
   String bd(int bit, String side) => it.border & bit != 0 ? 'border-$side:${it.borderWidth}mm solid #000;' : '';
+  if (it.isQr) {
+    return '<div class="it qr" style="left:${it.x}mm;top:${it.y}mm;width:${it.w}mm;height:${it.h}mm;'
+        '${bd(Sides.top, 'top')}${bd(Sides.right, 'right')}${bd(Sides.bottom, 'bottom')}${bd(Sides.left, 'left')}">'
+        '${qrSvg(text)}</div>';
+  }
   final align = switch (it.align) {
     'center' => 'center',
     'left' => 'left',
@@ -298,6 +318,7 @@ String reportHtml(ReportLayout l, ReportData d, {bool autoPrint = true}) {
   .page:last-child { page-break-after: auto; }
   .band { position: relative; width: ${l.contentW}mm; direction: ltr; }
   .it { position: absolute; display: flex; align-items: center; overflow: hidden; direction: rtl; padding: 0 0.6mm; white-space: nowrap; line-height: 1.15; }
+  .it.qr { padding: 0; justify-content: center; }
   .noprint { text-align: center; margin: 8px; } @media print { .noprint { display: none; } }
 </style></head><body>
 <div class="noprint"><button onclick="window.print()">چاپ</button></div>
@@ -316,6 +337,37 @@ String printReport(ReportLayout l, ReportData d, {String fileName = 'report', bo
 }
 
 // =================================================================== Report Preview window
+
+/// «خروجی به اکسل» of a report: one Excel column per text box of the data band
+/// (right to left), headed by the column-band box above it.
+String exportReportXlsx(AppStore s, ReportLayout l, ReportData d, {String fileName = 'report'}) {
+  final data = l.itemsOf(BandKind.data).where((i) => !i.isQr && i.text.trim().isNotEmpty).toList()
+    ..sort((a, b) => b.x.compareTo(a.x));
+  final heads = l.itemsOf(BandKind.columns).where((i) => !i.isQr && i.text.trim().isNotEmpty).toList();
+  String header(RItem it) {
+    RItem? best;
+    var bestOverlap = 0.0;
+    for (final h in heads) {
+      final o = (it.x + it.w < h.x + h.w ? it.x + it.w : h.x + h.w) - (it.x > h.x ? it.x : h.x);
+      if (o > bestOverlap) {
+        bestOverlap = o;
+        best = h;
+      }
+    }
+    final t = best == null ? it.text : fillText(best.text, d.fields);
+    return t.replaceAll(RegExp(r'[{}]'), '').trim();
+  }
+
+  final headers = [for (final it in data) header(it)];
+  final rows = [
+    for (final r in d.rows) [for (final it in data) fillText(it.text, {...d.fields, ...r}).trim()]
+  ];
+  final title = d.title.isNotEmpty ? d.title : l.name;
+  return s.exportTableXlsx(headers, rows, name: fileName, sheet: title, titleLines: [
+    title,
+    if (s.settings.businessName.isNotEmpty) s.settings.businessName,
+  ]);
+}
 
 Future<void> showReportPreview(BuildContext context, ReportLayout l, ReportData d, {String fileName = 'report'}) =>
     showDialog<void>(context: context, builder: (_) => _Preview(layout: l, data: d, fileName: fileName));
@@ -339,6 +391,16 @@ class _PreviewState extends State<_Preview> {
     } catch (_) {}
   }
 
+  void _excel() {
+    try {
+      final path = exportReportXlsx(StoreScope.read(context), widget.layout, widget.data, fileName: widget.fileName);
+      openFile(path);
+      toast(context, 'فایل اکسل ساخته شد');
+    } catch (e) {
+      toast(context, 'خروجی اکسل ناموفق: $e', error: true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -346,6 +408,7 @@ class _PreviewState extends State<_Preview> {
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.keyP, control: true): _print,
+        const SingleActivator(LogicalKeyboardKey.keyE, control: true): _excel,
         const SingleActivator(LogicalKeyboardKey.escape): () => Navigator.pop(context),
       },
       child: Focus(
@@ -366,6 +429,11 @@ class _PreviewState extends State<_Preview> {
                     const Text('Report-Preview', style: TextStyle(fontWeight: FontWeight.w700)),
                     const SizedBox(width: 16),
                     IconButton(tooltip: 'Print (Ctrl+P)', onPressed: _print, icon: const Icon(Icons.print_outlined)),
+                    IconButton(
+                      tooltip: 'Export to Excel (Ctrl+E)',
+                      onPressed: _excel,
+                      icon: const Icon(Icons.grid_on_rounded, color: Color(0xFF15803D)),
+                    ),
                     IconButton(
                       tooltip: 'Zoom out',
                       onPressed: () => setState(() => _zoom = (_zoom - 0.1).cl(0.5, 3)),

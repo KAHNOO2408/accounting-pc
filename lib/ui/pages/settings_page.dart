@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:file_selector/file_selector.dart' as fs;
 import 'package:flutter/material.dart';
 
 import '../../core/jalali.dart';
+import '../../core/zip_backup.dart';
 import '../../data/storage.dart';
 import '../../data/store.dart';
 import '../widgets/common.dart';
@@ -16,10 +18,13 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   final _path = TextEditingController();
+  late final _bpass = TextEditingController(text: StoreScope.read(context).settings.backupPassword);
+  bool _showBpass = false;
 
   @override
   void dispose() {
     _path.dispose();
+    _bpass.dispose();
     super.dispose();
   }
 
@@ -31,12 +36,58 @@ class _SettingsPageState extends State<SettingsPage> {
       ok: 'بازیابی',
     );
     if (!ok || !mounted) return;
-    try {
-      store.importBackup(path);
-      if (mounted) toast(context, 'اطلاعات با موفقیت بازیابی شد');
-    } catch (e) {
-      if (mounted) toast(context, 'بازیابی ناموفق: $e', error: true);
+    String? password;
+    while (true) {
+      try {
+        store.importBackup(path, password: password);
+        if (mounted) toast(context, 'اطلاعات با موفقیت بازیابی شد');
+        return;
+      } on BackupPasswordException catch (e) {
+        if (!mounted) return;
+        password = await _askPassword(e.wrong ? 'رمز اشتباه است؛ دوباره وارد کنید' : 'این فایل پشتیبان رمز دارد');
+        if (password == null || !mounted) return;
+      } catch (e) {
+        if (mounted) toast(context, 'بازیابی ناموفق: $e', error: true);
+        return;
+      }
     }
+  }
+
+  Future<String?> _askPassword(String message) async {
+    final c = TextEditingController();
+    final r = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('رمز فایل پشتیبان'),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Text(message),
+          const SizedBox(height: 12),
+          TextField(
+            controller: c,
+            autofocus: true,
+            obscureText: true,
+            textDirection: TextDirection.ltr,
+            decoration: const InputDecoration(labelText: 'رمز'),
+            onSubmitted: (v) => Navigator.pop(ctx, v),
+          ),
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('انصراف')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, c.text), child: const Text('تایید')),
+        ],
+      ),
+    );
+    c.dispose();
+    return r;
+  }
+
+  Future<void> _pickBackup(AppStore store) async {
+    final f = await fs.openFile(acceptedTypeGroups: const [
+      fs.XTypeGroup(label: 'پشتیبان تراز', extensions: ['zip', 'json']),
+    ]);
+    if (f == null || !mounted) return;
+    _path.text = f.path;
+    await _restore(store, f.path);
   }
 
   @override
@@ -172,9 +223,37 @@ class _SettingsPageState extends State<SettingsPage> {
                           children: [
                             Text(
                               'اطلاعات به‌صورت خودکار ذخیره می‌شود و هر روز یک نسخه پشتیبان خودکار هم گرفته می‌شود. '
-                              'برای انتقال به کامپیوتر دیگر، یک فایل پشتیبان بسازید.',
+                              'برای انتقال به کامپیوتر دیگر، یک فایل پشتیبان بسازید (فایل فشرده zip).',
                               style: th.textTheme.bodySmall?.copyWith(color: th.hintColor),
                             ),
+                            const SizedBox(height: 14),
+                            Row(children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _bpass,
+                                  obscureText: !_showBpass,
+                                  textDirection: TextDirection.ltr,
+                                  decoration: InputDecoration(
+                                    labelText: 'رمز فایل پشتیبان (اختیاری)',
+                                    helperText: 'با رمز، فایل پشتیبان رمزنگاری می‌شود (AES-256) و بدون رمز باز نمی‌شود',
+                                    isDense: true,
+                                    suffixIcon: IconButton(
+                                      icon: Icon(_showBpass ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18),
+                                      onPressed: () => setState(() => _showBpass = !_showBpass),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              OutlinedButton(
+                                onPressed: () {
+                                  store.settings.backupPassword = _bpass.text;
+                                  store.saveNow();
+                                  toast(context, _bpass.text.isEmpty ? 'رمز پشتیبان برداشته شد' : 'رمز پشتیبان ذخیره شد');
+                                },
+                                child: const Text('ثبت رمز'),
+                              ),
+                            ]),
                             const SizedBox(height: 14),
                             Wrap(
                               spacing: 8,
@@ -225,11 +304,17 @@ class _SettingsPageState extends State<SettingsPage> {
                                     textDirection: TextDirection.ltr,
                                     decoration: const InputDecoration(
                                       labelText: 'مسیر فایل پشتیبان (یا از فهرست زیر انتخاب کنید)',
-                                      hintText: r'C:\Users\...\taraz-backup.json',
+                                      hintText: r'C:\Users\...\taraz-backup.zip',
                                     ),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
+                                IconButton(
+                                  tooltip: 'انتخاب فایل',
+                                  onPressed: () => _pickBackup(store),
+                                  icon: const Icon(Icons.folder_open_outlined),
+                                ),
+                                const SizedBox(width: 4),
                                 FilledButton.tonal(
                                   onPressed: () {
                                     final p = _path.text.trim().replaceAll('"', '');
@@ -255,7 +340,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                   leading: Icon(
                                     f.path.split(Storage.sep).last.startsWith('auto-')
                                         ? Icons.history_rounded
-                                        : Icons.description_outlined,
+                                        : (f.path.toLowerCase().endsWith('.zip') ? Icons.folder_zip_outlined : Icons.description_outlined),
                                     size: 20,
                                   ),
                                   title: Text(f.path.split(Storage.sep).last, textDirection: TextDirection.ltr, textAlign: TextAlign.right),
