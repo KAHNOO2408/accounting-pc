@@ -1,0 +1,345 @@
+{
+ "source": "Cardex",
+ "reports": [
+  "Kazkrds.mrt",
+  "Kazkrds1.mrt",
+  "Kazkrds3.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Bid",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصه کالا",
+   "type": "String"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام لاتین",
+   "type": "String"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "Sharh",
+   "label": "شرح سند",
+   "type": "String"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "ResidNum",
+   "label": "شماره رسید انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "HavaleNum",
+   "label": "شماره حواله انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "tedad",
+   "label": "تعداد",
+   "type": "Double"
+  },
+  {
+   "field": "Tedad2",
+   "label": "تعداد2",
+   "type": "Double"
+  },
+  {
+   "field": "Tedad3",
+   "label": "تعداد3",
+   "type": "Double"
+  },
+  {
+   "field": "fi",
+   "label": "فی",
+   "type": "Double"
+  },
+  {
+   "field": "JamKol",
+   "label": "جمع کل",
+   "type": "Decimal"
+  },
+  {
+   "field": "action",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "molahezat",
+   "label": "ملاحظات",
+   "type": "String"
+  },
+  {
+   "field": "ID1",
+   "label": "شناسه واحد 1",
+   "type": "Int64"
+  },
+  {
+   "field": "Vahed1",
+   "label": "واحد1",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed1",
+   "label": "لاتین واحد1",
+   "type": "String"
+  },
+  {
+   "field": "ID2",
+   "label": "شناسه واحد2",
+   "type": "Int64"
+  },
+  {
+   "field": "Vahed2",
+   "label": "واحد2",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed2",
+   "label": "لاتین واحد2",
+   "type": "String"
+  },
+  {
+   "field": "ID3",
+   "label": "شناسه واحد3",
+   "type": "Int64"
+  },
+  {
+   "field": "Vahed3",
+   "label": "واحد3",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed3",
+   "label": "لاتین واحد3",
+   "type": "String"
+  },
+  {
+   "field": "storeid",
+   "label": "شناسه انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "StoreName",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "bid",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "fanyno",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "properties",
+   "label": "مشخصه کالا",
+   "type": "String"
+  },
+  {
+   "field": "frasiname",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "englishname",
+   "label": "نام لاتین",
+   "type": "String"
+  },
+  {
+   "field": "docnum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "sharh",
+   "label": "شرح سند",
+   "type": "String"
+  },
+  {
+   "field": "docmabnanum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "residnum",
+   "label": "شماره رسید انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "havalenum",
+   "label": "شماره حواله انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "tedad2",
+   "label": "تعداد2",
+   "type": "Decimal"
+  },
+  {
+   "field": "tedad3",
+   "label": "تعداد3",
+   "type": "Decimal"
+  },
+  {
+   "field": "jamkol",
+   "label": "جمع کل",
+   "type": "Double"
+  },
+  {
+   "field": "tedadremain1",
+   "label": "تعداد1 مانده",
+   "type": "Double"
+  },
+  {
+   "field": "tedadremain2",
+   "label": "تعداد2 مانده",
+   "type": "Decimal"
+  },
+  {
+   "field": "tedadremain3",
+   "label": "تعداد3 مانده",
+   "type": "Decimal"
+  },
+  {
+   "field": "rialremain",
+   "label": "ریال مانده",
+   "type": "Double"
+  },
+  {
+   "field": "rialbessadere",
+   "label": "ریال بستانکار صادره",
+   "type": "Double"
+  },
+  {
+   "field": "rialbedsadere",
+   "label": "ریال بدهکار وارده",
+   "type": "Double"
+  },
+  {
+   "field": "id1",
+   "label": "شناسه واحد 1",
+   "type": "Int64"
+  },
+  {
+   "field": "vahed1",
+   "label": "واحد1",
+   "type": "String"
+  },
+  {
+   "field": "engvahed1",
+   "label": "لاتین واحد1",
+   "type": "String"
+  },
+  {
+   "field": "id2",
+   "label": "شناسه واحد2",
+   "type": "Int64"
+  },
+  {
+   "field": "vahed2",
+   "label": "واحد2",
+   "type": "String"
+  },
+  {
+   "field": "engvahed2",
+   "label": "لاتین واحد2",
+   "type": "String"
+  },
+  {
+   "field": "id3",
+   "label": "شناسه واحد3",
+   "type": "Int64"
+  },
+  {
+   "field": "vahed3",
+   "label": "واحد3",
+   "type": "String"
+  },
+  {
+   "field": "engvahed3",
+   "label": "لاتین واحد3",
+   "type": "String"
+  },
+  {
+   "field": "storename",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "TedadRemain1",
+   "label": "تعداد1 مانده",
+   "type": "Double"
+  },
+  {
+   "field": "TedadRemain2",
+   "label": "تعداد2 مانده",
+   "type": "Decimal"
+  },
+  {
+   "field": "TedadRemain3",
+   "label": "تعداد3 مانده",
+   "type": "Decimal"
+  },
+  {
+   "field": "RialRemain",
+   "label": "ریال مانده",
+   "type": "Double"
+  }
+ ]
+}

@@ -1,0 +1,173 @@
+{
+ "source": "ServiceGroup",
+ "reports": [
+  "tjmifrosh brgsht az kdmat.mrt"
+ ],
+ "fields": [
+  {
+   "field": "kharidarBid",
+   "label": "کد خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "KharidarName",
+   "label": "خریدار",
+   "type": "String"
+  },
+  {
+   "field": "MablaghFactorBKHT",
+   "label": "جمع اقلام کالا بدون تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumTakhfifAghlam",
+   "label": "جمع تخفیف اقلام کالا",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghFactorTBkha",
+   "label": "جمع اقلام کالا با تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablagKolFactor",
+   "label": "جمع فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumHazineFroshandeh",
+   "label": "جمع هزینه بعهده فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzeshF",
+   "label": "مبلغ ارزش افزوده",
+   "type": "Decimal"
+  },
+  {
+   "field": "Jam_Cardex",
+   "label": "قیمت تمام شده",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodKhales",
+   "label": "سود و زیان خالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodNaKhales",
+   "label": "سود و زیان ناخالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumKhadamat",
+   "label": "جمع خدمات بدون تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumTakhfifKhadamat",
+   "label": "تخفیف خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "jamKhadamat",
+   "label": "جمع خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "jamKhadamatSystem",
+   "label": "جمع خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodHaselKomision",
+   "label": "سود حاصل از حق کمیسیون",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahmgarantiAghlam",
+   "label": "سهم گارانتی اقلام کالا",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahmgarantiKhadamat",
+   "label": "سهم گارانتی خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "sahmGaranti",
+   "label": "مبلغ گارانتی",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineKharidar_system",
+   "label": "هزینه بعهده خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineKharidar",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarez_F",
+   "label": "جمع عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamTax_F",
+   "label": "جمع مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarez_Aghlam",
+   "label": "جمع عوارض اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarez_Khadamat",
+   "label": "جمع عوارض خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat_Aghlam",
+   "label": "جمع مالیات اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat_Khadamat",
+   "label": "جمع مالیات خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarez_Hazine",
+   "label": "جمع عوارض هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat_Hazine",
+   "label": "جمع مالیات هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarez_Daramad",
+   "label": "جمع عوارض درآمد",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat_Daramad",
+   "label": "جمع مالیات دآمد",
+   "type": "Decimal"
+  },
+  {
+   "field": "JameBedonMali",
+   "label": "جمع فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "DoreName",
+   "label": "",
+   "type": "String"
+  }
+ ]
+}

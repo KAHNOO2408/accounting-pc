@@ -1,0 +1,210 @@
+{
+ "source": "InnerCheqReport",
+ "reports": [
+  "Kaz chk v.mrt",
+  "chkvarda 1.mrt",
+  "hkvarde4.mrt"
+ ],
+ "fields": [
+  {
+   "field": "VosolNashodeX",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "VosolshodeOrVagozarshodeX",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "TinTCode",
+   "label": "کد مشخصه پرداخت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "TinTName",
+   "label": "نام مشخصه پرداخت کننده",
+   "type": "String"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "ChekNumber",
+   "label": "شماره چک",
+   "type": "Int64"
+  },
+  {
+   "field": "DateChek",
+   "label": "تاریخ سررسید چک",
+   "type": "DateTime"
+  },
+  {
+   "field": "BankName",
+   "label": "نام بانک",
+   "type": "String"
+  },
+  {
+   "field": "Money",
+   "label": "مبلغ",
+   "type": "Decimal"
+  },
+  {
+   "field": "sandoghname",
+   "label": "نام صندوق یا بانک دریافت کننده چک",
+   "type": "String"
+  },
+  {
+   "field": "Molahezat",
+   "label": "ملاحظات",
+   "type": "String"
+  },
+  {
+   "field": "Property",
+   "label": "بابت",
+   "type": "String"
+  },
+  {
+   "field": "sandoghid",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "VagozarShode",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "VagozarShodeFR",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "VosolShode",
+   "label": "",
+   "type": "Boolean"
+  },
+  {
+   "field": "VosolNashode",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "Behesab",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "Passed",
+   "label": "",
+   "type": "Boolean"
+  },
+  {
+   "field": "PardakhtKonandeBID",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "PardakhtKonande",
+   "label": "نام شخص پرداخت کننده",
+   "type": "String"
+  },
+  {
+   "field": "VNDFR",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "VNDFN",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "DteP",
+   "label": "تاریخ پیگرد",
+   "type": "DateTime"
+  },
+  {
+   "field": "SharhP",
+   "label": "شرح پیگرد",
+   "type": "String"
+  },
+  {
+   "field": "Action",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "ArzSign",
+   "label": "علامت ارز",
+   "type": "String"
+  },
+  {
+   "field": "SefarshId",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "PNo",
+   "label": "پشت نمره",
+   "type": "Int64"
+  },
+  {
+   "field": "HesabNo",
+   "label": "شماره حساب مشتری",
+   "type": "String"
+  },
+  {
+   "field": "state",
+   "label": "استان",
+   "type": "String"
+  },
+  {
+   "field": "city",
+   "label": "شهرستان",
+   "type": "String"
+  },
+  {
+   "field": "Region",
+   "label": "منطقه",
+   "type": "String"
+  },
+  {
+   "field": "Moein",
+   "label": "معین طرف حساب",
+   "type": "String"
+  },
+  {
+   "field": "CreatorUser_DocMabnaNum",
+   "label": "کاربر ثبت کننده - شماره ثابت",
+   "type": "String"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "DateChek_x0020_Shamsi",
+   "label": "تاریخ سررسید چک شمسی",
+   "type": "String"
+  },
+  {
+   "field": "DteP_x0020_Shamsi",
+   "label": "تاریخ پیگرد شمسی",
+   "type": "String"
+  }
+ ]
+}

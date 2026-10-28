@@ -1,0 +1,318 @@
+{
+ "source": "SefareshFactor",
+ "reports": [
+  "FAsfarshah.mrt"
+ ],
+ "fields": [
+  {
+   "field": "sid",
+   "label": "شماره سفارش",
+   "type": "Int64"
+  },
+  {
+   "field": "dte",
+   "label": "تاریخ سفارش",
+   "type": "DateTime"
+  },
+  {
+   "field": "personbid",
+   "label": "شناسه سفارش دهنده",
+   "type": "Int64"
+  },
+  {
+   "field": "personname",
+   "label": "نام سفارش دهنده",
+   "type": "String"
+  },
+  {
+   "field": "typeorder",
+   "label": "نوع سفارش",
+   "type": "Int32"
+  },
+  {
+   "field": "typename",
+   "label": "نام نوع سفارش",
+   "type": "String"
+  },
+  {
+   "field": "bidkala",
+   "label": "شناسه حساب",
+   "type": "Int64"
+  },
+  {
+   "field": "frasiname",
+   "label": "عـنوان حــساب",
+   "type": "String"
+  },
+  {
+   "field": "englishname",
+   "label": "نام لاتین",
+   "type": "String"
+  },
+  {
+   "field": "tedad",
+   "label": "تعداد",
+   "type": "Double"
+  },
+  {
+   "field": "tedad2",
+   "label": "تعداد 2",
+   "type": "Double"
+  },
+  {
+   "field": "tedad3",
+   "label": "تعداد 3",
+   "type": "Double"
+  },
+  {
+   "field": "fi",
+   "label": "فی",
+   "type": "Decimal"
+  },
+  {
+   "field": "arzsign",
+   "label": "نوع ارز",
+   "type": "String"
+  },
+  {
+   "field": "jam",
+   "label": "جمع",
+   "type": "Double"
+  },
+  {
+   "field": "jamkol",
+   "label": "جمع کل",
+   "type": "Double"
+  },
+  {
+   "field": "vahed1",
+   "label": "واحد1",
+   "type": "String"
+  },
+  {
+   "field": "engvahed1",
+   "label": "لاتین واحد1",
+   "type": "String"
+  },
+  {
+   "field": "vahed2",
+   "label": "واحد2",
+   "type": "String"
+  },
+  {
+   "field": "engvahed2",
+   "label": "لاتین واحد2",
+   "type": "String"
+  },
+  {
+   "field": "vahed3",
+   "label": "واحد3",
+   "type": "String"
+  },
+  {
+   "field": "engvahed3",
+   "label": "لاتین واحد3",
+   "type": "String"
+  },
+  {
+   "field": "mavad",
+   "label": "مواد",
+   "type": "String"
+  },
+  {
+   "field": "avarez",
+   "label": "درصد عوارض",
+   "type": "Double"
+  },
+  {
+   "field": "maliat",
+   "label": "درصد مالیات",
+   "type": "Double"
+  },
+  {
+   "field": "avarezprice",
+   "label": "مبلغ عوارض",
+   "type": "Double"
+  },
+  {
+   "field": "maliatprice",
+   "label": "مبلغ مالیات",
+   "type": "Double"
+  },
+  {
+   "field": "mavadfarsi",
+   "label": "مواد ف",
+   "type": "String"
+  },
+  {
+   "field": "prepayed",
+   "label": "بیعانه",
+   "type": "Decimal"
+  },
+  {
+   "field": "babat",
+   "label": "بابت",
+   "type": "String"
+  },
+  {
+   "field": "tozihat",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "barcode",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "moshakhasatkala",
+   "label": "مشخصات کالا",
+   "type": "String"
+  },
+  {
+   "field": "fanyno",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "manager",
+   "label": "مدیر",
+   "type": "String"
+  },
+  {
+   "field": "companyname",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "pishshomare",
+   "label": "پیش شماره",
+   "type": "String"
+  },
+  {
+   "field": "tel1",
+   "label": "تلفن",
+   "type": "String"
+  },
+  {
+   "field": "tel2",
+   "label": "همراه",
+   "type": "String"
+  },
+  {
+   "field": "fax",
+   "label": "فکس",
+   "type": "String"
+  },
+  {
+   "field": "sms",
+   "label": "پیامک",
+   "type": "String"
+  },
+  {
+   "field": "email",
+   "label": "ایمیل",
+   "type": "String"
+  },
+  {
+   "field": "address",
+   "label": "آدرس",
+   "type": "String"
+  },
+  {
+   "field": "properties",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "codeeghtesady",
+   "label": "کد اقتصادی",
+   "type": "String"
+  },
+  {
+   "field": "codeposti",
+   "label": "کد پستی",
+   "type": "String"
+  },
+  {
+   "field": "checky",
+   "label": "اعتبار چکی",
+   "type": "Decimal"
+  },
+  {
+   "field": "naghdy",
+   "label": "اعتبار نقدی",
+   "type": "Decimal"
+  },
+  {
+   "field": "region",
+   "label": "منطقه",
+   "type": "String"
+  },
+  {
+   "field": "moeinname",
+   "label": "نام دفتر معین",
+   "type": "String"
+  },
+  {
+   "field": "htype",
+   "label": "کد نوع شخص",
+   "type": "Int32"
+  },
+  {
+   "field": "mellinum",
+   "label": "شماره ملی",
+   "type": "String"
+  },
+  {
+   "field": "statecity",
+   "label": "استان",
+   "type": "String"
+  },
+  {
+   "field": "city",
+   "label": "شهرستان",
+   "type": "String"
+  },
+  {
+   "field": "tedadindex",
+   "label": "اندیس واحد منتخب",
+   "type": "Int32"
+  },
+  {
+   "field": "ctedad",
+   "label": "تعداد واحد منتخب",
+   "type": "Double"
+  },
+  {
+   "field": "cvahed",
+   "label": "نام واحد منتخب",
+   "type": "String"
+  },
+  {
+   "field": "ficurr",
+   "label": "فی واحد منتخب",
+   "type": "Decimal"
+  },
+  {
+   "field": "fi2",
+   "label": "فی 2",
+   "type": "Decimal"
+  },
+  {
+   "field": "fi3",
+   "label": "فی 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "alarmme",
+   "label": "متن هشدار",
+   "type": "String"
+  },
+  {
+   "field": "dte_x0020_Shamsi",
+   "label": "تاریخ سفارش  شمسی",
+   "type": "String"
+  }
+ ]
+}

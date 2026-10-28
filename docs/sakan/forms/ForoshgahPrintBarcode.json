@@ -1,0 +1,48 @@
+{
+ "source": "ForoshgahPrintBarcode",
+ "reports": [
+  "weightbarcode.mrt"
+ ],
+ "fields": [
+  {
+   "field": "bid",
+   "label": "شناسه کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "frasiname",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "englishname",
+   "label": "نام لاتین",
+   "type": "String"
+  },
+  {
+   "field": "fanyno",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "properties",
+   "label": "مشخصه کالا",
+   "type": "String"
+  },
+  {
+   "field": "barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "vazn",
+   "label": "وزن",
+   "type": "Int32"
+  },
+  {
+   "field": "barcodevazni",
+   "label": "بارکد وزنی",
+   "type": "String"
+  }
+ ]
+}

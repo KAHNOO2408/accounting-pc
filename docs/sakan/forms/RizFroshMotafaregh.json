@@ -1,0 +1,269 @@
+{
+ "source": "RizFroshMotafaregh",
+ "reports": [
+  "gozarsh az frosh mojtvri 2 be riz.mrt",
+  "gozarsh az frosh mtfrke be riz.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "ShFactor",
+   "label": "شماره فاکتور",
+   "type": "Double"
+  },
+  {
+   "field": "shdarkhast",
+   "label": "شماره درخواست",
+   "type": "String"
+  },
+  {
+   "field": "SharhP",
+   "label": "شرح پیگرد",
+   "type": "String"
+  },
+  {
+   "field": "DteP",
+   "label": "تاریخ پیگرد",
+   "type": "DateTime"
+  },
+  {
+   "field": "Sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "Kharidar",
+   "label": "حساب خریدار",
+   "type": "String"
+  },
+  {
+   "field": "Kharidar_ID",
+   "label": "شناسه حساب خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "kharidarTNT",
+   "label": "شناسه مولفه حساب خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "Kharidar_TintName",
+   "label": "مولفه حساب خریدار",
+   "type": "String"
+  },
+  {
+   "field": "Fi_kharidar",
+   "label": "فی ارز حساب خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "Arsing_Karidar",
+   "label": "ارز حساب خریدار",
+   "type": "String"
+  },
+  {
+   "field": "HesabBid",
+   "label": "عنوان حساب",
+   "type": "Int64"
+  },
+  {
+   "field": "BName",
+   "label": "نام حساب",
+   "type": "String"
+  },
+  {
+   "field": "HesabTNT",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "Fi",
+   "label": "فی فروش به ارز خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiKharid",
+   "label": "فی خرید به ارز خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "Fi_system",
+   "label": "فی سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiKharid_system",
+   "label": "فی خرید سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "Tozihat",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "Hazine",
+   "label": "هزینه به ارز فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineSystem",
+   "label": "هزینه به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "sodVaZianKhales",
+   "label": "سود و زیان خالص به ارز خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "sodVaZianKhales_system",
+   "label": "سود و زیان خالص به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "sodVaZianNaKhales",
+   "label": "سود و زیان ناخالص به ارز خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "sodVaZianNaKhales_System",
+   "label": "سود و زیان ناخالص به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadSodVazianKhales",
+   "label": "درصد سود و زیان خالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadSodVazianNaKhales",
+   "label": "درصد سود و زیان ناخالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "Markaz",
+   "label": "شناسه مرکز اسناد",
+   "type": "Int64"
+  },
+  {
+   "field": "MarkazName",
+   "label": "مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "type",
+   "label": "شناسه",
+   "type": "Int32"
+  },
+  {
+   "field": "TypeFactor",
+   "label": "شناسه فاکتور",
+   "type": "Int64"
+  },
+  {
+   "field": "Factor",
+   "label": "فاکتور",
+   "type": "String"
+  },
+  {
+   "field": "Action",
+   "label": "اکشن",
+   "type": "Int64"
+  },
+  {
+   "field": "TintName",
+   "label": "مولفه کالای متفرقه",
+   "type": "String"
+  },
+  {
+   "field": "Arzesh_ID",
+   "label": "کد حساب  عوارض",
+   "type": "Int64"
+  },
+  {
+   "field": "hesabArzesh",
+   "label": "حساب عوارض",
+   "type": "String"
+  },
+  {
+   "field": "arzeshTNT",
+   "label": "کد مولفه  حساب  عوارض",
+   "type": "Int64"
+  },
+  {
+   "field": "Arzesh_TintName",
+   "label": "مولفه  حساب  عوارض",
+   "type": "String"
+  },
+  {
+   "field": "BidMaliat",
+   "label": "شناسه حساب مالیات",
+   "type": "Int64"
+  },
+  {
+   "field": "NameMaliat",
+   "label": "حساب مالیات",
+   "type": "String"
+  },
+  {
+   "field": "TintMaliat",
+   "label": "شناسه مولفه حساب مالیات",
+   "type": "Int64"
+  },
+  {
+   "field": "NameTintMaliat",
+   "label": "مولفه حساب مالیات",
+   "type": "String"
+  },
+  {
+   "field": "Aghlam",
+   "label": "عوارض و مالیات بر اقلام اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "SArzesh",
+   "label": "درصد عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzesh",
+   "label": "سهم عوارض (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "Smaliat",
+   "label": "درصد مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat",
+   "label": "سهم مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "DteP_x0020_Shamsi",
+   "label": "تاریخ پیگرد شمسی",
+   "type": "String"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ شمسی",
+   "type": "String"
+  }
+ ]
+}

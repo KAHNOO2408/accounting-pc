@@ -1,0 +1,31 @@
+{
+ "source": "PrintDraw",
+ "reports": [
+  "Ff.mrt",
+  "Ffroshkahy.mrt",
+  "faktor forosh 151.mrt",
+  "faktor forosh dd151.mrt",
+  "frosh gahi ba ston som.mrt",
+  "frosh kahi1.mrt",
+  "froskhcc151.mrt",
+  "frosshn151.mrt",
+  "psargad daraeaa151.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DrawCode",
+   "label": "کد قرعه کشی",
+   "type": "String"
+  },
+  {
+   "field": "LName",
+   "label": "نام کد",
+   "type": "String"
+  },
+  {
+   "field": "LDescription",
+   "label": "توضیحات",
+   "type": "String"
+  }
+ ]
+}

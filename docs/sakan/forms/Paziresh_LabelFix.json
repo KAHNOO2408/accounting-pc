@@ -1,0 +1,178 @@
+{
+ "source": "Paziresh_LabelFix",
+ "reports": [
+  "br chsb tmir.mrt"
+ ],
+ "fields": [
+  {
+   "field": "PANumber",
+   "label": "شماره پذیرش",
+   "type": "Int64"
+  },
+  {
+   "field": "GANumber",
+   "label": "شماره گارانتی",
+   "type": "Int64"
+  },
+  {
+   "field": "PAdate",
+   "label": "تاریخ تحویل از مشتری",
+   "type": "DateTime"
+  },
+  {
+   "field": "PAtime",
+   "label": "زمان تحویل از مشتری",
+   "type": "String"
+  },
+  {
+   "field": "Username",
+   "label": "نام کاربر",
+   "type": "String"
+  },
+  {
+   "field": "PAlocation",
+   "label": "مکان پذیرش",
+   "type": "String"
+  },
+  {
+   "field": "PAserial",
+   "label": "شماره سریال کالا",
+   "type": "String"
+  },
+  {
+   "field": "PAcodekala",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "PAbidmoshtari",
+   "label": "کد مشتری",
+   "type": "Int64"
+  },
+  {
+   "field": "NameMoshtari",
+   "label": "نام مشتری",
+   "type": "String"
+  },
+  {
+   "field": "PAtntmoshtari",
+   "label": "کد مشخصه مشتری",
+   "type": "Int64"
+  },
+  {
+   "field": "PAbidhazine",
+   "label": "کد حساب هزینه",
+   "type": "Int64"
+  },
+  {
+   "field": "NameHazine",
+   "label": "نام حساب هزینه",
+   "type": "String"
+  },
+  {
+   "field": "PAtnthazine",
+   "label": "کد مشخصه حساب هزینه",
+   "type": "Int64"
+  },
+  {
+   "field": "Tozihat",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "TozihatSabet",
+   "label": "توضیحات ثابت",
+   "type": "String"
+  },
+  {
+   "field": "Tahvldate",
+   "label": "تاریخ تحویل به مشتری",
+   "type": "DateTime"
+  },
+  {
+   "field": "Tahviltime",
+   "label": "زمان تحویل به مشتری",
+   "type": "String"
+  },
+  {
+   "field": "item1",
+   "label": "اظهارات مشتری 1",
+   "type": "String"
+  },
+  {
+   "field": "item2",
+   "label": "اظهارات مشتری 2",
+   "type": "String"
+  },
+  {
+   "field": "item3",
+   "label": "اظهارات مشتری 3",
+   "type": "String"
+  },
+  {
+   "field": "item4",
+   "label": "اظهارات مشتری 4",
+   "type": "String"
+  },
+  {
+   "field": "item5",
+   "label": "اظهارات مشتری 5",
+   "type": "String"
+  },
+  {
+   "field": "lavazem1",
+   "label": "لوازم جانبی 1",
+   "type": "String"
+  },
+  {
+   "field": "lavazem2",
+   "label": "لوازم جانبی 2",
+   "type": "String"
+  },
+  {
+   "field": "lavazem3",
+   "label": "لوازم جانبی 3",
+   "type": "String"
+  },
+  {
+   "field": "lavazem4",
+   "label": "لوازم جانبی 4",
+   "type": "String"
+  },
+  {
+   "field": "lavazem5",
+   "label": "لوازم جانبی 5",
+   "type": "String"
+  },
+  {
+   "field": "GarantiCode",
+   "label": "کد گارانتی",
+   "type": "Int32"
+  },
+  {
+   "field": "typecontract",
+   "label": "نوع پذیرش",
+   "type": "String"
+  },
+  {
+   "field": "Tel1",
+   "label": "تلفن مشتری",
+   "type": "String"
+  },
+  {
+   "field": "PAdate_x0020_Shamsi",
+   "label": "تاریخ تحویل از مشتری  شمسی",
+   "type": "String"
+  },
+  {
+   "field": "Tahvldate_x0020_Shamsi",
+   "label": "تاریخ تحویل به مشتری  شمسی",
+   "type": "String"
+  }
+ ]
+}

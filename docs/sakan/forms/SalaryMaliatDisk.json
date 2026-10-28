@@ -1,0 +1,188 @@
+{
+ "source": "SalaryMaliatDisk",
+ "reports": [
+  "list maliat.mrt"
+ ],
+ "fields": [
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "DoreId",
+   "label": "شناسه دوره",
+   "type": "Int64"
+  },
+  {
+   "field": "melinum",
+   "label": "ش ملی",
+   "type": "String"
+  },
+  {
+   "field": "nme",
+   "label": "نام",
+   "type": "String"
+  },
+  {
+   "field": "FamilyNme",
+   "label": "نام خانوادگی",
+   "type": "String"
+  },
+  {
+   "field": "fatherName",
+   "label": "ن پ",
+   "type": "String"
+  },
+  {
+   "field": "EstekhdamCode",
+   "label": "کد استخدام",
+   "type": "Int32"
+  },
+  {
+   "field": "CodePosti",
+   "label": "کد پستی",
+   "type": "String"
+  },
+  {
+   "field": "jobName",
+   "label": "نام شغل",
+   "type": "String"
+  },
+  {
+   "field": "SanavatKhedmat",
+   "label": "سنوات خدمت",
+   "type": "Int32"
+  },
+  {
+   "field": "MadrakCode",
+   "label": "کد مدرک",
+   "type": "Int32"
+  },
+  {
+   "field": "raste",
+   "label": "کد رسته",
+   "type": "Int64"
+  },
+  {
+   "field": "MoafiatCode",
+   "label": "کد معافیت",
+   "type": "Int64"
+  },
+  {
+   "field": "meliat",
+   "label": "کد ملیت",
+   "type": "Int32"
+  },
+  {
+   "field": "Country",
+   "label": "کشور",
+   "type": "String"
+  },
+  {
+   "field": "BimeCode",
+   "label": "کد بیمه",
+   "type": "Int32"
+  },
+  {
+   "field": "NoeBime",
+   "label": "نوع بیمه",
+   "type": "String"
+  },
+  {
+   "field": "empbimeNumber",
+   "label": "شماره بیمه",
+   "type": "String"
+  },
+  {
+   "field": "s17",
+   "label": "ح.م. مستمر پرداختی17",
+   "type": "Decimal"
+  },
+  {
+   "field": "s18",
+   "label": "م. غیر مستمر پرداختی18",
+   "type": "Double"
+  },
+  {
+   "field": "s19",
+   "label": "سایر پرداختها19",
+   "type": "Int32"
+  },
+  {
+   "field": "s20",
+   "label": "جمع کل مبالغ پرداختی20",
+   "type": "Double"
+  },
+  {
+   "field": "s21",
+   "label": "معافیت موضوع ماده نودویک21",
+   "type": "Double"
+  },
+  {
+   "field": "s22",
+   "label": "مانده ح.م پرداختی22",
+   "type": "Double"
+  },
+  {
+   "field": "s23",
+   "label": "_x0032_3 مبلغ پرداختی غیر نقدی",
+   "type": "Int32"
+  },
+  {
+   "field": "s24",
+   "label": "_x0032_4 مبلغ قابل احتساب بابت مسکن",
+   "type": "Int32"
+  },
+  {
+   "field": "s25",
+   "label": "_x0032_5 مبلغ قابل احتساب بابت اتومبیل",
+   "type": "Int32"
+  },
+  {
+   "field": "s26",
+   "label": "_x0032_6 جمع مبالغ پرداختی غیر نقدی",
+   "type": "Int32"
+  },
+  {
+   "field": "s27",
+   "label": "_x0032_7 مانده پرداختی غیرنقدی معافیت ماده نودویک",
+   "type": "Int32"
+  },
+  {
+   "field": "s28",
+   "label": "_x0032_8 مبلغ پرداختی عیدی",
+   "type": "Decimal"
+  },
+  {
+   "field": "s29",
+   "label": "_x0032_9 مانده عیدی پس از کسر معافیت ماده نودویک",
+   "type": "Decimal"
+  },
+  {
+   "field": "s30",
+   "label": "30 جمع کل ح.م",
+   "type": "Double"
+  },
+  {
+   "field": "s31",
+   "label": "_x0033_1 سایر معافیت ها",
+   "type": "Double"
+  },
+  {
+   "field": "s32",
+   "label": "_x0033_2 مشمول مالیات ح معافیت ماده هشتادوچهار",
+   "type": "Double"
+  },
+  {
+   "field": "s33",
+   "label": "_x0033_3 مالیات قابل پرداخت",
+   "type": "Decimal"
+  },
+  {
+   "field": "s34",
+   "label": "_x0033_4 مالیات قابل پرداخت معافیت ماده نودودو",
+   "type": "Double"
+  }
+ ]
+}

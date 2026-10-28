@@ -1,0 +1,194 @@
+{
+ "source": "HazineFactorKharid",
+ "reports": [
+  "hzine dr faktor brgasht az frosh.mrt",
+  "hzine dr faktor karid.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "FiArzKharidar",
+   "label": "فی ارز فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "ArzKharidar",
+   "label": "نوع ارز فروشنده",
+   "type": "String"
+  },
+  {
+   "field": "Radif",
+   "label": "ردیف",
+   "type": "Int64"
+  },
+  {
+   "field": "BidDaryaft",
+   "label": "کد دریافت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "DaryaftName",
+   "label": "دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "TintDaryaft",
+   "label": "کد مولفه دریافت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "TintDaryaftName",
+   "label": "مولفه دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "FiArzDaryaft",
+   "label": "فی ارز دریافت کننده",
+   "type": "Decimal"
+  },
+  {
+   "field": "ArzDaryaft",
+   "label": "نوع ارز دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "KolMablaghe",
+   "label": "مبلغ هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "KolMablagheArzDaryaft",
+   "label": "مبلغ هزینه به ارز دریافت کننده",
+   "type": "Decimal"
+  },
+  {
+   "field": "KolMablagheArzKharidar",
+   "label": "مبلغ هزینه به فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadSahemKharidar",
+   "label": "درصد سهم هزینه بعهده خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahemKharidar",
+   "label": "سهم هزینه بعهده خریدار",
+   "type": "Double"
+  },
+  {
+   "field": "SahemKharidararzDaryaft",
+   "label": "سهم هزینه بعهده خریدار به ارز دریافت کننده",
+   "type": "Double"
+  },
+  {
+   "field": "SahemKharidararzKharidar",
+   "label": "سهم هزینه بعهده خریدار به ارز فروشنده",
+   "type": "Double"
+  },
+  {
+   "field": "DarsadFroshande",
+   "label": "درصد سهم هزینه بعهده فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahmFroshande",
+   "label": "سهم هزینه بعهده فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahmFroshandeArzDaryaft",
+   "label": "سهم هزینه بعهده فروشنده به ارز دریافت کننده",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahmFroshandeArzKharidar",
+   "label": "سهم هزینه بعهده فروشنده به ارز فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "Sharh",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "NameCar",
+   "label": "نام وسیله نقلیه",
+   "type": "String"
+  },
+  {
+   "field": "NumCar",
+   "label": "شماره وسیله نقلیه",
+   "type": "String"
+  },
+  {
+   "field": "ShBar",
+   "label": "شماره بارنامه",
+   "type": "String"
+  },
+  {
+   "field": "NameSherkat",
+   "label": "نام شرکت باربری",
+   "type": "String"
+  },
+  {
+   "field": "VaznBaBar",
+   "label": "وزن وسیله با بار",
+   "type": "Double"
+  },
+  {
+   "field": "VaznBedonBar",
+   "label": "وزن وسیله بدون بار",
+   "type": "Double"
+  },
+  {
+   "field": "AHarekat",
+   "label": "مبدا حرکت",
+   "type": "String"
+  },
+  {
+   "field": "BHarekat",
+   "label": "مقصد حرکت",
+   "type": "String"
+  },
+  {
+   "field": "MoneyAvarez_sys",
+   "label": "مبلغ عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "MoneyTax_sys",
+   "label": "مبلغ مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "MoneyAvarz_Daryaft",
+   "label": "مبلغ عوارض به از دریافت کننده",
+   "type": "Decimal"
+  },
+  {
+   "field": "MoneyTax_Daryaft",
+   "label": "مبلغ مالیات به از دریافت کننده",
+   "type": "Decimal"
+  },
+  {
+   "field": "MoneyAvarz_Khariadar",
+   "label": "مبلغ عوارض به از طرف حساب",
+   "type": "Decimal"
+  },
+  {
+   "field": "MoneyAvarz_Kharidar",
+   "label": "مبلغ مالیات به از طرف حساب",
+   "type": "Decimal"
+  },
+  {
+   "field": "Hazine",
+   "label": "عوارض و مالیات بر هزینه اعمال شد",
+   "type": "Boolean"
+  }
+ ]
+}

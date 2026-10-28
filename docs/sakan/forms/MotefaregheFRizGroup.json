@@ -1,0 +1,58 @@
+{
+ "source": "MotefaregheFRizGroup",
+ "reports": [
+  "tjmieris frish motfrke.mrt"
+ ],
+ "fields": [
+  {
+   "field": "HesabBid",
+   "label": "عنوان حساب",
+   "type": "Int64"
+  },
+  {
+   "field": "BName",
+   "label": "نام حساب",
+   "type": "String"
+  },
+  {
+   "field": "Fi_system",
+   "label": "فی سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiKharid_system",
+   "label": "فی خرید سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineSystem",
+   "label": "هزینه به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "sodVaZianKhales_system",
+   "label": "سود و زیان خالص به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "sodVaZianNaKhales_System",
+   "label": "سود و زیان ناخالص به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzesh",
+   "label": "سهم عوارض (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat",
+   "label": "سهم مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "DoreName",
+   "label": "",
+   "type": "String"
+  }
+ ]
+}

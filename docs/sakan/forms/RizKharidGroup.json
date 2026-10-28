@@ -1,0 +1,183 @@
+{
+ "source": "RizKharidGroup",
+ "reports": [
+  "gozrsh riz karid tjmi.mrt.mrt"
+ ],
+ "fields": [
+  {
+   "field": "TintFroshande",
+   "label": "شناسه مولفه  فروشنده",
+   "type": "Int64"
+  },
+  {
+   "field": "TintNameFroshande",
+   "label": "مولفه",
+   "type": "String"
+  },
+  {
+   "field": "Bid",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام کالا (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصات کالا",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "IranCode",
+   "label": "ایران کد",
+   "type": "String"
+  },
+  {
+   "field": "Vahed1",
+   "label": "شناسه واحد اول",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedName1",
+   "label": "واحد اول",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName1",
+   "label": "واحد اول(لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "Vahed2",
+   "label": "شناسه واحد دوم",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedName2",
+   "label": "واحد دوم",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName2",
+   "label": "واحد دوم (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "Vahed3",
+   "label": "شناسه واحد سوم",
+   "type": "Int64"
+  },
+  {
+   "field": "GhimatCardexSystem",
+   "label": "قیمت تمام شده",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineSystem",
+   "label": "هزینه سربار",
+   "type": "Decimal"
+  },
+  {
+   "field": "VahedName3",
+   "label": "واحد سوم",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName3",
+   "label": "واحد سوم (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "Takhfif",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "TakhfifSystem",
+   "label": "تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "TedadVahed1",
+   "label": "تعداد 1",
+   "type": "Double"
+  },
+  {
+   "field": "TedadVahed2",
+   "label": "تعداد2",
+   "type": "Double"
+  },
+  {
+   "field": "TedadVahed3",
+   "label": "تعداد3",
+   "type": "Double"
+  },
+  {
+   "field": "Jam1Syatem",
+   "label": "جمع بدون تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "JamVazenKala",
+   "label": "جمع وزن کالا",
+   "type": "Double"
+  },
+  {
+   "field": "JamMablaghSystem",
+   "label": "جمع با تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "JamArzesh_sys",
+   "label": "سهم عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat_sys",
+   "label": "سهم مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamT_sys",
+   "label": "جمع بعد از تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "JamKol_sys",
+   "label": "جمع کل",
+   "type": "Double"
+  },
+  {
+   "field": "DoreName",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "FroshandeID",
+   "label": "کد  فروشنده",
+   "type": "Int64"
+  },
+  {
+   "field": "FroshandeName",
+   "label": "فروشنده",
+   "type": "String"
+  }
+ ]
+}

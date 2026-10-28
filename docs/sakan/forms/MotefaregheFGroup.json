@@ -1,0 +1,98 @@
+{
+ "source": "MotefaregheFGroup",
+ "reports": [
+  "tjmifrosh motfarke.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Kharidar",
+   "label": "حساب خریدار",
+   "type": "String"
+  },
+  {
+   "field": "Kharidar_ID",
+   "label": "شناسه حساب خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "MablaghFactorSystem",
+   "label": "مبلغ فاکتور به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "GhimatTamamShodeSystem",
+   "label": "قیمت تمام شده به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineSystem",
+   "label": "هزینه به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodNakhalesSystem",
+   "label": "سود و زیان ناخالص به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "sodkhales2ArzSystem",
+   "label": "سود و زیان خالص به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablagKolFactorSystem",
+   "label": "مبلغ کل فاکتور به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghArzeshSystem",
+   "label": "جمع عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatF_sys",
+   "label": "جمع مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezMotafareghe_sys",
+   "label": "جمع عوارض اقلام متفرقه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatKhadamat_sys",
+   "label": "جمع مالیات خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamFator_system",
+   "label": "جمع فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineKharidar_system",
+   "label": "هزینه بعهده خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamFactorBMali_sys",
+   "label": "جمع فاکتور بدون عملیات مالی(ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezDaramd_sys",
+   "label": "جمع عوارض درآمد",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatDaramad_sys",
+   "label": "جمع مالیات درآمد",
+   "type": "Decimal"
+  },
+  {
+   "field": "DoreName",
+   "label": "",
+   "type": "String"
+  }
+ ]
+}

@@ -1,0 +1,78 @@
+{
+ "source": "SalaryChilds",
+ "reports": [
+  "mosh kasat tht tfkol karkonan.mrt"
+ ],
+ "fields": [
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "شناسه دفتر پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "nme",
+   "label": "نام پرسنل",
+   "type": "String"
+  },
+  {
+   "field": "personelCode",
+   "label": "کد پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "cardcode",
+   "label": "شماره کارت",
+   "type": "String"
+  },
+  {
+   "field": "empVahed",
+   "label": "واحد",
+   "type": "String"
+  },
+  {
+   "field": "ChildNme",
+   "label": "نام شخص",
+   "type": "String"
+  },
+  {
+   "field": "BimeNumber",
+   "label": "شماره بیمه",
+   "type": "String"
+  },
+  {
+   "field": "Nesbat",
+   "label": "نسبت",
+   "type": "String"
+  },
+  {
+   "field": "DteBirth",
+   "label": "تاریخ تولد",
+   "type": "DateTime"
+  },
+  {
+   "field": "TakafolDte",
+   "label": "تحت تکفل تا تاریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "Sex",
+   "label": "جنسیت",
+   "type": "String"
+  },
+  {
+   "field": "DteBirth_x0020_Shamsi",
+   "label": "تاریخ تولد شمسی",
+   "type": "String"
+  },
+  {
+   "field": "TakafolDte_x0020_Shamsi",
+   "label": "تحت تکفل تا تاریخ شمسی",
+   "type": "String"
+  }
+ ]
+}

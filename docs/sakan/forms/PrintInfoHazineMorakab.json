@@ -1,0 +1,113 @@
+{
+ "source": "PrintInfoHazineMorakab",
+ "reports": [
+  "hazina morkb.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "Sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "Action",
+   "label": "اکشن",
+   "type": "Int64"
+  },
+  {
+   "field": "ArchivePath",
+   "label": "مسیر بایگانی",
+   "type": "String"
+  },
+  {
+   "field": "DteP",
+   "label": "تاریخ پیگرد",
+   "type": "DateTime"
+  },
+  {
+   "field": "SharhP",
+   "label": "شرح پیگرد",
+   "type": "String"
+  },
+  {
+   "field": "Markaz",
+   "label": "مرکز اسناد",
+   "type": "Int64"
+  },
+  {
+   "field": "MarkazName",
+   "label": "نام مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "DaryaftBid",
+   "label": "کد حساب دریافت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "DaryaftTnt",
+   "label": "کد تفضیلی دریافت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "tntname",
+   "label": "نام تفضیلی دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "tozihat",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "FiArz",
+   "label": "فی ارز",
+   "type": "Decimal"
+  },
+  {
+   "field": "Arz",
+   "label": "ارز",
+   "type": "String"
+  },
+  {
+   "field": "DaryaftName",
+   "label": "نام دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "FiTarfhesab",
+   "label": "فی دریافت کننده",
+   "type": "Decimal"
+  },
+  {
+   "field": "ArzTarafHesab",
+   "label": "ارز دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "DteP_x0020_Shamsi",
+   "label": "تاریخ پیگرد شمسی",
+   "type": "String"
+  }
+ ]
+}

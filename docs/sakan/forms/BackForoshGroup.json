@@ -1,0 +1,213 @@
+{
+ "source": "BackForoshGroup",
+ "reports": [
+  "tjmibrgshtasfrosh.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Kharidar",
+   "label": "حساب فروشنده",
+   "type": "String"
+  },
+  {
+   "field": "Kharidar_ID",
+   "label": "شناسه حساب فروشنده",
+   "type": "Int64"
+  },
+  {
+   "field": "MablaghFactorBKHTSystem",
+   "label": "مبلغ فاکتور بدون (تخفیف و خدمات ) به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghFactorTBkhaSystem",
+   "label": "مبلغ فاکتور بدون (خدمات) به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablagKolFactorSystem",
+   "label": "مبلغ فاکتور به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineHamelBarSystem",
+   "label": "هزینه بعهده خریدار به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineHamelBarKharidar",
+   "label": "هزینه بعهده خریدار به ارز فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineEshantionSystem",
+   "label": "هزینه اشانتیون به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineBazaryabanSystem",
+   "label": "هزینه بازاریابان به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "JameYaraneSystem",
+   "label": "مبلغ یارانه به  ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "Jam_Cardex",
+   "label": "قیمت تمام شده فاکتور به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamFrosh_System",
+   "label": "جمع فروش",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKasrMarjoei",
+   "label": "مبلغ کسر مرجوعی به ارز فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKhadamatKaridar",
+   "label": "جمغ خدمات به ارز فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKhadamatSystem",
+   "label": "جمع خدمات به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamTakhfifKhadamatSystem",
+   "label": "جمع تخفیف خدمات به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamVaznKalaFactor",
+   "label": "وزن فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKadamatTamamshode",
+   "label": "خدمات بعد از تخفیف (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodeKhadamatKharidar",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodeKhadamatSystem",
+   "label": "سود و زیان خدمات به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodKomisionSystem",
+   "label": "سود  حاصل از حق کمیسون به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodKomisionKharidar",
+   "label": "سود  حاصل از حق کمیسون به ارز فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodVazian_fi_System",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "sodNakhalesSystem",
+   "label": "سود و زیان ناخالص به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodkhalesSystem",
+   "label": "سود و زیان خالص به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamFator_system",
+   "label": "جمع فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineKharidar_system",
+   "label": "هزینه بعهده فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineKharidar",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghArzeshSystem",
+   "label": "جمع عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatF_sys",
+   "label": "جمع مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvaezAghlam_sys",
+   "label": "جمع عوارض اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezEshantion_sys",
+   "label": "جمع عوارض اشانتیون",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezKhadamat_sys",
+   "label": "جمع عوارض خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezHazine_sys",
+   "label": "جمع عوارض هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatAghlam_sys",
+   "label": "جمع مالیات اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatEshantion_sys",
+   "label": "جمع مالیات اشانتیون",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatKhadamat_sys",
+   "label": "جمع مالیات خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatHazine_sys",
+   "label": "جمع مالیات هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezDaramd_sys",
+   "label": "جمع عوارض درآمد",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatDaramad_sys",
+   "label": "جمع مالیات درآمد",
+   "type": "Decimal"
+  },
+  {
+   "field": "DoreName",
+   "label": "",
+   "type": "String"
+  }
+ ]
+}

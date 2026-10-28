@@ -1,0 +1,28 @@
+{
+ "source": "PrintCalc_Daily",
+ "reports": [
+  "baravard.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Bid",
+   "label": "کد دفتر    هزینه ها",
+   "type": "Int32"
+  },
+  {
+   "field": "BName",
+   "label": "نام دفتر    هزینه ها",
+   "type": "String"
+  },
+  {
+   "field": "Money",
+   "label": "مبلغ    هزینه ها",
+   "type": "Decimal"
+  },
+  {
+   "field": "Tozihat",
+   "label": "توضیحات    هزینه ها",
+   "type": "String"
+  }
+ ]
+}

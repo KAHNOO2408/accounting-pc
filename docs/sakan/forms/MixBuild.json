@@ -1,0 +1,383 @@
+{
+ "source": "MixBuild",
+ "reports": [
+  "Kaztolid.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Docmabnanum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "BuildNum",
+   "label": "شماره تولید",
+   "type": "Int64"
+  },
+  {
+   "field": "ResidNum",
+   "label": "شماره رسید انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "id",
+   "label": "شناسه سالن تولید",
+   "type": "Int64"
+  },
+  {
+   "field": "salonName",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "StoreId",
+   "label": "شناسه انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصه کالا",
+   "type": "String"
+  },
+  {
+   "field": "Bid",
+   "label": "شناسه کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام لاتین کالا",
+   "type": "String"
+  },
+  {
+   "field": "typeMix",
+   "label": "نوع کالا",
+   "type": "String"
+  },
+  {
+   "field": "tedad1",
+   "label": "تعداد1",
+   "type": "Double"
+  },
+  {
+   "field": "tedad2",
+   "label": "تعداد2",
+   "type": "Double"
+  },
+  {
+   "field": "tedad3",
+   "label": "تعداد3",
+   "type": "Double"
+  },
+  {
+   "field": "fi1",
+   "label": "فی 1",
+   "type": "Double"
+  },
+  {
+   "field": "fi2",
+   "label": "فی 2",
+   "type": "Decimal"
+  },
+  {
+   "field": "fi3",
+   "label": "فی 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "StoreName",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "info",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "Markaz",
+   "label": "شناسه مرکز اسناد",
+   "type": "Int64"
+  },
+  {
+   "field": "SefareshID",
+   "label": "شماره سفارش",
+   "type": "Int64"
+  },
+  {
+   "field": "serial",
+   "label": "سریال",
+   "type": "String"
+  },
+  {
+   "field": "DteP",
+   "label": "تاریخ پیگرد",
+   "type": "DateTime"
+  },
+  {
+   "field": "SharhP",
+   "label": "شرح پیگرد",
+   "type": "String"
+  },
+  {
+   "field": "ID1",
+   "label": "شناسه واحد1",
+   "type": "Int64"
+  },
+  {
+   "field": "Vahed1",
+   "label": "واحد1",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed1",
+   "label": "لاتین واحد1",
+   "type": "String"
+  },
+  {
+   "field": "ID2",
+   "label": "شناسه واحد2",
+   "type": "Int64"
+  },
+  {
+   "field": "Vahed2",
+   "label": "واحد2",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed2",
+   "label": "لاتین واحد2",
+   "type": "String"
+  },
+  {
+   "field": "ID3",
+   "label": "شناسه واحد3",
+   "type": "Int64"
+  },
+  {
+   "field": "Vahed3",
+   "label": "واحد3",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed3",
+   "label": "لاتین واحد3",
+   "type": "String"
+  },
+  {
+   "field": "MakeBid",
+   "label": "تاریخ سند",
+   "type": "Int64"
+  },
+  {
+   "field": "MakeStoreid",
+   "label": "تاریخ پیگرد",
+   "type": "Int64"
+  },
+  {
+   "field": "typemixn",
+   "label": "نوع مواد 0 تولیدی 1 مصرفی 2 هزینه",
+   "type": "Int32"
+  },
+  {
+   "field": "Jam1",
+   "label": "جمع1",
+   "type": "Double"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "DteP_x0020_Shamsi",
+   "label": "تاریخ پیگرد شمسی",
+   "type": "String"
+  },
+  {
+   "field": "docnum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "buildnum",
+   "label": "شماره تولید",
+   "type": "Int64"
+  },
+  {
+   "field": "residnum",
+   "label": "شماره رسید انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "salonname",
+   "label": "نام سالن تولید",
+   "type": "String"
+  },
+  {
+   "field": "barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "storeid",
+   "label": "شناسه انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "fanyno",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "properties",
+   "label": "مشخصه کالا",
+   "type": "String"
+  },
+  {
+   "field": "bid",
+   "label": "شناسه کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "frasiname",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "englishname",
+   "label": "نام لاتین کالا",
+   "type": "String"
+  },
+  {
+   "field": "typemix",
+   "label": "نوع کالا",
+   "type": "String"
+  },
+  {
+   "field": "storename",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "markaz",
+   "label": "شناسه مرکز اسناد",
+   "type": "Int64"
+  },
+  {
+   "field": "sefareshid",
+   "label": "شماره سفارش",
+   "type": "Int64"
+  },
+  {
+   "field": "dtep",
+   "label": "تاریخ پیگرد",
+   "type": "DateTime"
+  },
+  {
+   "field": "sharhp",
+   "label": "شرح پیگرد",
+   "type": "String"
+  },
+  {
+   "field": "id1",
+   "label": "شناسه واحد1",
+   "type": "Int64"
+  },
+  {
+   "field": "vahed1",
+   "label": "واحد1",
+   "type": "String"
+  },
+  {
+   "field": "engvahed1",
+   "label": "لاتین واحد1",
+   "type": "String"
+  },
+  {
+   "field": "id2",
+   "label": "شناسه واحد2",
+   "type": "Int64"
+  },
+  {
+   "field": "vahed2",
+   "label": "واحد2",
+   "type": "String"
+  },
+  {
+   "field": "engvahed2",
+   "label": "لاتین واحد2",
+   "type": "String"
+  },
+  {
+   "field": "id3",
+   "label": "شناسه واحد3",
+   "type": "Int64"
+  },
+  {
+   "field": "vahed3",
+   "label": "واحد3",
+   "type": "String"
+  },
+  {
+   "field": "engvahed3",
+   "label": "لاتین واحد3",
+   "type": "String"
+  },
+  {
+   "field": "makebid",
+   "label": "شناسه کالای تولیدی",
+   "type": "Int64"
+  },
+  {
+   "field": "makestoreid",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "jam1",
+   "label": "جمع1",
+   "type": "Double"
+  },
+  {
+   "field": "dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "dtep_x0020_Shamsi",
+   "label": "تاریخ پیگرد شمسی",
+   "type": "String"
+  }
+ ]
+}

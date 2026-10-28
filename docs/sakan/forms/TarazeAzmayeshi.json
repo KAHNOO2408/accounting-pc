@@ -1,0 +1,175 @@
+{
+ "source": "TarazeAzmayeshi",
+ "reports": [
+  "1134karbrg.mrt",
+  "Taraz azmayshi.mrt",
+  "karbarg2.mrt"
+ ],
+ "fields": [
+  {
+   "field": "kbid",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "kbname",
+   "label": "نام دفتر کل",
+   "type": "String"
+  },
+  {
+   "field": "mbid",
+   "label": "کد دفتر معین",
+   "type": "Int64"
+  },
+  {
+   "field": "mbname",
+   "label": "نام دفتر معین",
+   "type": "String"
+  },
+  {
+   "field": "typeid",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "startcode",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "basecode",
+   "label": "کد پایه",
+   "type": "String"
+  },
+  {
+   "field": "kbid1",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "bookid",
+   "label": "کد دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "bookname",
+   "label": "نام دفتر",
+   "type": "String"
+  },
+  {
+   "field": "startbed",
+   "label": "بدهکاری ابتدای دوره",
+   "type": "Decimal"
+  },
+  {
+   "field": "startbes",
+   "label": "بستانکاری ابتدای دوره",
+   "type": "Decimal"
+  },
+  {
+   "field": "pbed",
+   "label": "بدهکاری طی دوره",
+   "type": "Decimal"
+  },
+  {
+   "field": "pbes",
+   "label": "بستانکاری طی دوره",
+   "type": "Decimal"
+  },
+  {
+   "field": "ffbed",
+   "label": "مانده بدهکاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "ffbes",
+   "label": "مانده بستانکاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "ffbedsod",
+   "label": "مانده بدهکاری دفاتر سود و زیانی",
+   "type": "Decimal"
+  },
+  {
+   "field": "ffbessod",
+   "label": "مانده بستانکاری دفاتر سود و زیانی",
+   "type": "Decimal"
+  },
+  {
+   "field": "fullbed",
+   "label": "بدهکاری تراز آزمایشی انتهای دوره",
+   "type": "Decimal"
+  },
+  {
+   "field": "fullbes",
+   "label": "بستانکاری تراز آزمایشی انتهای دوره",
+   "type": "Decimal"
+  },
+  {
+   "field": "increment",
+   "label": "افزایش",
+   "type": "Decimal"
+  },
+  {
+   "field": "decrement",
+   "label": "کاهش",
+   "type": "Decimal"
+  },
+  {
+   "field": "fullremain",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "startdate",
+   "label": "تاریخ مبدا تراز آزمایشی",
+   "type": "String"
+  },
+  {
+   "field": "enddate",
+   "label": "تاریخ مقصد تراز آزمایشی",
+   "type": "String"
+  },
+  {
+   "field": "startdatesh",
+   "label": "تاریخ مبدا تراز آزمایشی شمسی",
+   "type": "String"
+  },
+  {
+   "field": "enddatesh",
+   "label": "تاریخ مقصد تراز آزمایشی شمسی",
+   "type": "String"
+  },
+  {
+   "field": "bid",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "FullBed",
+   "label": "بدهکاری تراز آزمایشی انتهای دوره",
+   "type": "Decimal"
+  },
+  {
+   "field": "FullBes",
+   "label": "بستانکاری تراز آزمایشی انتهای دوره",
+   "type": "Decimal"
+  },
+  {
+   "field": "Increment",
+   "label": "افزایش",
+   "type": "Decimal"
+  },
+  {
+   "field": "Decrement",
+   "label": "کاهش",
+   "type": "Decimal"
+  },
+  {
+   "field": "FullRemain",
+   "label": "",
+   "type": "Decimal"
+  }
+ ]
+}

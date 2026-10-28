@@ -1,0 +1,78 @@
+{
+ "source": "SalaryPadash",
+ "reports": [
+  "gozarsh az padash prsnl.mrt"
+ ],
+ "fields": [
+  {
+   "field": "id",
+   "label": "شماره پاداش",
+   "type": "Int64"
+  },
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "شناسه دفتر پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "nme",
+   "label": "نام",
+   "type": "String"
+  },
+  {
+   "field": "personelCode",
+   "label": "کد پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "empVahed",
+   "label": "واحد",
+   "type": "String"
+  },
+  {
+   "field": "price",
+   "label": "مبلغ",
+   "type": "Decimal"
+  },
+  {
+   "field": "info",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "IsBime",
+   "label": "بیمه",
+   "type": "Boolean"
+  },
+  {
+   "field": "IsMaliat",
+   "label": "مالیات",
+   "type": "Boolean"
+  },
+  {
+   "field": "dte",
+   "label": "تاریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "gid",
+   "label": "شناسه دوره",
+   "type": "Int64"
+  },
+  {
+   "field": "gname",
+   "label": "نام دوره",
+   "type": "String"
+  },
+  {
+   "field": "dte_x0020_Shamsi",
+   "label": "تاریخ شمسی",
+   "type": "String"
+  }
+ ]
+}

@@ -1,0 +1,80 @@
+{
+ "source": "books",
+ "reports": [
+  "kol kodbndi.mrt",
+  "list hsabha.mrt",
+  "list hsabhaikol.mrt"
+ ],
+ "fields": [
+  {
+   "field": "BName",
+   "label": "نام",
+   "type": "String"
+  },
+  {
+   "field": "BCode",
+   "label": "کد دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "mahiat",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "istafzili",
+   "label": "",
+   "type": "Boolean"
+  },
+  {
+   "field": "ismoeen",
+   "label": "",
+   "type": "Boolean"
+  },
+  {
+   "field": "isbase",
+   "label": "",
+   "type": "Boolean"
+  },
+  {
+   "field": "BID",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "BGroup",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "BDaste",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "strCode",
+   "label": "کد رشته",
+   "type": "String"
+  },
+  {
+   "field": "Bsath",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "Column1",
+   "label": "",
+   "type": "Double"
+  },
+  {
+   "field": "remain",
+   "label": "مانده",
+   "type": "Decimal"
+  },
+  {
+   "field": "position",
+   "label": "",
+   "type": "Int64"
+  }
+ ]
+}

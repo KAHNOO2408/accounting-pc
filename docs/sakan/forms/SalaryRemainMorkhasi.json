@@ -1,0 +1,63 @@
+{
+ "source": "SalaryRemainMorkhasi",
+ "reports": [
+  "gozarsh az moraksi .mrt"
+ ],
+ "fields": [
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "شناسه دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "nme",
+   "label": "نام",
+   "type": "String"
+  },
+  {
+   "field": "empVahed",
+   "label": "واحد",
+   "type": "String"
+  },
+  {
+   "field": "personelCode",
+   "label": "کد پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "MorkhasiDay",
+   "label": "تعداد روز مجاز",
+   "type": "Int32"
+  },
+  {
+   "field": "RemainMorkhasi",
+   "label": "مانده مرخصی",
+   "type": "Double"
+  },
+  {
+   "field": "HourToDay",
+   "label": "هرساعت/روز",
+   "type": "Double"
+  },
+  {
+   "field": "hourlyMorkhasi",
+   "label": "تعداد ساعت استفاده شده",
+   "type": "Double"
+  },
+  {
+   "field": "UsedMorkhasi",
+   "label": "تعداد روز استفاده شده",
+   "type": "Double"
+  },
+  {
+   "field": "BuyedMorkhasi",
+   "label": "تعداد روز خریداری شده",
+   "type": "Double"
+  }
+ ]
+}

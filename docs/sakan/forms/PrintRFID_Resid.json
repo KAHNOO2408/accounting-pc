@@ -1,0 +1,68 @@
+{
+ "source": "PrintRFID_Resid",
+ "reports": [
+  "ChargeAndDecharge.mrt"
+ ],
+ "fields": [
+  {
+   "field": "cardno",
+   "label": "شماره کارت",
+   "type": "String"
+  },
+  {
+   "field": "factortype",
+   "label": "کد نوع تراکنش",
+   "type": "Int32"
+  },
+  {
+   "field": "factordate",
+   "label": "تاریخ تراکنش",
+   "type": "DateTime"
+  },
+  {
+   "field": "factortime",
+   "label": "ساعت تراکنش",
+   "type": "DateTime"
+  },
+  {
+   "field": "factorprice",
+   "label": "مبلغ فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "charge",
+   "label": "مبلغ شارژ",
+   "type": "Decimal"
+  },
+  {
+   "field": "decharge",
+   "label": "مبلغ دشارژ",
+   "type": "Decimal"
+  },
+  {
+   "field": "remainetebar",
+   "label": "مانده اعتبار",
+   "type": "Decimal"
+  },
+  {
+   "field": "residnum",
+   "label": "شماره رسید",
+   "type": "Int32"
+  },
+  {
+   "field": "tdescription",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "factordate_x0020_Shamsi",
+   "label": "تاریخ تراکنش  شمسی",
+   "type": "String"
+  },
+  {
+   "field": "factortime_x0020_Shamsi",
+   "label": "ساعت تراکنش  شمسی",
+   "type": "String"
+  }
+ ]
+}

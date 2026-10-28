@@ -1,0 +1,133 @@
+{
+ "source": "HumanBedBes",
+ "reports": [
+  "Kbed bes hsab.mrt"
+ ],
+ "fields": [
+  {
+   "field": "BID",
+   "label": "کد طرف حساب",
+   "type": "Int64"
+  },
+  {
+   "field": "BName",
+   "label": "نام طرف حساب",
+   "type": "String"
+  },
+  {
+   "field": "ArzSign",
+   "label": "علامت ارز",
+   "type": "String"
+  },
+  {
+   "field": "SumInnerChekVN",
+   "label": "مجموع چک های وارده که تاریخ سررسیدشان فرانرسیده",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumInnerChekVS",
+   "label": "مجموع چک های وارده که تاریخ سررسیدشان فرارسیده",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumOutterChekVN",
+   "label": "مجموع چک های صادره که تاریخ سررسیدشان فرانرسیده",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumOutterChekVS",
+   "label": "مجموع چک های صادره که تاریخ سررسیدشان فرارسیده",
+   "type": "Decimal"
+  },
+  {
+   "field": "PishPardakhtRemain",
+   "label": "جمع پیش پرداخت ها",
+   "type": "Decimal"
+  },
+  {
+   "field": "PishDaryaftRemain",
+   "label": "جمع پیش دریافت ها",
+   "type": "Decimal"
+  },
+  {
+   "field": "Remain",
+   "label": "مانده حساب",
+   "type": "Decimal"
+  },
+  {
+   "field": "Checky",
+   "label": "اعتبار چکی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Naghdy",
+   "label": "اعتبار نقدی",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumOfInnerEntezamy",
+   "label": "مجموع انتظامی های دریافتی",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumOfOutterEntezamy",
+   "label": "مجموع انتظامی های صادره",
+   "type": "Decimal"
+  },
+  {
+   "field": "EtebareRemain",
+   "label": "مانده اعتبار",
+   "type": "Decimal"
+  },
+  {
+   "field": "ChekyRemainEtebar",
+   "label": "مانده اعتبار چکی",
+   "type": "Decimal"
+  },
+  {
+   "field": "hasechekvnfromhe",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "hasechekvnfromme",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "hasminuseEtebare",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "Manager",
+   "label": "مدیر",
+   "type": "String"
+  },
+  {
+   "field": "Tel1",
+   "label": "تلفن1",
+   "type": "String"
+  },
+  {
+   "field": "Tel2",
+   "label": "تلفن2",
+   "type": "String"
+  },
+  {
+   "field": "SMS",
+   "label": "تلفن3",
+   "type": "String"
+  },
+  {
+   "field": "Address",
+   "label": "آدرس",
+   "type": "String"
+  },
+  {
+   "field": "latinNme",
+   "label": "نام لاتین",
+   "type": "String"
+  }
+ ]
+}

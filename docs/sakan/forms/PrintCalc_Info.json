@@ -1,0 +1,38 @@
+{
+ "source": "PrintCalc_Info",
+ "reports": [
+  "baravard.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Date",
+   "label": "تاریخ تولید",
+   "type": "DateTime"
+  },
+  {
+   "field": "Properties",
+   "label": "توضیحات تولید",
+   "type": "String"
+  },
+  {
+   "field": "SumSodAOutFi",
+   "label": "پیش بینی سود حاصل از تولید بر اساس فی خروجی از انبار",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumSodALastBuyFi",
+   "label": "پیش بینی سود حاصل از تولید بر اساس آخرین فی خرید",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumSodADailyFi",
+   "label": "پیش بینی سود حاصل از تولید بر اساس فی روز بازار",
+   "type": "Decimal"
+  },
+  {
+   "field": "Date_x0020_Shamsi",
+   "label": "تاریخ تولید شمسی",
+   "type": "String"
+  }
+ ]
+}

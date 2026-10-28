@@ -1,0 +1,93 @@
+{
+ "source": "SalaryMamoriatPage",
+ "reports": [
+  "mamoryat.mrt"
+ ],
+ "fields": [
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "personelCode",
+   "label": "کد پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "شناسه دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "color",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "nme",
+   "label": "نام",
+   "type": "String"
+  },
+  {
+   "field": "empVahed",
+   "label": "واحد",
+   "type": "String"
+  },
+  {
+   "field": "mid",
+   "label": "شناسه ماموریت",
+   "type": "Int64"
+  },
+  {
+   "field": "bargeNum",
+   "label": "شماره برگه",
+   "type": "String"
+  },
+  {
+   "field": "dtestart",
+   "label": "تاریخ شروع",
+   "type": "DateTime"
+  },
+  {
+   "field": "dteEnd",
+   "label": "تاریخ پایان",
+   "type": "DateTime"
+  },
+  {
+   "field": "duration",
+   "label": "مدت",
+   "type": "Double"
+  },
+  {
+   "field": "sharh",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "type",
+   "label": "کد نوع",
+   "type": "Int32"
+  },
+  {
+   "field": "TypeTxt",
+   "label": "نوع ماموریت",
+   "type": "String"
+  },
+  {
+   "field": "Price",
+   "label": "مبلغ",
+   "type": "Decimal"
+  },
+  {
+   "field": "dtestart_x0020_Shamsi",
+   "label": "تاریخ شروع شمسی",
+   "type": "String"
+  },
+  {
+   "field": "dteEnd_x0020_Shamsi",
+   "label": "تاریخ پایان شمسی",
+   "type": "String"
+  }
+ ]
+}

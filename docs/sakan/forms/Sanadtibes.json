@@ -1,0 +1,71 @@
+{
+ "source": "Sanadtibes",
+ "reports": [
+  "Sanad KT.mrt",
+  "Sand K mT.mrt",
+  "snad33.mrt",
+  "tafzili.mrt"
+ ],
+ "fields": [
+  {
+   "field": "KOLBID",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "KolCode",
+   "label": "کد کل",
+   "type": "Int64"
+  },
+  {
+   "field": "MoeinBID",
+   "label": "کد معین",
+   "type": "Int64"
+  },
+  {
+   "field": "MoeinCode",
+   "label": "کد معین",
+   "type": "Int64"
+  },
+  {
+   "field": "TAFZILIBID",
+   "label": "کد تفضیلی",
+   "type": "Int64"
+  },
+  {
+   "field": "TAFZILICode",
+   "label": "کد تفصیلی",
+   "type": "Int64"
+  },
+  {
+   "field": "TafziliBName",
+   "label": "نام تفضیلی",
+   "type": "String"
+  },
+  {
+   "field": "SharheRecord",
+   "label": "شـــرح رکورد",
+   "type": "String"
+  },
+  {
+   "field": "Molahezat",
+   "label": "ملاحظات",
+   "type": "String"
+  },
+  {
+   "field": "TafziliMoney",
+   "label": "مبلغ تفضیلی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Action",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "KolBID",
+   "label": "کد دفتر کل",
+   "type": "Int64"
+  }
+ ]
+}

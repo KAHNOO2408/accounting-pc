@@ -1,0 +1,283 @@
+{
+ "source": "PrintMali",
+ "reports": [
+  "FFTC.mrt",
+  "FK.mrt",
+  "FKCT.mrt",
+  "Ff   dolary.mrt",
+  "Ff.mrt",
+  "R DAMAD.MRT",
+  "R pardakt hzina.mrt",
+  "bargasht az frish ty dore jary.mrt",
+  "bargasht az frosh m167.mrt",
+  "bargasht az frosh ty dore jary sadh.mrt",
+  "bargsht az forosh ty dore kbl.mrt",
+  "brg morkasi.mrt",
+  "brgasht az karid.mrt",
+  "brgasht dramd.mrt",
+  "brgasht hzine.mrt",
+  "faktor brgasht az karid .mrt",
+  "faktor brgasht az karid m141.mrt",
+  "faktor brgasht balans.mrt",
+  "faktor f moi rki.mrt",
+  "faktor f moi rki151.mrt",
+  "faktor forosh 151.mrt",
+  "faktor forosh darsd.mrt",
+  "faktor forosh dd151.mrt",
+  "faktor forosh j151.mrt",
+  "faktor forosh m151.mrt",
+  "faktor forosh o151.mrt",
+  "faktor forosh trh n151.mrt",
+  "faktor frosh amval.mrt",
+  "faktor frosh balans kaml.mrt",
+  "faktor frosh balans sadh.mrt",
+  "faktor frosh ee151.mrt",
+  "faktor frosh kadamat.mrt",
+  "faktor frosh motfrke.mrt",
+  "faktor frosh mtfrka sado.mrt",
+  "faktor karid amval.mrt",
+  "faktor kridmotfrka 2.mrt",
+  "faktor srvis kadamat.mrt",
+  "faktor srvis kdamat sado.mrt",
+  "forsh sipa A5151.mrt",
+  "frosh amval sado.mrt",
+  "frosh d151.mrt",
+  "frosh kadmat sadh.mrt",
+  "frosh sipa 151.mrt",
+  "frosh trhe sipa151.mrt",
+  "frosha4 ts151.mrt",
+  "frosha5 r151.mrt",
+  "frosha5 ts151.mrt",
+  "froshkk151.mrt",
+  "froshsng151.mrt",
+  "froskhcc151.mrt",
+  "frosshn151.mrt",
+  "hazina morkb.mrt",
+  "karid kml jadid.mrt",
+  "krid a134.mrt",
+  "krid sade  jadid.mrt",
+  "kridm134.mrt",
+  "mobl151.mrt",
+  "mrmrit krb 1.mrt",
+  "psargad daraeaa151.mrt",
+  "psargad daraebb151.mrt",
+  "vahd montakab.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "Money_DaryafteCheq",
+   "label": "مبلغ دریافت چک",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_DaryafteCheq",
+   "label": "تعداد دریافت چک",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_KasrAzPishDaryaft",
+   "label": "مبلغ کسر از پیش دریافت",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_KasrAzPishDaryaft",
+   "label": "تعداد  کسر از پیش دریافت",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_DaryaftHavaleyeBanki",
+   "label": "مبلغ دریافت حواله بانکی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_DaryaftHavaleyeBanki",
+   "label": "تعداد دریافت حواله بانکی",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_DaryaftNaghdy",
+   "label": "مبلغ دریافت نقدی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_DaryaftNaghdy",
+   "label": "تعداد دریافت نقدی",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_PardakhtBeSayereAshkhas",
+   "label": "مبلغ پرداخت به سایر اشخاص",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_PardakhtBeSayereAshkhas",
+   "label": "تعداد پرداخت به سایر اشخاص",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_PardakhtBeTankhahGardan",
+   "label": "مبلغ پرداخت به تنخواه گردان",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_PardakhtBeTankhahGardan",
+   "label": "تعداد پرداخت به تنخواه گردان",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_TakhfifAzForosh",
+   "label": "مبلغ تخفیف از فروش",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_TakhfifAzForosh",
+   "label": "تعداد تخفیف از فروش",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_TakhfifAzKharid",
+   "label": "مبلغ تخفیف از خرید",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_TakhfifAzKharid",
+   "label": "تعداد تخفیف از خرید",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_PasGereftaneCheqeVagozarShode",
+   "label": "مبلغ پس گرفتن چک واگذار شده",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_PasGereftaneCheqeVagozarShode",
+   "label": "تعداد پس گرفتن چک واگذار شده",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_KasrAzPishPardakht",
+   "label": "مبلغ کسر از پیش دریافت",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_KasrAzPishPardakht",
+   "label": "تعداد کسر از پیش دریافت",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_PasGereftaneCheqeSadere",
+   "label": "مبلغ پس گرفتن چک صادره",
+   "type": "Decimal"
+  },
+  {
+   "field": "Money_DaryafteArz",
+   "label": "مبلغ دریافت ارز",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_DaryafteArz",
+   "label": "تعدا دریافت ارز",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_BardashtAzKarteEtebary",
+   "label": "مبلغ برداشت از کارت اعتباری",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_BardashtAzKarteEtebary",
+   "label": "تعداد برداشت از کارت اعتباری",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_PasDadaneChekVarede",
+   "label": "مبلغ  پس دادن چک دریافتی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_PasDadaneChekVarede",
+   "label": "تعداد پس دادن چک دریافتی",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_PardakhtAzSayereAshkhas",
+   "label": "مبلغ پرداخت توسط سایر اشخاص",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_PardakhtAzSayereAshkhas",
+   "label": "تعداد پرداخت توسط سایر اشخاص",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_VagozaryChekVarede",
+   "label": "مبلغ واگذاری چک وارده",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_VagozaryChekVarede",
+   "label": "تعداد واگذاری چک وارده",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_PardakhtAzTankhahGardan",
+   "label": "مبلغ پرداخت از تنخواه گردان",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_PardakhtAzTankhahGardan",
+   "label": "تعداد پرداخت از تنخواه گردان",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_PardakhteArz",
+   "label": "مبلغ پرداخت ارز",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_PardakhteArz",
+   "label": "تعداد پرداخت ارز",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_x0020_Mony_PardakhtNaghdy",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_PardakhtNaghdy",
+   "label": "تعداد پرداخت نقدی",
+   "type": "Int32"
+  },
+  {
+   "field": "Count_PardakhtCheq",
+   "label": "تعداد صدور چک",
+   "type": "Int32"
+  },
+  {
+   "field": "Money_PardakhtCheq",
+   "label": "مبلغ صدور چک",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count_PasGereftaneCheqeSadere",
+   "label": "تعداد پس گرفتن چک صادره",
+   "type": "Int32"
+  },
+  {
+   "field": "Expr1",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "CreatorUser_DocMabnaNum",
+   "label": "کاربر ثبت کننده - شماره ثابت",
+   "type": "String"
+  }
+ ]
+}

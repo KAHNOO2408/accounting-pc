@@ -1,0 +1,113 @@
+{
+ "source": "soratHesabsodzian",
+ "reports": [
+  "sort hsab sid vzyan.mrt"
+ ],
+ "fields": [
+  {
+   "field": "StartFilterDate",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "EndFilterDate",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "ArzPrice",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "ArzSign",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "BID",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "BName",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "Bcode",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "mahiat",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "Strcode",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "IsBase",
+   "label": "",
+   "type": "Boolean"
+  },
+  {
+   "field": "bedgid",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "bedpos",
+   "label": "",
+   "type": "Double"
+  },
+  {
+   "field": "besgid",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "bespos",
+   "label": "",
+   "type": "Double"
+  },
+  {
+   "field": "bedname",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "besname",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "remain",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "GroupID",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "GroupTitle",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "GroupOrder",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "InGroupOrder",
+   "label": "",
+   "type": "Int32"
+  }
+ ]
+}

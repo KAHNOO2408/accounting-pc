@@ -1,0 +1,103 @@
+{
+ "source": "visitorlist",
+ "reports": [
+  "gozarsh az porsant F.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Action",
+   "label": "اکشن",
+   "type": "Int64"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "Markaz",
+   "label": "مرکز اسناد",
+   "type": "Int64"
+  },
+  {
+   "field": "Sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "ShFactor",
+   "label": "شماره فاکتور",
+   "type": "Double"
+  },
+  {
+   "field": "HazineId",
+   "label": "شناسه حساب هزینه بازاریابان",
+   "type": "Int64"
+  },
+  {
+   "field": "HazineName",
+   "label": "حساب هزینه بازاریابان",
+   "type": "String"
+  },
+  {
+   "field": "HazineTintId",
+   "label": "شناسه مولفه حساب هزینه بازاریابان",
+   "type": "Int64"
+  },
+  {
+   "field": "HazineTintName",
+   "label": "مولفه حساب هزینه بازاریابان",
+   "type": "String"
+  },
+  {
+   "field": "jamMablaghBazaryabi",
+   "label": "جمع کل مبلغ بازار یابی سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "TypeFactor",
+   "label": "شناسه فاکتور",
+   "type": "Int64"
+  },
+  {
+   "field": "BazarybId",
+   "label": "شناسه بازاریاب",
+   "type": "Int64"
+  },
+  {
+   "field": "bazaryabName",
+   "label": "نام بازاریاب",
+   "type": "String"
+  },
+  {
+   "field": "DarsadBazaryabi",
+   "label": "درصد بازاریابی",
+   "type": "Double"
+  },
+  {
+   "field": "MablaghBazaryabi",
+   "label": "سهم بازاریاب",
+   "type": "Decimal"
+  },
+  {
+   "field": "Factor",
+   "label": "فاکتور",
+   "type": "String"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ شمسی",
+   "type": "String"
+  }
+ ]
+}

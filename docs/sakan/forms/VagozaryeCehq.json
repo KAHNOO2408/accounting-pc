@@ -1,0 +1,288 @@
+{
+ "source": "VagozaryeCehq",
+ "reports": [
+  "R v ch.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "uname",
+   "label": "نام کاربر",
+   "type": "String"
+  },
+  {
+   "field": "ufamily",
+   "label": "نام خانوادگی کاربر",
+   "type": "String"
+  },
+  {
+   "field": "ArchivePath",
+   "label": "مسیر بایگانی",
+   "type": "String"
+  },
+  {
+   "field": "MarkazID",
+   "label": "کد مرکز",
+   "type": "Int64"
+  },
+  {
+   "field": "MarkazName",
+   "label": "نام مرکز",
+   "type": "String"
+  },
+  {
+   "field": "pardakhtkonandebid",
+   "label": "کد دفتر پرداخت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "pardakhtkonandebname",
+   "label": "نام دفتر پرداخت کننده",
+   "type": "String"
+  },
+  {
+   "field": "pardakhtkonandetint",
+   "label": "کد تفضیلی در تفضیلی پرداخت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "pardakhtkonandetintname",
+   "label": "نام تفضیلی در تفضیلی پرداخت کننده",
+   "type": "String"
+  },
+  {
+   "field": "daryaftkonandebid",
+   "label": "کد دفتر دریافت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "daryaftkonandebname",
+   "label": "نام دفتر دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "daryaftkonandetint",
+   "label": "کد تفضیلی در تفضیلی دریافت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "daryaftkonandetintname",
+   "label": "نام تفضیلی در تفضیلی دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "Babat",
+   "label": "بابت",
+   "type": "String"
+  },
+  {
+   "field": "ChekNumber",
+   "label": "شماره چک",
+   "type": "Int64"
+  },
+  {
+   "field": "BankName",
+   "label": "نام بانک",
+   "type": "String"
+  },
+  {
+   "field": "CheqMoney",
+   "label": "مبلغ چک",
+   "type": "Decimal"
+  },
+  {
+   "field": "CheqArzSign",
+   "label": "نوع ارز چک",
+   "type": "String"
+  },
+  {
+   "field": "DateChek",
+   "label": "تاریخ سررسید چک",
+   "type": "DateTime"
+  },
+  {
+   "field": "Property",
+   "label": "ملاحظات",
+   "type": "String"
+  },
+  {
+   "field": "SefareshNumber",
+   "label": "شماره سند سفارش",
+   "type": "Int64"
+  },
+  {
+   "field": "BedRemain",
+   "label": "مانده بدهکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "BesRemain",
+   "label": "مانده بستانکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedBesRemain",
+   "label": "مانده بدهکار و بستانکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedRemainSH",
+   "label": "مانده بدهکار با احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "BesRemainSH",
+   "label": "مانده بستانکار با احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedBesRemainSH",
+   "label": "مانده بدهکار و بستانکار با احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "Action",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "DateChek_x0020_Shamsi",
+   "label": "تاریخ سررسید چک شمسی",
+   "type": "String"
+  },
+  {
+   "field": "docnum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "docmabnanum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "archivepath",
+   "label": "مسیر بایگانی",
+   "type": "String"
+  },
+  {
+   "field": "markazid",
+   "label": "کد مرکز",
+   "type": "Int64"
+  },
+  {
+   "field": "markazname",
+   "label": "نام مرکز",
+   "type": "String"
+  },
+  {
+   "field": "babat",
+   "label": "بابت",
+   "type": "String"
+  },
+  {
+   "field": "cheknumber",
+   "label": "شماره چک",
+   "type": "Int64"
+  },
+  {
+   "field": "bankname",
+   "label": "نام بانک",
+   "type": "String"
+  },
+  {
+   "field": "cheqmoney",
+   "label": "مبلغ چک",
+   "type": "Decimal"
+  },
+  {
+   "field": "cheqarzsign",
+   "label": "نوع ارز چک",
+   "type": "String"
+  },
+  {
+   "field": "datechek",
+   "label": "تاریخ سررسید چک",
+   "type": "DateTime"
+  },
+  {
+   "field": "property",
+   "label": "ملاحظات",
+   "type": "String"
+  },
+  {
+   "field": "sefareshnumber",
+   "label": "شماره سند سفارش",
+   "type": "Int64"
+  },
+  {
+   "field": "bedremain",
+   "label": "مانده بدهکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "besremain",
+   "label": "مانده بستانکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "bedbesremain",
+   "label": "مانده بدهکار و بستانکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "bedremainsh",
+   "label": "مانده بدهکار با احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "besremainsh",
+   "label": "مانده بستانکار با احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "bedbesremainsh",
+   "label": "مانده بدهکار و بستانکار با احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "action",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "datechek_x0020_Shamsi",
+   "label": "تاریخ سررسید چک شمسی",
+   "type": "String"
+  }
+ ]
+}

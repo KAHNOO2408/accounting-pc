@@ -1,0 +1,48 @@
+{
+ "source": "MojodiAmval",
+ "reports": [
+  "gozarsh az mojodi amval.mrt"
+ ],
+ "fields": [
+  {
+   "field": "BID",
+   "label": "کد اموال",
+   "type": "Int64"
+  },
+  {
+   "field": "AmvalName",
+   "label": "نام اموال",
+   "type": "String"
+  },
+  {
+   "field": "FiKharid",
+   "label": "بهای خرید",
+   "type": "Decimal"
+  },
+  {
+   "field": "mandehZakhire",
+   "label": "ذخیره استهلاک",
+   "type": "Int64"
+  },
+  {
+   "field": "mandeDaraii",
+   "label": "ارزش دفتری",
+   "type": "Decimal"
+  },
+  {
+   "field": "FarsodeMoney",
+   "label": "ارزش فرسوده",
+   "type": "Decimal"
+  },
+  {
+   "field": "mostahlak",
+   "label": "مستهلک شده",
+   "type": "Boolean"
+  },
+  {
+   "field": "Mostahlaks",
+   "label": "وضعیت",
+   "type": "String"
+  }
+ ]
+}

@@ -1,0 +1,153 @@
+{
+ "source": "HazinBackKharid",
+ "reports": [
+  "gozarsh az hzina dr k.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Action",
+   "label": "اکشن",
+   "type": "Int64"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "ShFactor",
+   "label": "شماره فاکتور",
+   "type": "Double"
+  },
+  {
+   "field": "Sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "Markaz",
+   "label": "شناسه مرکز اسناد",
+   "type": "Int64"
+  },
+  {
+   "field": "MarkazName",
+   "label": "مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "BidDaryaft",
+   "label": "شناسه حساب دریافت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "DaryaftKonnde",
+   "label": "دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "TintDaryaftKonnde",
+   "label": "شناسه مولفه  دریافت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "TintNameDaryftekonnde",
+   "label": "مولفه  دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "FiArzDaryaft",
+   "label": "فی ارز",
+   "type": "Decimal"
+  },
+  {
+   "field": "ArzDaryaft",
+   "label": "نوع ارز",
+   "type": "String"
+  },
+  {
+   "field": "BidOnvanHazine",
+   "label": "کد حساب  هزینه",
+   "type": "Int64"
+  },
+  {
+   "field": "OnvanHazine",
+   "label": "حساب  هزینه",
+   "type": "String"
+  },
+  {
+   "field": "TintOnvanHazine",
+   "label": "شناسه مولفه حساب  هزینه",
+   "type": "String"
+  },
+  {
+   "field": "TintNameOnvanHazine",
+   "label": "مولفه هزینه",
+   "type": "String"
+  },
+  {
+   "field": "FiArzOnvanHazine",
+   "label": "فی ارز حساب عنوان هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "ArzOnvanHazine",
+   "label": "ارز حساب عنوان هزینه",
+   "type": "String"
+  },
+  {
+   "field": "DarsadHazine",
+   "label": "درصد هزینه",
+   "type": "Double"
+  },
+  {
+   "field": "Mony_Daryaft",
+   "label": "مبلغ هزینه (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "Mony_System",
+   "label": "مبلغ هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "Molahezat",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "TypeFactor",
+   "label": "شناسه فاکتور",
+   "type": "Int64"
+  },
+  {
+   "field": "Factor",
+   "label": "نوع فاکتور",
+   "type": "String"
+  },
+  {
+   "field": "Balanc",
+   "label": "شناسه بالانس",
+   "type": "Int32"
+  },
+  {
+   "field": "BalancFactor",
+   "label": "بالانس",
+   "type": "String"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  }
+ ]
+}

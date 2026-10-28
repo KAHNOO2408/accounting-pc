@@ -1,0 +1,140 @@
+{
+ "source": "DPiMTakhfifAzKharid",
+ "reports": [
+  "frosshn151.mrt",
+  "psargad daraeaa151.mrt",
+  "rsid mali .mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "Dte",
+   "label": "ناریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "uname",
+   "label": "نام کاربر",
+   "type": "String"
+  },
+  {
+   "field": "ufamily",
+   "label": "نام خانوادگی کاربر",
+   "type": "String"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "ArchivePath",
+   "label": "مسیر بایگانی",
+   "type": "String"
+  },
+  {
+   "field": "markaze_x0020_asnad",
+   "label": "مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "pardakhtkonandeBID",
+   "label": "کد دفتر پرداخت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "pardakhtkonande",
+   "label": "نام دفتر پرداخت کننده",
+   "type": "String"
+  },
+  {
+   "field": "pardakhtkonandetintid",
+   "label": "کد تفصیلی در تفصیلی پرداخت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "pardakhtkonandetintname",
+   "label": "مولفه",
+   "type": "String"
+  },
+  {
+   "field": "SefareshId",
+   "label": "شماره سند سفارش",
+   "type": "Int64"
+  },
+  {
+   "field": "money",
+   "label": "مبلغ",
+   "type": "Decimal"
+  },
+  {
+   "field": "daryaftkonandeBID",
+   "label": "کد دفتر دریافت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "daryaftkonande",
+   "label": "نام دفتر دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "arzsign",
+   "label": "نوع ارز",
+   "type": "String"
+  },
+  {
+   "field": "BedRemain",
+   "label": "مانده بدهکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "BesRemain",
+   "label": "مانده بستانکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedBesRemain",
+   "label": "مانده بدهکار و بستانکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedRemainSH",
+   "label": "مانده بدهکاری با احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "BesRemainSH",
+   "label": "مانده بستانکاری با احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedBesRemainSH",
+   "label": "مانده بدهکاری و بستانکاری با احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "Molahezat",
+   "label": "بابت",
+   "type": "String"
+  },
+  {
+   "field": "Action",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "CreatorUser_DocMabnaNum",
+   "label": "کاربر ثبت کننده - شماره ثابت",
+   "type": "String"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "ناریخ شمسی",
+   "type": "String"
+  }
+ ]
+}

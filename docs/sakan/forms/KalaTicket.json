@@ -1,0 +1,153 @@
+{
+ "source": "KalaTicket",
+ "reports": [
+  "atikt.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Bid",
+   "label": "شناسه کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام لاتین",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصه کالا",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "SellPrice1",
+   "label": "فروش1",
+   "type": "Decimal"
+  },
+  {
+   "field": "SellPrice2",
+   "label": "فروش2",
+   "type": "Decimal"
+  },
+  {
+   "field": "SellPrice3",
+   "label": "فروش3",
+   "type": "Decimal"
+  },
+  {
+   "field": "BuyPrice1",
+   "label": "خرید1",
+   "type": "Decimal"
+  },
+  {
+   "field": "BuyPrice2",
+   "label": "خرید2",
+   "type": "Decimal"
+  },
+  {
+   "field": "BuyPrice3",
+   "label": "خرید3",
+   "type": "Decimal"
+  },
+  {
+   "field": "HamkarPrice1",
+   "label": "همکار1",
+   "type": "Decimal"
+  },
+  {
+   "field": "HamkarPrice2",
+   "label": "همکار2",
+   "type": "Decimal"
+  },
+  {
+   "field": "HamkarPrice3",
+   "label": "همکار3",
+   "type": "Decimal"
+  },
+  {
+   "field": "SecondPrice1",
+   "label": "فرعی1",
+   "type": "Decimal"
+  },
+  {
+   "field": "SecondPrice2",
+   "label": "فرعی2",
+   "type": "Decimal"
+  },
+  {
+   "field": "SecondPrice3",
+   "label": "فرعی3",
+   "type": "Decimal"
+  },
+  {
+   "field": "kalaweight",
+   "label": "وزن",
+   "type": "Double"
+  },
+  {
+   "field": "ArzeshAfzodePercent",
+   "label": "درصد ارزش افزوده",
+   "type": "Double"
+  },
+  {
+   "field": "BazaryabPercent",
+   "label": "درصد بازاریابی",
+   "type": "Double"
+  },
+  {
+   "field": "BaseName",
+   "label": "نام کل",
+   "type": "String"
+  },
+  {
+   "field": "MoeenName",
+   "label": "نام معین",
+   "type": "String"
+  },
+  {
+   "field": "Vahed1",
+   "label": "واحد1",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed1",
+   "label": "لاتین واحد1",
+   "type": "String"
+  },
+  {
+   "field": "Vahed2",
+   "label": "واحد2",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed2",
+   "label": "لاتین واحد2",
+   "type": "String"
+  },
+  {
+   "field": "Vahed3",
+   "label": "واحد3",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed3",
+   "label": "لاتین واحد3",
+   "type": "String"
+  }
+ ]
+}

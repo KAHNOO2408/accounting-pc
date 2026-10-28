@@ -1,0 +1,153 @@
+{
+ "source": "SalaryMorkhasiPage",
+ "reports": [
+  "brg morkasi.mrt"
+ ],
+ "fields": [
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "personelCode",
+   "label": "کد پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "شناسه دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "color",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "nme",
+   "label": "نام",
+   "type": "String"
+  },
+  {
+   "field": "empVahed",
+   "label": "واحد",
+   "type": "String"
+  },
+  {
+   "field": "mid",
+   "label": "شناسه مرخصی",
+   "type": "Int64"
+  },
+  {
+   "field": "bargeNum",
+   "label": "شماره برگه",
+   "type": "String"
+  },
+  {
+   "field": "DteStart",
+   "label": "تاریخ شروع",
+   "type": "DateTime"
+  },
+  {
+   "field": "DteEnd",
+   "label": "تاریخ پایان",
+   "type": "DateTime"
+  },
+  {
+   "field": "duration",
+   "label": "مدت",
+   "type": "Double"
+  },
+  {
+   "field": "sharh",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "type",
+   "label": "کد نوع",
+   "type": "Int32"
+  },
+  {
+   "field": "Mtype",
+   "label": "کد نوع مرخصی",
+   "type": "Int32"
+  },
+  {
+   "field": "TypeTxt",
+   "label": "متن نوع",
+   "type": "String"
+  },
+  {
+   "field": "MtypeText",
+   "label": "متن احتساب",
+   "type": "String"
+  },
+  {
+   "field": "DteStart_x0020_Shamsi",
+   "label": "تاریخ شروع شمسی",
+   "type": "String"
+  },
+  {
+   "field": "DteEnd_x0020_Shamsi",
+   "label": "تاریخ پایان شمسی",
+   "type": "String"
+  },
+  {
+   "field": "personelcode",
+   "label": "کد پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "bid",
+   "label": "شناسه دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "empvahed",
+   "label": "واحد",
+   "type": "String"
+  },
+  {
+   "field": "bargenum",
+   "label": "شماره برگه",
+   "type": "String"
+  },
+  {
+   "field": "dtestart",
+   "label": "تاریخ شروع",
+   "type": "DateTime"
+  },
+  {
+   "field": "dteend",
+   "label": "تاریخ پایان",
+   "type": "DateTime"
+  },
+  {
+   "field": "mtype",
+   "label": "کد نوع مرخصی",
+   "type": "Int32"
+  },
+  {
+   "field": "typetxt",
+   "label": "متن نوع",
+   "type": "String"
+  },
+  {
+   "field": "mtypetext",
+   "label": "متن احتساب",
+   "type": "String"
+  },
+  {
+   "field": "dtestart_x0020_Shamsi",
+   "label": "تاریخ شروع شمسی",
+   "type": "String"
+  },
+  {
+   "field": "dteend_x0020_Shamsi",
+   "label": "تاریخ پایان شمسی",
+   "type": "String"
+  }
+ ]
+}

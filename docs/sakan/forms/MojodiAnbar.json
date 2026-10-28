@@ -1,0 +1,103 @@
+{
+ "source": "MojodiAnbar",
+ "reports": [
+  "Kazmojodi anbar.mrt"
+ ],
+ "fields": [
+  {
+   "field": "bid",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "fanyno",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "frasiname",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "englishname",
+   "label": "نام لاتین کالا",
+   "type": "String"
+  },
+  {
+   "field": "properties",
+   "label": "مشخصه کالا",
+   "type": "String"
+  },
+  {
+   "field": "storeid",
+   "label": "شناسه انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "storename",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "jamtedad",
+   "label": "تعداد1",
+   "type": "Double"
+  },
+  {
+   "field": "vahed1",
+   "label": "واحد1",
+   "type": "String"
+  },
+  {
+   "field": "tedad2",
+   "label": "تعداد2",
+   "type": "Double"
+  },
+  {
+   "field": "vahed2",
+   "label": "واحد2",
+   "type": "String"
+  },
+  {
+   "field": "tedad3",
+   "label": "تعداد3",
+   "type": "Double"
+  },
+  {
+   "field": "vahed3",
+   "label": "واحد3",
+   "type": "String"
+  },
+  {
+   "field": "fulltedad",
+   "label": "تعداد1 کل",
+   "type": "Double"
+  },
+  {
+   "field": "fulltedad2",
+   "label": "تعداد2 کل",
+   "type": "Double"
+  },
+  {
+   "field": "fulltedad3",
+   "label": "تعداد3 کل",
+   "type": "Double"
+  },
+  {
+   "field": "jamkolstore",
+   "label": "جمع ریال انبار",
+   "type": "Decimal"
+  },
+  {
+   "field": "jamkolfull",
+   "label": "جمع ریال",
+   "type": "Decimal"
+  }
+ ]
+}

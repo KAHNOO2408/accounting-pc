@@ -1,0 +1,46 @@
+{
+ "source": "SefteE",
+ "reports": [
+  "RASNAD ANTZAMI D.MRT",
+  "Rantzami S.mrt",
+  "Rsid pas grftn antzami S.mrt",
+  "rsid pas dadn antzami.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "SefteNumber",
+   "label": "شماره سریال",
+   "type": "Int64"
+  },
+  {
+   "field": "SefteMoney",
+   "label": "مبلغ",
+   "type": "Decimal"
+  },
+  {
+   "field": "SefteDate",
+   "label": "تاریخ سررسید",
+   "type": "DateTime"
+  },
+  {
+   "field": "SefteHoldenPlace",
+   "label": "مکان نگهداری",
+   "type": "String"
+  },
+  {
+   "field": "SefteHuman",
+   "label": "متعلق به",
+   "type": "String"
+  },
+  {
+   "field": "SefteDate_x0020_Shamsi",
+   "label": "تاریخ سررسید شمسی",
+   "type": "String"
+  }
+ ]
+}

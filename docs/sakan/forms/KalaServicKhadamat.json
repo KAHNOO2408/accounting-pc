@@ -1,0 +1,269 @@
+{
+ "source": "KalaServicKhadamat",
+ "reports": [
+  "faktor srvis kadamat.mrt",
+  "faktor srvis kdamat sado.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره ثابت",
+   "type": "Int64"
+  },
+  {
+   "field": "SanadSefaresh",
+   "label": "سند سفارش",
+   "type": "Double"
+  },
+  {
+   "field": "pazireshNumber",
+   "label": "شماره پذیرش",
+   "type": "Int64"
+  },
+  {
+   "field": "CodeKala",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام کالا (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شمار فنی",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصات کالا",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "IranCode",
+   "label": "بارکد ملی",
+   "type": "String"
+  },
+  {
+   "field": "Aid",
+   "label": "شناسه انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "AName",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "VahedId1",
+   "label": "شناسه واحد اول",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedName1",
+   "label": "واحد 1",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName1",
+   "label": "واحد 1 لاتین",
+   "type": "String"
+  },
+  {
+   "field": "TedadVahed1",
+   "label": "تعداد واحد 1",
+   "type": "Double"
+  },
+  {
+   "field": "FiVahed1",
+   "label": "فی واحد 1 ارزی",
+   "type": "Decimal"
+  },
+  {
+   "field": "VhahedId2",
+   "label": "شناسه واحد 2",
+   "type": "Int64"
+  },
+  {
+   "field": "VhaedName2",
+   "label": "واحد 2",
+   "type": "String"
+  },
+  {
+   "field": "VhaedEnglishName2",
+   "label": "واحد 2 لاتین",
+   "type": "String"
+  },
+  {
+   "field": "NesbatV2BV1",
+   "label": "نسبت واحد 2 به 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "TedadVahed2",
+   "label": "تعداد واحد 2",
+   "type": "Double"
+  },
+  {
+   "field": "Fivahed2",
+   "label": "فی واحد 2 ارزی",
+   "type": "Decimal"
+  },
+  {
+   "field": "VahedId3",
+   "label": "شناسه واحد 3",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedNAme3",
+   "label": "واحد 3",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName3",
+   "label": "واحد 3 لاتین",
+   "type": "String"
+  },
+  {
+   "field": "NesbatV3BV1",
+   "label": "نسبت واحد 3 به 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "TedadVahed3",
+   "label": "تعداد واحد 3",
+   "type": "Double"
+  },
+  {
+   "field": "Fivahed3",
+   "label": "فی واحد 3 ارزی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Jam1",
+   "label": "جمع بدون تخفیف ارزی",
+   "type": "Double"
+  },
+  {
+   "field": "Takhfif",
+   "label": "جمع تخفیف ارزی",
+   "type": "Double"
+  },
+  {
+   "field": "DarsadTakhfif",
+   "label": "درصد تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamT",
+   "label": "جمع بعد از تخفیف (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "VazenKalaBeV1",
+   "label": "وزن واحد 1",
+   "type": "Double"
+  },
+  {
+   "field": "JamVazenKala",
+   "label": "جمع وزن کالا",
+   "type": "Double"
+  },
+  {
+   "field": "garanti",
+   "label": "",
+   "type": "Boolean"
+  },
+  {
+   "field": "Tozihat",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "Shserial",
+   "label": "شماره سریال",
+   "type": "String"
+  },
+  {
+   "field": "SahmHazine",
+   "label": "سهم هزینه(ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahemHazineGaranti",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "Hazine",
+   "label": "هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "mablaghgaranti",
+   "label": "مبلغ گارانتی",
+   "type": "Double"
+  },
+  {
+   "field": "TypeAghlam",
+   "label": "نوع اقلام",
+   "type": "String"
+  },
+  {
+   "field": "TypeAghlam_int",
+   "label": "شناسه نوع اقلام",
+   "type": "Int32"
+  },
+  {
+   "field": "DarsadArzesh",
+   "label": "درصد عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahemArzesh",
+   "label": "سهم عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "SMaliat",
+   "label": "درصد مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat",
+   "label": "سهم مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamT1",
+   "label": "جمع بعداز تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "JamKol",
+   "label": "جمع کل",
+   "type": "Double"
+  },
+  {
+   "field": "Aghlam",
+   "label": "عوارض و مالیات بر اقلام اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "KalaVat_Moshtari",
+   "label": "عوارض و مالیات بعهده مشتری است",
+   "type": "Boolean"
+  }
+ ]
+}

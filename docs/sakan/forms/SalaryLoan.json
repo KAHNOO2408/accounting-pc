@@ -1,0 +1,98 @@
+{
+ "source": "SalaryLoan",
+ "reports": [
+  "vam prsnl.mrt"
+ ],
+ "fields": [
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "شناسه دفتر پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "nme",
+   "label": "نام پرسنل",
+   "type": "String"
+  },
+  {
+   "field": "personelCode",
+   "label": "کد پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "empVahed",
+   "label": "واحد",
+   "type": "String"
+  },
+  {
+   "field": "JazbName",
+   "label": "نام سرفصل جذب وام",
+   "type": "String"
+  },
+  {
+   "field": "gid",
+   "label": "شناسه دوره حقوقی",
+   "type": "Int64"
+  },
+  {
+   "field": "gname",
+   "label": "نام دوره حقوقی",
+   "type": "String"
+  },
+  {
+   "field": "jazbBid",
+   "label": "شناسه سرفصل جذب",
+   "type": "Int64"
+  },
+  {
+   "field": "jazbTinT",
+   "label": "مولفه سرفصل جذب",
+   "type": "Int64"
+  },
+  {
+   "field": "dte",
+   "label": "تاریخ سررسید قسط",
+   "type": "DateTime"
+  },
+  {
+   "field": "passed",
+   "label": "پرداخت شده",
+   "type": "Boolean"
+  },
+  {
+   "field": "docmabnaNum",
+   "label": "شماره مبنای پرداخت",
+   "type": "Int64"
+  },
+  {
+   "field": "num",
+   "label": "شماره قسط",
+   "type": "Int32"
+  },
+  {
+   "field": "info",
+   "label": "توضیحات قسط",
+   "type": "String"
+  },
+  {
+   "field": "price",
+   "label": "مبلغ قسط",
+   "type": "Decimal"
+  },
+  {
+   "field": "Lid",
+   "label": "شماره وام",
+   "type": "Int64"
+  },
+  {
+   "field": "dte_x0020_Shamsi",
+   "label": "تاریخ سررسید قسط شمسی",
+   "type": "String"
+  }
+ ]
+}

@@ -1,0 +1,599 @@
+{
+ "source": "BackKharidBalanc",
+ "reports": [
+  "gozarsh az faktor brgasht balans.mrt",
+  "gozarsh riz faktor brgasht balans.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "Action",
+   "label": "اکشن",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "shdarkhast",
+   "label": "شماره درخواست",
+   "type": "String"
+  },
+  {
+   "field": "ShFactor",
+   "label": "شماره فاکتور",
+   "type": "Double"
+  },
+  {
+   "field": "SharhP",
+   "label": "شرح پیگرد",
+   "type": "String"
+  },
+  {
+   "field": "DteP",
+   "label": "تاریخ پیگرد",
+   "type": "DateTime"
+  },
+  {
+   "field": "Sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "FroshandeID",
+   "label": "کد خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "FroshandeName",
+   "label": "خریدار",
+   "type": "String"
+  },
+  {
+   "field": "FiFroshande",
+   "label": "فی ارز",
+   "type": "Decimal"
+  },
+  {
+   "field": "ArsingFroshande",
+   "label": "نوع ارز",
+   "type": "String"
+  },
+  {
+   "field": "TintFroshande",
+   "label": "شناسه مولفه خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "TintNameFroshande",
+   "label": "مولفه خریدار",
+   "type": "String"
+  },
+  {
+   "field": "JamTakhfifKharidar",
+   "label": "تخفیف به ارز خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamTakhfifSystem",
+   "label": "تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAghlamKalaKharidar",
+   "label": "جمع فاکتور به ارز خریدار (بدون تخفیف )",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKalaSystem",
+   "label": "جمع فاکتور (بدون تخفیف)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamHazineKharidar_kharidar",
+   "label": "هزینه سربار سهم خریدار (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamHazineKharidar_system",
+   "label": "هزینه سربار سهم خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamhazineFroshande_system",
+   "label": "هزینه سربار سهم فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamHazineFoshande",
+   "label": "هزینه سربار سهم فروشنده (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghFactorKharidar",
+   "label": "جمع فاکتور به ارز خریدار (با تخفیف)",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghFactorSystem",
+   "label": "جمع فاکتور (با تخفیف)",
+   "type": "Decimal"
+  },
+  {
+   "field": "BalancKharidarId",
+   "label": "کد فروشنده",
+   "type": "Int64"
+  },
+  {
+   "field": "BalancKharidarName",
+   "label": "فروشنده",
+   "type": "String"
+  },
+  {
+   "field": "FiBalancKharidar",
+   "label": "فی ارز (فروشنده)",
+   "type": "Decimal"
+  },
+  {
+   "field": "ArsingBalancKharidar",
+   "label": "نوع ارز (فروشنده)",
+   "type": "String"
+  },
+  {
+   "field": "TintKharidar",
+   "label": "شناسه مولفه  فروشنده",
+   "type": "Int64"
+  },
+  {
+   "field": "TintNameKharidar",
+   "label": "مولفه  فروشنده",
+   "type": "String"
+  },
+  {
+   "field": "BalancVaseteId",
+   "label": "شناسه حساب عودت درآمد واسطه گری",
+   "type": "Int64"
+  },
+  {
+   "field": "BalancVaseteName",
+   "label": "حساب عودت  درآمد واسطه گری",
+   "type": "String"
+  },
+  {
+   "field": "MablaghVaseteGaryBArzFroshande",
+   "label": "مبلغ عودت  واسطه گری به ارز خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghVaseteGaryBArzSystem",
+   "label": "مبلغ عودت  واسطه گری",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghVaseteGaryBArzKharidar",
+   "label": "مبلغ عودت  واسطه گری به ارز  فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "NameCar",
+   "label": "نام وسیله نقلیه",
+   "type": "String"
+  },
+  {
+   "field": "NUmCar",
+   "label": "شماره وسیله نقلیه",
+   "type": "String"
+  },
+  {
+   "field": "Barname",
+   "label": "شماره بارنامه",
+   "type": "String"
+  },
+  {
+   "field": "Sherkat",
+   "label": "نام شرکت باربری",
+   "type": "String"
+  },
+  {
+   "field": "MabdaeHarekat",
+   "label": "مبدا حرکت",
+   "type": "String"
+  },
+  {
+   "field": "MaghsadHarekat",
+   "label": "مقصد حرکت",
+   "type": "String"
+  },
+  {
+   "field": "Markaz",
+   "label": "شناسه مرکز اسناد",
+   "type": "Int64"
+  },
+  {
+   "field": "MarkazName",
+   "label": "مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "JamVaznFactor",
+   "label": "جمع وزن فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "TypeFactor",
+   "label": "شناسه فاکتور",
+   "type": "Int64"
+  },
+  {
+   "field": "Factor",
+   "label": "نوع فاکتور",
+   "type": "String"
+  },
+  {
+   "field": "BidAvarez",
+   "label": "شناسه حساب عوارض",
+   "type": "Int64"
+  },
+  {
+   "field": "NameAvarez",
+   "label": "حساب عوارض",
+   "type": "String"
+  },
+  {
+   "field": "TintAvarez",
+   "label": "شناسه مولفه حساب عوارض",
+   "type": "Int64"
+  },
+  {
+   "field": "NameTintAvarez",
+   "label": "مولفه حساب عوارض",
+   "type": "String"
+  },
+  {
+   "field": "BidMaliat",
+   "label": "شناسه حساب مالیات",
+   "type": "Int64"
+  },
+  {
+   "field": "NameMaliat",
+   "label": "حساب مالیات",
+   "type": "String"
+  },
+  {
+   "field": "TintMaliat",
+   "label": "شناسه مولفه حساب مالیات",
+   "type": "Int64"
+  },
+  {
+   "field": "NameTintMaliat",
+   "label": "مولفه حساب مالیات",
+   "type": "String"
+  },
+  {
+   "field": "BidMojry",
+   "label": "شناسه حساب در یافت کننده مالیاتی",
+   "type": "Int64"
+  },
+  {
+   "field": "NameMojry",
+   "label": "حساب در یافت کننده  مالیاتی",
+   "type": "String"
+  },
+  {
+   "field": "TintMojry",
+   "label": "شناسه مولفه حساب در یافت کننده  مالیاتی",
+   "type": "Int64"
+  },
+  {
+   "field": "NameTintMojry",
+   "label": "مولفه حساب در یافت کننده  مالیاتی",
+   "type": "String"
+  },
+  {
+   "field": "Aghlam",
+   "label": "عوارض و مالیات بر اقلام اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "Hazine",
+   "label": "عوارض و مالیات بر هزینه اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "JamArzeshF_sys",
+   "label": "جمع عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatF_sys",
+   "label": "جمع مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezAghlam_sys",
+   "label": "جمع عوارض اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezHazine_sys",
+   "label": "جمع عوارض هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatAghlam_sys",
+   "label": "جمع مالیات اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatHazine_sys",
+   "label": "جمع مالیات هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "DteP_x0020_Shamsi",
+   "label": "تاریخ پیگرد شمسی",
+   "type": "String"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "Bid",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالای فارسی",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام کالای انگلیسی",
+   "type": "String"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصات کالا",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "IranCode",
+   "label": "ایران کد",
+   "type": "String"
+  },
+  {
+   "field": "Vahed1",
+   "label": "شناسه واحد1",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedName1",
+   "label": "نام فارسی واحد1",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName1",
+   "label": "نام انگلیسی واحد 1",
+   "type": "String"
+  },
+  {
+   "field": "TedadVahed1",
+   "label": "تعداد واحد 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiV1",
+   "label": "فی واحد 1 به ارز فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "Fiv1System",
+   "label": "فی واحد 1 به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "Vahed2",
+   "label": "شناسه واحد 2",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedName2",
+   "label": "نام فارسی واحد 2",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName2",
+   "label": "نام انگلیسی واحد 2",
+   "type": "String"
+  },
+  {
+   "field": "TedadVahed2",
+   "label": "تعداد واحد 2",
+   "type": "Decimal"
+  },
+  {
+   "field": "Fivahed2",
+   "label": "فی واحد 2 به ارز فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "Fivahed2System",
+   "label": "فی واحد 2 به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "Each2Equal1",
+   "label": "نسبت واحد 2 به واحد 1",
+   "type": "Double"
+  },
+  {
+   "field": "Vahed3",
+   "label": "شناسه واحد 3",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedName3",
+   "label": "نام فارسی واحد 3",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName3",
+   "label": "نام انگلیسی واحد 3",
+   "type": "String"
+  },
+  {
+   "field": "TedadVahed3",
+   "label": "تعداد واحد 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "Fivahed3",
+   "label": "فی واحد 3 به ارز فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "Fivahed3System",
+   "label": "فی واحد 3 به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "Each1Equal3",
+   "label": "نسبت واحد 3 به واحد 1",
+   "type": "Double"
+  },
+  {
+   "field": "DarsadTakhfif",
+   "label": "درصد تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "Takhfif",
+   "label": "تخفیف به ارز فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "TakhfifSystem",
+   "label": "تخفیف به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "Jam1",
+   "label": "جمع بدون تخفیف به ارز فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "Jam1Syatem",
+   "label": "جمع بدون تخفیف به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMablagh",
+   "label": "مبلغ به ارز فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMablaghSystem",
+   "label": "مبلغ به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamVazenKala",
+   "label": "وزن کالا",
+   "type": "Double"
+  },
+  {
+   "field": "Tozihat",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "SArzesh",
+   "label": "درصد عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzesh",
+   "label": "سهم عوارض (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzesh_sys",
+   "label": "سهم عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "SMaliat",
+   "label": "درصد مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat",
+   "label": "سهم مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat_sys",
+   "label": "سهم مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamT",
+   "label": "جمع بعد از تخفیف (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKol",
+   "label": "جمع کل (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamT_sys",
+   "label": "جمع بعد از تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKol_sys",
+   "label": "جمع کل",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineSystem",
+   "label": "هزینه سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineFroshande",
+   "label": "هزینه فروشنده(ارز)",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineFroshande_system",
+   "label": "هزینه فروشنده سیستم",
+   "type": "Decimal"
+  }
+ ]
+}

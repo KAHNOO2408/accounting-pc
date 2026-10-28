@@ -1,0 +1,29 @@
+{
+ "source": "SodzianCharts",
+ "reports": [
+  "list hsabha.mrt",
+  "nmodar sodvzyan.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Bid",
+   "label": "کد",
+   "type": "Int32"
+  },
+  {
+   "field": "FrasiName",
+   "label": "دوره",
+   "type": "Int32"
+  },
+  {
+   "field": "tedad",
+   "label": "سود/زیان",
+   "type": "Decimal"
+  },
+  {
+   "field": "DoreName",
+   "label": "",
+   "type": "String"
+  }
+ ]
+}

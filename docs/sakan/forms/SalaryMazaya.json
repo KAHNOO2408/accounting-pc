@@ -1,0 +1,56 @@
+{
+ "source": "SalaryMazaya",
+ "reports": [
+  "fish hokok.mrt",
+  "fish pshrafte3.mrt",
+  "list mzaya koli.mrt",
+  "list mzayay .mrt"
+ ],
+ "fields": [
+  {
+   "field": "jid",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "شناسه دفتر پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "PersonelCode",
+   "label": "کد پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "nme",
+   "label": "نام پرسنل",
+   "type": "String"
+  },
+  {
+   "field": "MazayaNme",
+   "label": "عنوان مزایا",
+   "type": "String"
+  },
+  {
+   "field": "MazayaPrice",
+   "label": "مبلغ",
+   "type": "Decimal"
+  },
+  {
+   "field": "gid",
+   "label": "شناسه دوره حقوقی",
+   "type": "Int64"
+  },
+  {
+   "field": "gname",
+   "label": "عنوان دوره",
+   "type": "String"
+  }
+ ]
+}

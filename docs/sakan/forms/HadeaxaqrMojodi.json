@@ -1,0 +1,158 @@
+{
+ "source": "HadeaxaqrMojodi",
+ "reports": [
+  "gozarsh az had aksr mojidy kala.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Bid",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام لاتین کالا",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصه کالا",
+   "type": "String"
+  },
+  {
+   "field": "TedadAll1",
+   "label": "موجودی 1",
+   "type": "Double"
+  },
+  {
+   "field": "TedadAll2",
+   "label": "موجودی 2",
+   "type": "Double"
+  },
+  {
+   "field": "TedadAll3",
+   "label": "موجودی 3",
+   "type": "Double"
+  },
+  {
+   "field": "StoreTedad1",
+   "label": "موجودی 1 انبار",
+   "type": "Double"
+  },
+  {
+   "field": "StoreTedad2",
+   "label": "موجودی 2 انبار",
+   "type": "Double"
+  },
+  {
+   "field": "StoreTedad3",
+   "label": "موجودی 3 انبار",
+   "type": "Double"
+  },
+  {
+   "field": "Storeid",
+   "label": "شناسه انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "maximum",
+   "label": "حداکثر موجودی",
+   "type": "Int64"
+  },
+  {
+   "field": "AddAll1",
+   "label": "اضافه 1",
+   "type": "Double"
+  },
+  {
+   "field": "AddAll2",
+   "label": "اضافه 2",
+   "type": "Decimal"
+  },
+  {
+   "field": "AddAll3",
+   "label": "اضافه 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "AddStore1",
+   "label": "تعداد1 انبار اضافه",
+   "type": "Double"
+  },
+  {
+   "field": "AddStore2",
+   "label": "تعداد2 انبار اضافه",
+   "type": "Decimal"
+  },
+  {
+   "field": "AddStore3",
+   "label": "تعداد3 انبار اضافه",
+   "type": "Decimal"
+  },
+  {
+   "field": "ID1",
+   "label": "شناسه واحد1",
+   "type": "Int64"
+  },
+  {
+   "field": "Vahed1",
+   "label": "واحد1",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed1",
+   "label": "لاتین واحد1",
+   "type": "String"
+  },
+  {
+   "field": "ID2",
+   "label": "شناسه واحد2",
+   "type": "Int64"
+  },
+  {
+   "field": "Vahed2",
+   "label": "واحد2",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed2",
+   "label": "لاتین واحد2",
+   "type": "String"
+  },
+  {
+   "field": "ID3",
+   "label": "شناسه واحد3",
+   "type": "Int64"
+  },
+  {
+   "field": "Vahed3",
+   "label": "واحد3",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed3",
+   "label": "لاتین واحد3",
+   "type": "String"
+  },
+  {
+   "field": "StoreName",
+   "label": "نام انبار",
+   "type": "String"
+  }
+ ]
+}

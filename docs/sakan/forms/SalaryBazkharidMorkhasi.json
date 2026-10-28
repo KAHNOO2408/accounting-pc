@@ -1,0 +1,68 @@
+{
+ "source": "SalaryBazkharidMorkhasi",
+ "reports": [
+  "gozarsh az bazkrid morkasi.mrt"
+ ],
+ "fields": [
+  {
+   "field": "bazkharidId",
+   "label": "شناسه بازخرید",
+   "type": "Int64"
+  },
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "شناسه دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "nme",
+   "label": "نام",
+   "type": "String"
+  },
+  {
+   "field": "personelCode",
+   "label": "شماره پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "tedad",
+   "label": "تعداد روز",
+   "type": "Double"
+  },
+  {
+   "field": "priceDay",
+   "label": "فی",
+   "type": "Decimal"
+  },
+  {
+   "field": "jam",
+   "label": "جمع",
+   "type": "Double"
+  },
+  {
+   "field": "isBime",
+   "label": "بیمه",
+   "type": "Boolean"
+  },
+  {
+   "field": "isMaliat",
+   "label": "مالیات",
+   "type": "Boolean"
+  },
+  {
+   "field": "gname",
+   "label": "دوره حقوقی",
+   "type": "String"
+  },
+  {
+   "field": "gid",
+   "label": "شناسه دوره",
+   "type": "Int64"
+  }
+ ]
+}

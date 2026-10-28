@@ -1,0 +1,78 @@
+{
+ "source": "Garanti_Record",
+ "reports": [
+  "brg granty.mrt"
+ ],
+ "fields": [
+  {
+   "field": "id",
+   "label": "کد",
+   "type": "Int64"
+  },
+  {
+   "field": "GarantiCode",
+   "label": "کد گارانتی",
+   "type": "Int64"
+  },
+  {
+   "field": "CodeRadif",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "codekala",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "KalaName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "serialkala",
+   "label": "سریال کالا",
+   "type": "String"
+  },
+  {
+   "field": "datestart",
+   "label": "تاریخ شروع گارانتی",
+   "type": "DateTime"
+  },
+  {
+   "field": "dateend",
+   "label": "تاریخ اتمام گارانتی",
+   "type": "DateTime"
+  },
+  {
+   "field": "chenge",
+   "label": "تعویض",
+   "type": "Boolean"
+  },
+  {
+   "field": "put",
+   "label": "جایگزین",
+   "type": "Boolean"
+  },
+  {
+   "field": "date",
+   "label": "تاریخ تعویض یا جایگزین",
+   "type": "DateTime"
+  },
+  {
+   "field": "datestart_x0020_Shamsi",
+   "label": "تاریخ شروع گارانتی شمسی",
+   "type": "String"
+  },
+  {
+   "field": "dateend_x0020_Shamsi",
+   "label": "تاریخ اتمام گارانتی شمسی",
+   "type": "String"
+  },
+  {
+   "field": "date_x0020_Shamsi",
+   "label": "تاریخ تعویض یا جایگزین شمسی",
+   "type": "String"
+  }
+ ]
+}

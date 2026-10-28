@@ -1,0 +1,919 @@
+{
+ "groups": [
+  {
+   "id": 1,
+   "parent": -1,
+   "order": 1,
+   "name": "دارایی",
+   "side": "d"
+  },
+  {
+   "id": 2,
+   "parent": 1,
+   "order": 1,
+   "name": "دارايي هاي جاري",
+   "side": "d"
+  },
+  {
+   "id": 3,
+   "parent": 1,
+   "order": 1,
+   "name": "دارايي هاي غير جاري",
+   "side": "d"
+  },
+  {
+   "id": 4,
+   "parent": 2,
+   "order": 1,
+   "name": "دارايي هاي جاري نقدي",
+   "side": "d"
+  },
+  {
+   "id": 5,
+   "parent": 2,
+   "order": 1,
+   "name": "دارايي هاي جاري غير نقدي",
+   "side": "d"
+  },
+  {
+   "id": 6,
+   "parent": 5,
+   "order": 1,
+   "name": "حسابهاي دريافتني",
+   "side": "d"
+  },
+  {
+   "id": 7,
+   "parent": 3,
+   "order": 1,
+   "name": "سرمایه گذاری های بلند مدت",
+   "side": "d"
+  },
+  {
+   "id": 8,
+   "parent": 3,
+   "order": 5,
+   "name": "دارایی های مشهود",
+   "side": "d"
+  },
+  {
+   "id": 10,
+   "parent": 3,
+   "order": 1,
+   "name": "سایر دارایی ها",
+   "side": "d"
+  },
+  {
+   "id": 12,
+   "parent": 5,
+   "order": 1,
+   "name": "پیمان در دست اجرا",
+   "side": "d"
+  },
+  {
+   "id": 13,
+   "parent": -1,
+   "order": 1,
+   "name": "بدهي ها",
+   "side": "b"
+  },
+  {
+   "id": 14,
+   "parent": 13,
+   "order": 1,
+   "name": "بدهي هاي جاري",
+   "side": "b"
+  },
+  {
+   "id": 15,
+   "parent": 13,
+   "order": 1,
+   "name": "بدهي هاي غير جاري",
+   "side": "b"
+  },
+  {
+   "id": 16,
+   "parent": 15,
+   "order": 1,
+   "name": "تسهیلات مالی دریافتی و اوراق مشارکت",
+   "side": "b"
+  },
+  {
+   "id": 17,
+   "parent": 15,
+   "order": 1,
+   "name": "تعهدات بلند مدت اجاره اي سرمايه اي",
+   "side": "b"
+  },
+  {
+   "id": 18,
+   "parent": 15,
+   "order": 1,
+   "name": "ذخایر",
+   "side": "b"
+  },
+  {
+   "id": 19,
+   "parent": 15,
+   "order": 1,
+   "name": "سایر بدهی ها",
+   "side": "b"
+  },
+  {
+   "id": 20,
+   "parent": -1,
+   "order": 1,
+   "name": "حقوق صاحبان سرمايه",
+   "side": "b"
+  },
+  {
+   "id": 24,
+   "parent": -1,
+   "order": 1,
+   "name": "فروش",
+   "side": "s"
+  },
+  {
+   "id": 25,
+   "parent": 24,
+   "order": 240,
+   "name": "تخفیف از فروش",
+   "side": "s"
+  },
+  {
+   "id": 26,
+   "parent": 24,
+   "order": 250,
+   "name": "تخفیف از خرید",
+   "side": "s"
+  },
+  {
+   "id": 27,
+   "parent": 24,
+   "order": 260,
+   "name": "انحراف جذب سربار",
+   "side": "s"
+  },
+  {
+   "id": 28,
+   "parent": -1,
+   "order": 5,
+   "name": "برگشت از خرید",
+   "side": "s"
+  },
+  {
+   "id": 29,
+   "parent": -1,
+   "order": 6,
+   "name": "درآمد پیمان",
+   "side": "s"
+  },
+  {
+   "id": 30,
+   "parent": -1,
+   "order": 7,
+   "name": "فروش خدمات",
+   "side": "s"
+  },
+  {
+   "id": 31,
+   "parent": -1,
+   "order": 8,
+   "name": "فروش متفرقه",
+   "side": "s"
+  },
+  {
+   "id": 32,
+   "parent": -1,
+   "order": 9,
+   "name": "فروش اموال",
+   "side": "s"
+  },
+  {
+   "id": 80,
+   "parent": -1,
+   "order": 300,
+   "name": "سایر هزینه ها",
+   "side": "s"
+  },
+  {
+   "id": 90,
+   "parent": -1,
+   "order": 4,
+   "name": "هزینه های توزیع و فروش",
+   "side": "s"
+  },
+  {
+   "id": 120,
+   "parent": -1,
+   "order": 100,
+   "name": "درآمد ها",
+   "side": "s"
+  },
+  {
+   "id": 161,
+   "parent": 31,
+   "order": 161,
+   "name": "فروش  موجودي متفرقه",
+   "side": "s"
+  },
+  {
+   "id": 162,
+   "parent": 24,
+   "order": 162,
+   "name": "فروش موجودي کالا",
+   "side": "s"
+  },
+  {
+   "id": 163,
+   "parent": 28,
+   "order": 163,
+   "name": "برگشت از خرید موجودي کالا",
+   "side": "s"
+  },
+  {
+   "id": 164,
+   "parent": 32,
+   "order": 164,
+   "name": "فروش اموال و ماشين آلات",
+   "side": "s"
+  },
+  {
+   "id": 165,
+   "parent": 31,
+   "order": 165,
+   "name": "فروش  موجودي کالاي متفرقه",
+   "side": "s"
+  },
+  {
+   "id": 166,
+   "parent": 12,
+   "order": 166,
+   "name": "پيمان در دست اجرا",
+   "side": "d"
+  },
+  {
+   "id": 167,
+   "parent": 29,
+   "order": 167,
+   "name": "درآمد پيمان در دست اجرا",
+   "side": "s"
+  }
+ ],
+ "ledgers": [
+  {
+   "code": "1",
+   "path": "1",
+   "name": "متفرقه",
+   "level": "3",
+   "statement": "ts",
+   "nature": "t"
+  },
+  {
+   "code": "1010",
+   "path": "100100",
+   "name": "صندوق",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1020",
+   "path": "100200",
+   "name": "بانکها",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1030",
+   "path": "100300",
+   "name": "صندوق ارزي",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1040",
+   "path": "100400",
+   "name": "تنخواه گردان",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1110",
+   "path": "110100",
+   "name": "سرمايه گذاري جاري",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1115",
+   "path": "110150",
+   "name": "اسناد وصولي نزد بانکها",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1120",
+   "path": "110200",
+   "name": "اسناد وصولي نزد صندوق",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1125",
+   "path": "110250",
+   "name": "اشخاص",
+   "level": "3",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "1130",
+   "path": "110300",
+   "name": "اشخاص ارزي",
+   "level": "3",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "1135",
+   "path": "110350",
+   "name": "پرسنل",
+   "level": "3",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1138",
+   "path": "300400",
+   "name": "سود سهام پرداختني",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "sarmaye"
+  },
+  {
+   "code": "1140",
+   "path": "110400",
+   "name": "صاحبان سهام",
+   "level": "3",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1145",
+   "path": "110450",
+   "name": "ساير اشخاص",
+   "level": "3",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1150",
+   "path": "110500",
+   "name": "موجودي کالا",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1155",
+   "path": "110550",
+   "name": "موجودي کالاي متفرقه",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1160",
+   "path": "110600",
+   "name": "سفارشات",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1165",
+   "path": "110650",
+   "name": "پيش پرداختها",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1170",
+   "path": "110700",
+   "name": "سربار واقعي سربار جذبي",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1175",
+   "path": "110750",
+   "name": "پيمان در دست اجرا",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1210",
+   "path": "120100",
+   "name": "سرمايه گذاريهاي بلند مدت",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1220",
+   "path": "120200",
+   "name": "اموال وماشين آلات",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1240",
+   "path": "120400",
+   "name": "ساير دارايي ها",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1250",
+   "path": "120500",
+   "name": "حسابهاي انتظامي",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "1260",
+   "path": "120600",
+   "name": "طرف حسابهاي انتظامي",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "2030",
+   "path": "200300",
+   "name": "اسناد پرداختني بانکها",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "2035",
+   "path": "200350",
+   "name": "پيش دريافتها",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "2040",
+   "path": "200400",
+   "name": "ذخيره ماليات",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "2045",
+   "path": "200450",
+   "name": "تعهدات پرداختني",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "2050",
+   "path": "200500",
+   "name": "سربار جذبي",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "2055",
+   "path": "200550",
+   "name": "کنترل تخفيف از خريد",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "2060",
+   "path": "200600",
+   "name": "اعتبارات",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "2065",
+   "path": "200650",
+   "name": "ذخيره مطالبات مشکوک الوصول",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "2070",
+   "path": "200700",
+   "name": "صورت وضعيت هاي تاييد شده پيمان در دست اجرا",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "2110",
+   "path": "210100",
+   "name": "تسهيلات مالي دريافتني واوراق مشارکت",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "2120",
+   "path": "210200",
+   "name": "تعهدات بلند مدت اجاره اي سرمايه اي",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "2130",
+   "path": "210300",
+   "name": "ذخيره مزاياي پايان خدمت",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "2140",
+   "path": "210400",
+   "name": "ساير ذخاير",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "2150",
+   "path": "210500",
+   "name": "ساير بدهي ها",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "2180",
+   "path": "210800",
+   "name": "ذخاير استهلاک اموال وماشين آلات",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "3010",
+   "path": "300100",
+   "name": "سرمايه",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "sarmaye"
+  },
+  {
+   "code": "3030",
+   "path": "300300",
+   "name": "سود وزيان سنواتي",
+   "level": "3",
+   "statement": "taraz",
+   "nature": "sarmaye"
+  },
+  {
+   "code": "3040",
+   "path": "300400",
+   "name": "سود سهام پرداختني",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "sarmaye"
+  },
+  {
+   "code": "3050",
+   "path": "300500",
+   "name": "اندوخته هاي قانوني",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "sarmaye"
+  },
+  {
+   "code": "3080",
+   "path": "300800",
+   "name": "ساير حقوق صاحبان سهام",
+   "level": "3",
+   "statement": "taraz",
+   "nature": "sarmaye"
+  },
+  {
+   "code": "4010",
+   "path": "400100",
+   "name": "تخفيف از خريد",
+   "level": "2",
+   "statement": "sod",
+   "nature": "bes"
+  },
+  {
+   "code": "4020",
+   "path": "400200",
+   "name": "درآمدها",
+   "level": "2",
+   "statement": "sod",
+   "nature": "bes"
+  },
+  {
+   "code": "4030",
+   "path": "400300",
+   "name": "درآمد پيمان در دست اجرا",
+   "level": "2",
+   "statement": "sod",
+   "nature": "bes"
+  },
+  {
+   "code": "4040",
+   "path": "400400",
+   "name": "فروش  موجودي کالاي متفرقه",
+   "level": "2",
+   "statement": "sod",
+   "nature": "bes"
+  },
+  {
+   "code": "4050",
+   "path": "400500",
+   "name": "فروش خدمات",
+   "level": "2",
+   "statement": "sod",
+   "nature": "bes"
+  },
+  {
+   "code": "4060",
+   "path": "400600",
+   "name": "فروش موجودي کالا",
+   "level": "2",
+   "statement": "sod",
+   "nature": "bes"
+  },
+  {
+   "code": "4070",
+   "path": "400700",
+   "name": "برگشت از خريد موجودي کالا",
+   "level": "2",
+   "statement": "sod",
+   "nature": "bes"
+  },
+  {
+   "code": "4080",
+   "path": "400800",
+   "name": "فروش اموال و ماشين آلات",
+   "level": "2",
+   "statement": "sod",
+   "nature": "bes"
+  },
+  {
+   "code": "5005",
+   "path": "500050",
+   "name": "هزينه ها",
+   "level": "1",
+   "statement": "sod",
+   "nature": "bed"
+  },
+  {
+   "code": "5010",
+   "path": "500100",
+   "name": "هزينه هاي توزيع وفروش",
+   "level": "3",
+   "statement": "sod",
+   "nature": "bed"
+  },
+  {
+   "code": "5025",
+   "path": "500250",
+   "name": "قيمت تمام شده درآمد پيمان در دست اجرا",
+   "level": "1",
+   "statement": "sod",
+   "nature": "bed"
+  },
+  {
+   "code": "5030",
+   "path": "500300",
+   "name": "انحراف جذب سربار درقيمت تمام شده",
+   "level": "3",
+   "statement": "sod",
+   "nature": "bed"
+  },
+  {
+   "code": "5035",
+   "path": "500350",
+   "name": "قيمت تمام شده فروش موجودي کالاي متفرقه",
+   "level": "1",
+   "statement": "sod",
+   "nature": "bed"
+  },
+  {
+   "code": "5040",
+   "path": "500400",
+   "name": "قيمت تمام شده کالاي فروخته شده موجودي کالا",
+   "level": "1",
+   "statement": "sod",
+   "nature": "bed"
+  },
+  {
+   "code": "5045",
+   "path": "500450",
+   "name": "قيمت تمام شده برگشت از خريد موجودي کالا",
+   "level": "1",
+   "statement": "sod",
+   "nature": "bed"
+  },
+  {
+   "code": "5050",
+   "path": "500500",
+   "name": "تخفيف ازفروش",
+   "level": "1",
+   "statement": "sod",
+   "nature": "bed"
+  },
+  {
+   "code": "5055",
+   "path": "500550",
+   "name": "برگشت از فروش موجودي کالا",
+   "level": "1",
+   "statement": "sod",
+   "nature": "bed"
+  },
+  {
+   "code": "5060",
+   "path": "500600",
+   "name": "قيمت تمام شده اموال و ماشين آلات",
+   "level": "1",
+   "statement": "sod",
+   "nature": "bed"
+  },
+  {
+   "code": "5080",
+   "path": "500800",
+   "name": "بانکهاي ارزي",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "5090",
+   "path": "500900",
+   "name": "اسناد ارزي وصولي نزد بانکهاي ارزي",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "6050",
+   "path": "600500",
+   "name": "اسناد ارزي پرداختني بانکهاي ارزي",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "6060",
+   "path": "600600",
+   "name": "اسناد ارزي وصولي نزد صندوق ارزي",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "7060",
+   "path": "700600",
+   "name": "پيش دريافتهاي ارزي",
+   "level": "2",
+   "statement": "taraz",
+   "nature": "bedehi"
+  },
+  {
+   "code": "7070",
+   "path": "700700",
+   "name": "پيش پرداختهاي ارزي",
+   "level": "1",
+   "statement": "taraz",
+   "nature": "daraee"
+  },
+  {
+   "code": "8010",
+   "path": "800100",
+   "name": "تراز اختتاميه",
+   "level": "3",
+   "statement": "ts",
+   "nature": "t"
+  },
+  {
+   "code": "8020",
+   "path": "800200",
+   "name": "خلاصه حساب سود وزيان",
+   "level": "3",
+   "statement": "ts",
+   "nature": "t"
+  }
+ ],
+ "invoiceTypes": [
+  {
+   "code": 2,
+   "name": "فروش"
+  },
+  {
+   "code": 70,
+   "name": "فروش سند دستی"
+  },
+  {
+   "code": 76,
+   "name": "فروش خدمات سند دستی"
+  },
+  {
+   "code": 22,
+   "name": "فروش اموال"
+  },
+  {
+   "code": 21,
+   "name": "فروش کالای متفرقه"
+  },
+  {
+   "code": 7,
+   "name": "پیش فاکتور"
+  },
+  {
+   "code": 8,
+   "name": "برگشت از فروش دوره جاری"
+  },
+  {
+   "code": 11,
+   "name": "برگشت از فروش دوره قبل"
+  },
+  {
+   "code": 74,
+   "name": "برگشت از فروش دوره جاری سند دستی"
+  },
+  {
+   "code": 75,
+   "name": "برگشت از فروش دوره قبل سند دستی"
+  },
+  {
+   "code": 4,
+   "name": "خرید"
+  },
+  {
+   "code": 71,
+   "name": "خرید سند دستی"
+  },
+  {
+   "code": 43,
+   "name": "خرید بالانس"
+  },
+  {
+   "code": 42,
+   "name": "خرید اموال"
+  },
+  {
+   "code": 41,
+   "name": "خرید کالای متفرقه"
+  },
+  {
+   "code": 6,
+   "name": "برگشت از خرید"
+  },
+  {
+   "code": 73,
+   "name": "برگشت از خرید سند دستی"
+  },
+  {
+   "code": 61,
+   "name": "برگشت از خرید بالانس"
+  },
+  {
+   "code": 79,
+   "name": "فروش خدمات"
+  },
+  {
+   "code": 80,
+   "name": "برگشت از فروش خدمات"
+  },
+  {
+   "code": 30,
+   "name": "سرویس خدمات"
+  }
+ ]
+}

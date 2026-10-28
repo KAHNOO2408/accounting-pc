@@ -1,0 +1,194 @@
+{
+ "source": "NotCategorized",
+ "reports": [
+  "11.mrt",
+  "hazina morkb.mrt"
+ ],
+ "fields": [
+  {
+   "field": "f1",
+   "label": "جمع حقوق و مزایای نقدی _x060C_ غیر نقدی _x060C_ عیدی و پاداش پرداختنی / تخصصی ماه جاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "f2",
+   "label": "جمع حقوق و مزایای نقدی _x060C_ غیر نقدی _x060C_ عیدی و پاداش پرداختنی / تخصصی ماه قبل",
+   "type": "Decimal"
+  },
+  {
+   "field": "f3",
+   "label": "جمع حقوق و مزایای نقدی _x060C_ غیر نقدی _x060C_ عیدی و پاداش مشمول مالیات ماه جاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "f4",
+   "label": "جمع حقوق و مزایای نقدی _x060C_ غیر نقدی _x060C_ عیدی و پاداش مشمول مالیات ماه قبل",
+   "type": "Decimal"
+  },
+  {
+   "field": "f5",
+   "label": "جمع مالیات متعلقه ماه جاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "f6",
+   "label": "جمع مالیات متعلقه ماه قبل",
+   "type": "Decimal"
+  },
+  {
+   "field": "f7",
+   "label": "جریمه عدم تسلیم به موقع خلاصه لیست 2 _x0025_ (موضوع ماده 197) ماه جاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "f8",
+   "label": "جریمه عدم تسلیم به موقع خلاصه لیست 2 _x0025_ (موضوع ماده 197) ماه قبل",
+   "type": "Decimal"
+  },
+  {
+   "field": "f9",
+   "label": "جریمه عدم پرداخت به موقع مالیات 20 _x0025_ (موضوع ماده 197) ماه جاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "f10",
+   "label": "جریمه عدم پرداخت به موقع مالیات 20 _x0025_ (موضوع ماده 197) ماه قبل",
+   "type": "Decimal"
+  },
+  {
+   "field": "f11",
+   "label": "بدهی مالیاتی ماه جاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "f12",
+   "label": "بدهی مالیاتی ماه قبل",
+   "type": "Decimal"
+  },
+  {
+   "field": "f13",
+   "label": "تاریه ثبت در دفتر روزنامه (تخصیص/پرداخت)",
+   "type": "DateTime"
+  },
+  {
+   "field": "f14",
+   "label": "تعداد کل کارکنان",
+   "type": "Decimal"
+  },
+  {
+   "field": "f15",
+   "label": "تعداد کارکنان خارجی",
+   "type": "Decimal"
+  },
+  {
+   "field": "f16",
+   "label": "کد نحوه پرداخت",
+   "type": "Int32"
+  },
+  {
+   "field": "f17",
+   "label": "مبلغ پرداختی/مبلغ چک",
+   "type": "Decimal"
+  },
+  {
+   "field": "f18",
+   "label": "مبلغ پرداختی خزانه",
+   "type": "Decimal"
+  },
+  {
+   "field": "f19",
+   "label": "تاریخ پرداختی خزانه",
+   "type": "DateTime"
+  },
+  {
+   "field": "f20",
+   "label": "شماره سری",
+   "type": "Decimal"
+  },
+  {
+   "field": "f21",
+   "label": "تاریخ چک",
+   "type": "DateTime"
+  },
+  {
+   "field": "f22",
+   "label": "کد نام بانک",
+   "type": "Int32"
+  },
+  {
+   "field": "f23",
+   "label": "نام شعبه",
+   "type": "String"
+  },
+  {
+   "field": "f24",
+   "label": "شماره حساب",
+   "type": "String"
+  },
+  {
+   "field": "f25",
+   "label": "نوع مودی",
+   "type": "Int32"
+  },
+  {
+   "field": "f26",
+   "label": "نام مودی",
+   "type": "String"
+  },
+  {
+   "field": "f27",
+   "label": "کد ملی / کد فراگیر",
+   "type": "String"
+  },
+  {
+   "field": "f28",
+   "label": "شناسه ملی",
+   "type": "String"
+  },
+  {
+   "field": "f29",
+   "label": "شماره شعبه",
+   "type": "String"
+  },
+  {
+   "field": "f30",
+   "label": "کد اقتصادی",
+   "type": "String"
+  },
+  {
+   "field": "f13_x0020_Shamsi",
+   "label": "تاریه ثبت در دفتر روزنامه (تخصیص/پرداخت) شمسی",
+   "type": "String"
+  },
+  {
+   "field": "f19_x0020_Shamsi",
+   "label": "تاریخ پرداختی خزانه شمسی",
+   "type": "String"
+  },
+  {
+   "field": "f21_x0020_Shamsi",
+   "label": "تاریخ چک شمسی",
+   "type": "String"
+  },
+  {
+   "field": "Money",
+   "label": "مبلغ کل هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "MoneyAvarez",
+   "label": "مبلغ عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "MoneyTax",
+   "label": "مبلغ مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKolRiali",
+   "label": "جمع کل مبلغ هزینه با احتساب عوارض و مالیات",
+   "type": "Decimal"
+  }
+ ]
+}

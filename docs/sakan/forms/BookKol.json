@@ -1,0 +1,130 @@
+{
+ "source": "BookKol",
+ "reports": [
+  "1143dftrkoll.mrt",
+  "daftr kol.mrt",
+  "dftr tfsili.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "Sharh",
+   "label": "شرح سند",
+   "type": "String"
+  },
+  {
+   "field": "BID",
+   "label": "کد دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "BName",
+   "label": "نام دفتر",
+   "type": "String"
+  },
+  {
+   "field": "Bed",
+   "label": "بدهکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "Bes",
+   "label": "بستانکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "Type",
+   "label": "تشخیص",
+   "type": "String"
+  },
+  {
+   "field": "Remian",
+   "label": "مانده",
+   "type": "Decimal"
+  },
+  {
+   "field": "Date",
+   "label": "تاریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "Action",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "Date_x0020_Shamsi",
+   "label": "تاریخ شمسی",
+   "type": "String"
+  },
+  {
+   "field": "docmabnanum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "docnum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "sharh",
+   "label": "شرح سند",
+   "type": "String"
+  },
+  {
+   "field": "date",
+   "label": "تاریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "bid",
+   "label": "کد دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "bname",
+   "label": "نام دفتر",
+   "type": "String"
+  },
+  {
+   "field": "bed",
+   "label": "بدهکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "bes",
+   "label": "بستانکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "type",
+   "label": "تشخیص",
+   "type": "String"
+  },
+  {
+   "field": "remian",
+   "label": "مانده",
+   "type": "Decimal"
+  },
+  {
+   "field": "action",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "date_x0020_Shamsi",
+   "label": "تاریخ شمسی",
+   "type": "String"
+  }
+ ]
+}

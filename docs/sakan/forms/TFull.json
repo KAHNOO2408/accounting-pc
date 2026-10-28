@@ -1,0 +1,73 @@
+{
+ "source": "TFull",
+ "reports": [
+  "tahodat.MRT"
+ ],
+ "fields": [
+  {
+   "field": "TBID",
+   "label": "کد حساب",
+   "type": "Int64"
+  },
+  {
+   "field": "BName",
+   "label": "عـنوان حــساب",
+   "type": "String"
+  },
+  {
+   "field": "fullmoney",
+   "label": "کل مبلغ",
+   "type": "Decimal"
+  },
+  {
+   "field": "GSDate",
+   "label": "تاریخ شروع پرداخت قسط",
+   "type": "DateTime"
+  },
+  {
+   "field": "Remain",
+   "label": "مانده پرداختنی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Babat",
+   "label": "بابت",
+   "type": "String"
+  },
+  {
+   "field": "GSDate_x0020_Shamsi",
+   "label": "تاریخ شروع پرداخت قسط شمسی",
+   "type": "String"
+  },
+  {
+   "field": "tbid",
+   "label": "کد حساب",
+   "type": "Int64"
+  },
+  {
+   "field": "bname",
+   "label": "عنوان حساب",
+   "type": "String"
+  },
+  {
+   "field": "gsdate",
+   "label": "تاریخ شروع پرداخت قسط",
+   "type": "DateTime"
+  },
+  {
+   "field": "remain",
+   "label": "مانده پرداختنی",
+   "type": "Decimal"
+  },
+  {
+   "field": "babat",
+   "label": "بابت",
+   "type": "String"
+  },
+  {
+   "field": "gsdate_x0020_Shamsi",
+   "label": "تاریخ شروع پرداخت قسط شمسی",
+   "type": "String"
+  }
+ ]
+}

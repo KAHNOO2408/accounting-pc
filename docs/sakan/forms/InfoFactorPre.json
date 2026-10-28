@@ -1,0 +1,184 @@
+{
+ "source": "InfoFactorPre",
+ "reports": [
+  "list  pish factor.mrt",
+  "pish factor.mrt"
+ ],
+ "fields": [
+  {
+   "field": "ShFactor",
+   "label": "شماره فاکتور",
+   "type": "Double"
+  },
+  {
+   "field": "DatePre",
+   "label": "تاریخ فاکتور",
+   "type": "DateTime"
+  },
+  {
+   "field": "Namekharidar",
+   "label": "نام خریدار",
+   "type": "String"
+  },
+  {
+   "field": "Tozihat",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "jameKol",
+   "label": "جمع کل",
+   "type": "Decimal"
+  },
+  {
+   "field": "TozihatSabt",
+   "label": "توضیحات ثابت",
+   "type": "String"
+  },
+  {
+   "field": "DatePre_x0020_Shamsi",
+   "label": "تاریخ فاکتور شمسی",
+   "type": "String"
+  },
+  {
+   "field": "NameKharidar",
+   "label": "نام خریدار",
+   "type": "String"
+  },
+  {
+   "field": "BCode",
+   "label": "کد خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "Eshterak",
+   "label": "کد اشتراک خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "کد دفتر خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "TinTid",
+   "label": "کد مولفه خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "TinTName",
+   "label": "نام مولفه خریدار",
+   "type": "String"
+  },
+  {
+   "field": "Manager",
+   "label": "مدیر شرکت",
+   "type": "String"
+  },
+  {
+   "field": "CompanyName",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "Pishshomare",
+   "label": "پیش شماره",
+   "type": "String"
+  },
+  {
+   "field": "Tel1",
+   "label": "تلفن فروشنده",
+   "type": "String"
+  },
+  {
+   "field": "Tel2",
+   "label": "همراه فروشنده",
+   "type": "String"
+  },
+  {
+   "field": "Fax",
+   "label": "فکس",
+   "type": "String"
+  },
+  {
+   "field": "SMS",
+   "label": "پیامک",
+   "type": "String"
+  },
+  {
+   "field": "Email",
+   "label": "پست الکترونیک",
+   "type": "String"
+  },
+  {
+   "field": "Address",
+   "label": "آدرس خریدار",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصات خریدار",
+   "type": "String"
+  },
+  {
+   "field": "CodeEghtesady",
+   "label": "کد اقتصادی خریدار",
+   "type": "String"
+  },
+  {
+   "field": "CodePosti",
+   "label": "کد پستی",
+   "type": "String"
+  },
+  {
+   "field": "Checky",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "Naghdy",
+   "label": "نقدی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Region",
+   "label": "منطقه",
+   "type": "String"
+  },
+  {
+   "field": "MoeinName",
+   "label": "معین خریدار",
+   "type": "String"
+  },
+  {
+   "field": "HType",
+   "label": "کد نوع شخص",
+   "type": "Int32"
+  },
+  {
+   "field": "mellinum",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "statecity",
+   "label": "استان",
+   "type": "String"
+  },
+  {
+   "field": "city",
+   "label": "شهرستان",
+   "type": "String"
+  },
+  {
+   "field": "BazaryabBID",
+   "label": "شناسه حساب بازاریاب",
+   "type": "Int64"
+  },
+  {
+   "field": "BazaryabBName",
+   "label": "نام حساب بازاریاب",
+   "type": "String"
+  }
+ ]
+}

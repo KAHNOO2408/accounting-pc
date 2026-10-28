@@ -1,0 +1,238 @@
+{
+ "source": "RizFroshAmval",
+ "reports": [
+  "gozarsh az riz frosh amval.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "ژماره_x200C_ی بنه_x200C_ما",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "ژماره_x200C_ی به_x200C_ڵگه_x200C_نامه_x200C_",
+   "type": "Decimal"
+  },
+  {
+   "field": "ShFactor",
+   "label": "ژماره_x200C_ی فاکتۆر",
+   "type": "Double"
+  },
+  {
+   "field": "shdarkhast",
+   "label": "ژماره_x200C_ی داواکاری",
+   "type": "String"
+  },
+  {
+   "field": "SharhP",
+   "label": "شرۆڤه_x200C_ی شوێنگری",
+   "type": "String"
+  },
+  {
+   "field": "DteP",
+   "label": "ڕێکه_x200C_وتی شوێنگری",
+   "type": "DateTime"
+  },
+  {
+   "field": "Sharh",
+   "label": "شرۆڤه_x200C_",
+   "type": "String"
+  },
+  {
+   "field": "Dte",
+   "label": "ڕێکه_x200C_وت",
+   "type": "DateTime"
+  },
+  {
+   "field": "Kharidar",
+   "label": "حه_x200C_سێبی کڕیار",
+   "type": "String"
+  },
+  {
+   "field": "Kharidar_ID",
+   "label": "ناسه_x200C_ی حه_x200C_سێبی کڕیار",
+   "type": "Int64"
+  },
+  {
+   "field": "kharidarTNT",
+   "label": "شناسه_x200C_ی ناسه_x200C_ی حه_x200C_سێبی کڕیار",
+   "type": "Int64"
+  },
+  {
+   "field": "Kharidar_TintName",
+   "label": "ناسه_x200C_ی حه_x200C_سێبی کڕیار",
+   "type": "String"
+  },
+  {
+   "field": "Fi_kharidar",
+   "label": "نرخی ئه_x200C_رزی حه_x200C_سێبی کڕیار",
+   "type": "Decimal"
+  },
+  {
+   "field": "Arsing_Karidar",
+   "label": "ئه_x200C_رزی حه_x200C_سێبی کڕیار",
+   "type": "String"
+  },
+  {
+   "field": "HesabBid",
+   "label": "کۆدی داراییه_x200C_کان",
+   "type": "Int64"
+  },
+  {
+   "field": "BName",
+   "label": "ناوی داراییه_x200C_کان",
+   "type": "String"
+  },
+  {
+   "field": "HesabTNT",
+   "label": "شناسەی ناسەی حەسێبی داراییەکان",
+   "type": "Int64"
+  },
+  {
+   "field": "TintName",
+   "label": "ناسەی کاڵای پەرژوبڵاو",
+   "type": "String"
+  },
+  {
+   "field": "Fi",
+   "label": "ناسه_x200C_ی نیشانه_x200C_ی حه_x200C_سێبی ماڵیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "Fi_system",
+   "label": "بڕ به_x200C_ئه_x200C_رزی سیسته_x200C_م",
+   "type": "Decimal"
+  },
+  {
+   "field": "Hazine",
+   "label": "پیتاک و ماڵیات له_x200C_سه_x200C_ر کاڵاکان ده_x200C_کار هێنرا",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineSystem",
+   "label": "له_x200C_سه_x200C_دی پیتاک",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamBaKasrHazine",
+   "label": "سەرجەم پاش حەسێبکردنی خەرج بەئەستۆی فرۆشیار بە ئەرزی کڕیار",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamBaKasrHazine_System",
+   "label": "سەرجەم پاش حەسێبکردنی خەرج بەئەستۆی فرۆشیار بە ئەرزی سیستەم",
+   "type": "Decimal"
+  },
+  {
+   "field": "Tozihat",
+   "label": "شرۆڤه_x200C_کان",
+   "type": "String"
+  },
+  {
+   "field": "Markaz",
+   "label": "شناسه_x200C_ی ناوه_x200C_ندی به_x200C_ڵگه_x200C_نامه_x200C_کان",
+   "type": "Int64"
+  },
+  {
+   "field": "MarkazName",
+   "label": "ناوه_x200C_ندی به_x200C_ڵگه_x200C_نامه_x200C_کان",
+   "type": "String"
+  },
+  {
+   "field": "type",
+   "label": "ناسه_x200C_",
+   "type": "Int32"
+  },
+  {
+   "field": "TypeFactor",
+   "label": "شناسه_x200C_ی فاکتۆر",
+   "type": "Int64"
+  },
+  {
+   "field": "Factor",
+   "label": "چه_x200C_شنی فاکتۆر",
+   "type": "String"
+  },
+  {
+   "field": "Action",
+   "label": "ئه_x200C_کشێن",
+   "type": "Int64"
+  },
+  {
+   "field": "BidMaliat",
+   "label": "شناسه_x200C_ی حه_x200C_سێبی ماڵیات",
+   "type": "Int64"
+  },
+  {
+   "field": "NameMaliat",
+   "label": "حه_x200C_سێبی ماڵیات",
+   "type": "String"
+  },
+  {
+   "field": "TintMaliat",
+   "label": "ناسه_x200C_ی نیشانه_x200C_ی حه_x200C_سێبی ماڵیات",
+   "type": "Int64"
+  },
+  {
+   "field": "NameTintMaliat",
+   "label": "نیشانه_x200C_ی حه_x200C_سێبی ماڵیات",
+   "type": "String"
+  },
+  {
+   "field": "Aghlam",
+   "label": "پیتاک و ماڵیات له_x200C_سه_x200C_ر کاڵاکان ده_x200C_کار هێنرا",
+   "type": "Boolean"
+  },
+  {
+   "field": "SArzesh",
+   "label": "له_x200C_سه_x200C_دی پیتاک",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzesh",
+   "label": "به_x200C_شی پیتاکه_x200C_کان (ئه_x200C_رزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "Smaliat",
+   "label": "له_x200C_سه_x200C_دی ماڵیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat",
+   "label": "به_x200C_شی ماڵیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "Arzesh_ID",
+   "label": "کۆدی حه_x200C_سێبی پیتاک",
+   "type": "Int64"
+  },
+  {
+   "field": "hesabArzesh",
+   "label": "حه_x200C_سێبی پیتاکه_x200C_کان",
+   "type": "String"
+  },
+  {
+   "field": "arzeshTNT",
+   "label": "کۆدی نیشانه_x200C_ی حه_x200C_سێبی پیتاک",
+   "type": "Int64"
+  },
+  {
+   "field": "Arzesh_TintName",
+   "label": "نیشانه_x200C_ی حه_x200C_سێبی پیتاک",
+   "type": "String"
+  },
+  {
+   "field": "DteP_x0020_Shamsi",
+   "label": "ڕێکه_x200C_وتی شوێنگریهه_x200C_تاوی",
+   "type": "String"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "ڕێکه_x200C_وتهه_x200C_تاوی",
+   "type": "String"
+  }
+ ]
+}

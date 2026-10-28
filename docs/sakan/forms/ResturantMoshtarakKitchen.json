@@ -1,0 +1,113 @@
+{
+ "source": "ResturantMoshtarakKitchen",
+ "reports": [
+  "SABM.mrt"
+ ],
+ "fields": [
+  {
+   "field": "kitchenmsg",
+   "label": "هشدار",
+   "type": "String"
+  },
+  {
+   "field": "tahvil",
+   "label": "تاریخ تحویل",
+   "type": "DateTime"
+  },
+  {
+   "field": "pardakht",
+   "label": "نحوه پرداخت",
+   "type": "String"
+  },
+  {
+   "field": "mode",
+   "label": "نوع",
+   "type": "Int32"
+  },
+  {
+   "field": "bidkala",
+   "label": "شناسه کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "frasiname",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "englishname",
+   "label": "نام لاتین",
+   "type": "String"
+  },
+  {
+   "field": "tedad",
+   "label": "تعداد",
+   "type": "Double"
+  },
+  {
+   "field": "fi",
+   "label": "فی",
+   "type": "Decimal"
+  },
+  {
+   "field": "vahed1",
+   "label": "واحد",
+   "type": "String"
+  },
+  {
+   "field": "engvahed1",
+   "label": "واحد لاتین",
+   "type": "String"
+  },
+  {
+   "field": "jam",
+   "label": "جمع",
+   "type": "Double"
+  },
+  {
+   "field": "desknum",
+   "label": "شماره میز",
+   "type": "Int64"
+  },
+  {
+   "field": "subscribeeshterak",
+   "label": "شماره اشتراک",
+   "type": "Int64"
+  },
+  {
+   "field": "subscribebid",
+   "label": "شناسه مشترک",
+   "type": "Int64"
+  },
+  {
+   "field": "subscribename",
+   "label": "نام مشترک",
+   "type": "String"
+  },
+  {
+   "field": "address",
+   "label": "آدرش مشترک",
+   "type": "String"
+  },
+  {
+   "field": "tel1",
+   "label": "تلفن مشترک",
+   "type": "String"
+  },
+  {
+   "field": "rowstate",
+   "label": "وضعیت ردیف",
+   "type": "Int32"
+  },
+  {
+   "field": "rowtext",
+   "label": "متن وضعیت",
+   "type": "String"
+  },
+  {
+   "field": "tahvil_x0020_Shamsi",
+   "label": "تاریخ تحویل شمسی",
+   "type": "String"
+  }
+ ]
+}

@@ -1,0 +1,51 @@
+{
+ "source": "CheqE",
+ "reports": [
+  "RASNAD ANTZAMI D.MRT",
+  "Rantzami S.mrt",
+  "Rsid pas grftn antzami S.mrt",
+  "rsid pas dadn antzami.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره سند",
+   "type": "Int64"
+  },
+  {
+   "field": "CheqNumber",
+   "label": "شماره چک",
+   "type": "Int64"
+  },
+  {
+   "field": "CheqMoney",
+   "label": "مبلغ",
+   "type": "Decimal"
+  },
+  {
+   "field": "CheqDate",
+   "label": "تاریخ سررسید",
+   "type": "DateTime"
+  },
+  {
+   "field": "CheqBankName",
+   "label": "نام بانک",
+   "type": "String"
+  },
+  {
+   "field": "CheqHoldenPlace",
+   "label": "مکان نگهداری",
+   "type": "String"
+  },
+  {
+   "field": "CheqHuman",
+   "label": "صادر کننده",
+   "type": "String"
+  },
+  {
+   "field": "CheqDate_x0020_Shamsi",
+   "label": "تاریخ سررسید شمسی",
+   "type": "String"
+  }
+ ]
+}

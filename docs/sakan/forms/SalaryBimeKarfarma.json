@@ -1,0 +1,63 @@
+{
+ "source": "SalaryBimeKarfarma",
+ "reports": [
+  "gozarsh bime shme kar frma.mrt"
+ ],
+ "fields": [
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "شناسه دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "nme",
+   "label": "نام",
+   "type": "String"
+  },
+  {
+   "field": "personelCode",
+   "label": "کد پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "cardcode",
+   "label": "شماره کارت",
+   "type": "String"
+  },
+  {
+   "field": "doreid",
+   "label": "شناسه دوره",
+   "type": "Int64"
+  },
+  {
+   "field": "doreName",
+   "label": "نام دوره",
+   "type": "String"
+  },
+  {
+   "field": "bimeSahmKarfarma",
+   "label": "بیمه سهم کارفرما",
+   "type": "Decimal"
+  },
+  {
+   "field": "bimeBikariSahmKarfarma",
+   "label": "بیمه بیکاری سهم کارفرما",
+   "type": "Decimal"
+  },
+  {
+   "field": "bimeMashagheleSakht",
+   "label": "بیمه مشاغل سخت و زیان آور",
+   "type": "Decimal"
+  },
+  {
+   "field": "jambime",
+   "label": "جمع بیمه",
+   "type": "Decimal"
+  }
+ ]
+}

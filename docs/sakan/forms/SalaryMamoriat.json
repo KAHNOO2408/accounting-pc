@@ -1,0 +1,93 @@
+{
+ "source": "SalaryMamoriat",
+ "reports": [
+  "gozarsh az mamorit prsenl.mrt"
+ ],
+ "fields": [
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "personelCode",
+   "label": "کد پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "شناسه دفتر پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "nme",
+   "label": "نام پرسنل",
+   "type": "String"
+  },
+  {
+   "field": "empVahed",
+   "label": "واحد",
+   "type": "String"
+  },
+  {
+   "field": "mid",
+   "label": "شماره ماموریت",
+   "type": "Int64"
+  },
+  {
+   "field": "dtestart",
+   "label": "شروع",
+   "type": "DateTime"
+  },
+  {
+   "field": "dteEnd",
+   "label": "پایان",
+   "type": "DateTime"
+  },
+  {
+   "field": "duration",
+   "label": "مدت",
+   "type": "Double"
+  },
+  {
+   "field": "sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "type",
+   "label": "کد نوع",
+   "type": "Int32"
+  },
+  {
+   "field": "TypeTxt",
+   "label": "نوع",
+   "type": "String"
+  },
+  {
+   "field": "Price",
+   "label": "مبلغ",
+   "type": "Decimal"
+  },
+  {
+   "field": "gid",
+   "label": "شناسه دوره",
+   "type": "Int64"
+  },
+  {
+   "field": "gname",
+   "label": "دوره حقوقی",
+   "type": "String"
+  },
+  {
+   "field": "dtestart_x0020_Shamsi",
+   "label": "شروع شمسی",
+   "type": "String"
+  },
+  {
+   "field": "dteEnd_x0020_Shamsi",
+   "label": "پایان شمسی",
+   "type": "String"
+  }
+ ]
+}

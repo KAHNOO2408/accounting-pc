@@ -1,0 +1,448 @@
+{
+ "source": "KalaKharid",
+ "reports": [
+  "FK.mrt",
+  "FKCT.mrt",
+  "faktor brgasht balans.mrt",
+  "faktor frosh balans kaml.mrt",
+  "faktor frosh balans sadh.mrt",
+  "faktor karid amval.mrt",
+  "faktor kridmotfrka 2.mrt",
+  "karid kml jadid.mrt",
+  "krid a134.mrt",
+  "krid sade  jadid.mrt",
+  "kridm134.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام کالا (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصات کالا",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "IranCode",
+   "label": "ایران کد",
+   "type": "String"
+  },
+  {
+   "field": "Vahed1",
+   "label": "شناسه واحد اول",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedName1",
+   "label": "واحد اول",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName1",
+   "label": "واحد اول(لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "Vahed2",
+   "label": "شناسه واحد دوم",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedName2",
+   "label": "واحد دوم",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName2",
+   "label": "واحد دوم (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "Vahed3",
+   "label": "شناسه واحد 3",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedName3",
+   "label": "واحد سوم",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName3",
+   "label": "واحد سوم (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "Aid",
+   "label": "شناسه انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "AName",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "SanadSefaresh",
+   "label": "شماره سفارش",
+   "type": "Double"
+  },
+  {
+   "field": "Takhfif",
+   "label": "تخفیف (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "TakhfifSystem",
+   "label": "تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "Tozihat",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "eshantion",
+   "label": "شناسه اشانتیون",
+   "type": "Boolean"
+  },
+  {
+   "field": "TedadVahed1",
+   "label": "تعداد 1",
+   "type": "Double"
+  },
+  {
+   "field": "FiV1",
+   "label": "فی1 (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "Fiv1System",
+   "label": "فی 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "TedadVahed2",
+   "label": "تعداد2",
+   "type": "Double"
+  },
+  {
+   "field": "Fivahed2",
+   "label": "فی 2 (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "Fivahed2System",
+   "label": "فی 2",
+   "type": "Decimal"
+  },
+  {
+   "field": "TedadVahed3",
+   "label": "تعداد3",
+   "type": "Double"
+  },
+  {
+   "field": "Fivahed3",
+   "label": "فی 3 (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "Fivahed3System",
+   "label": "فی 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "Jam1",
+   "label": "جمع بدون تخفیف (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "Jam1Syatem",
+   "label": "جمع بدون تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "DarsadTakhfif",
+   "label": "درصد تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamVazenKala",
+   "label": "جمع وزن کالا",
+   "type": "Double"
+  },
+  {
+   "field": "JamMablagh",
+   "label": "جمع با تخفیف (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "JamMablaghSystem",
+   "label": "جمع با تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "Each2Equal1",
+   "label": "نسبت واحد 2 به واحد 1",
+   "type": "Double"
+  },
+  {
+   "field": "Each1Equal3",
+   "label": "نسبت واحد 3 به واحد 1",
+   "type": "Double"
+  },
+  {
+   "field": "Shserial",
+   "label": "شماره سریال",
+   "type": "String"
+  },
+  {
+   "field": "TypeKala",
+   "label": "نوع کالا",
+   "type": "String"
+  },
+  {
+   "field": "TypeKalaInt",
+   "label": "شناسه نوع کالا",
+   "type": "Int32"
+  },
+  {
+   "field": "SArzesh",
+   "label": "درصد عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzesh",
+   "label": "سهم عوارض (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "SMaliat",
+   "label": "درصد مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat",
+   "label": "سهم مالیات (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamT",
+   "label": "جمع بعد از تخفیف (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "JamKol",
+   "label": "جمع کل (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "JamKol_system",
+   "label": "جمع کل سیستم",
+   "type": "Double"
+  },
+  {
+   "field": "Hazine",
+   "label": "هزینه(ارز)",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineSystem",
+   "label": "هزینه سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineFroshande",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineFroshande_system",
+   "label": "هزینه فروشنده سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "HesabBid",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "BName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "HesabTNT",
+   "label": "مولفه کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "Fi",
+   "label": "مبلغ کالا (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "Fi_System",
+   "label": "مبلغ به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "Takhfif_system",
+   "label": "تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JameKol",
+   "label": "جمع با تخفیف (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JameKol_system",
+   "label": "جمع با تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzesh_sys",
+   "label": "سهم عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "Smaliat",
+   "label": "درصد مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat_sys",
+   "label": "سهم مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "Jamkole",
+   "label": "جمع کل (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "Jamkole_sys",
+   "label": "جمع کل",
+   "type": "Decimal"
+  },
+  {
+   "field": "Aghlam",
+   "label": "عوارض و مالیات بر اقلام اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "Fi_system",
+   "label": "تخفیف (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "SellPrice1",
+   "label": "فی 1 فروش به واحد اول",
+   "type": "Decimal"
+  },
+  {
+   "field": "SellPrice2",
+   "label": "فی 1 فروش به واحد دوم",
+   "type": "Decimal"
+  },
+  {
+   "field": "SellPrice3",
+   "label": "فی 1 فروش به واحد سوم",
+   "type": "Decimal"
+  },
+  {
+   "field": "HamkarPrice1",
+   "label": "فی 3 فروش به واحد اول",
+   "type": "Decimal"
+  },
+  {
+   "field": "HamkarPrice2",
+   "label": "فی 3 فروش به واحد دوم",
+   "type": "Decimal"
+  },
+  {
+   "field": "HamkarPrice3",
+   "label": "فی 3 فروش به واحد سوم",
+   "type": "Decimal"
+  },
+  {
+   "field": "SecondPrice1",
+   "label": "فی 2 فروش به واحد اول",
+   "type": "Decimal"
+  },
+  {
+   "field": "SecondPrice2",
+   "label": "فی 2 فروش به واحد دوم",
+   "type": "Decimal"
+  },
+  {
+   "field": "SecondPrice3",
+   "label": "فی 2 فروش به واحد سوم",
+   "type": "Decimal"
+  },
+  {
+   "field": "BuyPrice1",
+   "label": "بهای خرید واحد اول",
+   "type": "Decimal"
+  },
+  {
+   "field": "BuyPrice2",
+   "label": "بهای خرید واحد دوم",
+   "type": "Decimal"
+  },
+  {
+   "field": "BuyPrice3",
+   "label": "بهای خرید واحد سوم",
+   "type": "Decimal"
+  },
+  {
+   "field": "Takhfif1",
+   "label": "تخفیف 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "Takhfif2",
+   "label": "تخفیف 2",
+   "type": "Decimal"
+  },
+  {
+   "field": "TakhfifN",
+   "label": "تخفیف تعدادی",
+   "type": "Decimal"
+  },
+  {
+   "field": "MainVahedid",
+   "label": "واحد منتخب",
+   "type": "Int64"
+  }
+ ]
+}

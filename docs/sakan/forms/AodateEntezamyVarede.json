@@ -1,0 +1,154 @@
+{
+ "source": "AodateEntezamyVarede",
+ "reports": [
+  "Rsid pas grftn antzami S.mrt",
+  "rsid pas dadn antzami.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "archivepath",
+   "label": "مسیر بایگانی",
+   "type": "String"
+  },
+  {
+   "field": "markazid",
+   "label": "کد مرکز اسناد",
+   "type": "Int64"
+  },
+  {
+   "field": "babat",
+   "label": "بابت",
+   "type": "String"
+  },
+  {
+   "field": "hesabentezamybedremainSN",
+   "label": "مانده بدهکاری حساب انتظامی بدون احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "hesabentezamybesremainSN",
+   "label": "مانده بستانکاری حساب انتظامی بدون احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "hesabentezamybedbesremainSN",
+   "label": "مانده بدهکاری و بستانکاری حساب انتظامی بدون احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "hesabentezamybedremainSH",
+   "label": "مانده بدهکاری حساب انتظامی با احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "hesabentezamybesremainSH",
+   "label": "مانده بستانکاری حساب انتظامی با احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "hesabentezamybedbesremainSH",
+   "label": "مانده بدهکاری و بستانکاری حساب انتظامی با احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "tarafehesabentezamybedremainSN",
+   "label": "مانده بدهکاری طرف حساب انتظامی بدون احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "tarafehesabentezamybesremainSN",
+   "label": "مانده بستانکاری طرف حساب انتظامی بدون احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "tarafehesabentezamybedbesremainSN",
+   "label": "مانده بدهکاری و بستانکاری طرف حساب انتظامی بدون احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "tarafehesabentezamybedremainSH",
+   "label": "مانده بدهکاری طرف حساب انتظامی با احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "tarafehesabentezamybesremainSH",
+   "label": "مانده بستانکاری طرف حساب انتظامی با احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "tarafehesabentezamybedbesremainSH",
+   "label": "مانده بدهکاری و بستانکاری طرف حساب انتظامی با احتساب این سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "hesabeentezamybid",
+   "label": "کد دفتر حساب انتظامی",
+   "type": "Int64"
+  },
+  {
+   "field": "hesabeentezamybname",
+   "label": "نام دفتر حساب انتظامی",
+   "type": "String"
+  },
+  {
+   "field": "tarafhesabentezamybid",
+   "label": "کد دفتر طرف حساب انتظامی",
+   "type": "Int64"
+  },
+  {
+   "field": "tarafhesabentezamybname",
+   "label": "نام دفتر طرف حساب انتظامی",
+   "type": "String"
+  },
+  {
+   "field": "markazeasnadname",
+   "label": "نام مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "tarafehesabeentezamytint",
+   "label": "تفضیلی در تفضیلی طرف حساب انتظامی",
+   "type": "String"
+  },
+  {
+   "field": "hesabeentezamytint",
+   "label": "تفضیلی در تفضیلی حساب انتظامی",
+   "type": "String"
+  },
+  {
+   "field": "username",
+   "label": "نام کاربر",
+   "type": "String"
+  },
+  {
+   "field": "userfamily",
+   "label": "نام خانوادگی کاربر",
+   "type": "String"
+  },
+  {
+   "field": "Action",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  }
+ ]
+}

@@ -1,0 +1,85 @@
+{
+ "source": "BarcodPrint",
+ "reports": [
+  "Barkod.mrt",
+  "barkod1.mrt",
+  "barkod2.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Bid",
+   "label": "کدکالا",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام کالا (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصات",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "SellPrice1",
+   "label": "بهای فروش به  واحد اول",
+   "type": "Decimal"
+  },
+  {
+   "field": "SellPrice2",
+   "label": "بهای فروش به  واحد دوم",
+   "type": "Decimal"
+  },
+  {
+   "field": "SellPrice3",
+   "label": "بهای فروش به  واحد سوم",
+   "type": "Decimal"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "HamkarPrice1",
+   "label": "بهای همکار به واحد اول",
+   "type": "Decimal"
+  },
+  {
+   "field": "HamkarPrice2",
+   "label": "بهای همکار به واحد دوم",
+   "type": "Decimal"
+  },
+  {
+   "field": "HamkarPrice3",
+   "label": "بهای همکار به واحد سوم",
+   "type": "Decimal"
+  },
+  {
+   "field": "SecondPrice1",
+   "label": "بهای فرعی به واحد اول",
+   "type": "Decimal"
+  },
+  {
+   "field": "SecondPrice2",
+   "label": "بهای فرعی به واحد دوم",
+   "type": "Decimal"
+  },
+  {
+   "field": "SecondPrice3",
+   "label": "بهای فرعی به واحد سوم",
+   "type": "Decimal"
+  }
+ ]
+}

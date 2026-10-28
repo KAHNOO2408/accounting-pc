@@ -1,0 +1,123 @@
+{
+ "source": "SalaryNatijeAmalkarMonth",
+ "reports": [
+  "ntije vrod kroj prsnl.mrt"
+ ],
+ "fields": [
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "شناسه دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "nme",
+   "label": "نام",
+   "type": "String"
+  },
+  {
+   "field": "personelCode",
+   "label": "کد پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "cardcode",
+   "label": "شماره کارت",
+   "type": "String"
+  },
+  {
+   "field": "empDteEstekhdam",
+   "label": "تاریخ استخدام",
+   "type": "DateTime"
+  },
+  {
+   "field": "gname",
+   "label": "نام دوره",
+   "type": "String"
+  },
+  {
+   "field": "DoreId",
+   "label": "شناسه دوره",
+   "type": "Int64"
+  },
+  {
+   "field": "TarkCount",
+   "label": "تعداد روزهای ترک کار",
+   "type": "Int32"
+  },
+  {
+   "field": "MorkhasiEstelajiCount",
+   "label": "تعداد روزهای مرخصی استعلاجی",
+   "type": "Int32"
+  },
+  {
+   "field": "MorkhasiEsteghaghiCount",
+   "label": "تعداد روزهای مرخصی استحقاقی",
+   "type": "Int32"
+  },
+  {
+   "field": "MorkhasiWithoutSalaryCount",
+   "label": "تعداد روزهای مرخصی بدون حقوق",
+   "type": "Int32"
+  },
+  {
+   "field": "KasrKarCount",
+   "label": "تعداد ساعت کسر کار",
+   "type": "Double"
+  },
+  {
+   "field": "EzafeKarCount",
+   "label": "تعداد ساعت اضافه کار",
+   "type": "Double"
+  },
+  {
+   "field": "GheybatCount",
+   "label": "تعداد روزهای غیبت",
+   "type": "Int32"
+  },
+  {
+   "field": "MamoriatCount",
+   "label": "تعداد روزهای ماموریت",
+   "type": "Int32"
+  },
+  {
+   "field": "WorkCount",
+   "label": "تعدادروزهای حاضر",
+   "type": "Int32"
+  },
+  {
+   "field": "DoreWorkDaysCount",
+   "label": "تعداد روزهای دوره حقوقی",
+   "type": "Int32"
+  },
+  {
+   "field": "HolidayCount",
+   "label": "تعداد روزهای تعطیل",
+   "type": "Int32"
+  },
+  {
+   "field": "MamoriatPrice",
+   "label": "مبلغ ماموریت",
+   "type": "Decimal"
+  },
+  {
+   "field": "EnfesalDte",
+   "label": "تاریخ انفصال",
+   "type": "DateTime"
+  },
+  {
+   "field": "empDteEstekhdam_x0020_Shamsi",
+   "label": "تاریخ استخدام شمسی",
+   "type": "String"
+  },
+  {
+   "field": "EnfesalDte_x0020_Shamsi",
+   "label": "تاریخ انفصال شمسی",
+   "type": "String"
+  }
+ ]
+}

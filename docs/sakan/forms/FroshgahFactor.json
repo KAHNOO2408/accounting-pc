@@ -1,0 +1,395 @@
+{
+ "source": "FroshgahFactor",
+ "reports": [
+  "Ffroshkahy.mrt",
+  "frosh gahi ba ston som.mrt",
+  "frosh kahi1.mrt"
+ ],
+ "fields": [
+  {
+   "field": "BedRemain",
+   "label": "مانده بدهکاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "BesRemain",
+   "label": "مانده بستانکاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedBesRemain",
+   "label": "مانده نهایی",
+   "type": "Decimal"
+  },
+  {
+   "field": "eshan",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "vahed2",
+   "label": "واحد 2",
+   "type": "String"
+  },
+  {
+   "field": "vahed3",
+   "label": "واحد 3",
+   "type": "String"
+  },
+  {
+   "field": "Nesbat21",
+   "label": "نسبت واحد 2 به 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "Nesbat31",
+   "label": "نسبت واحد 3 به 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "Fid",
+   "label": "شماره فاکتور",
+   "type": "Int64"
+  },
+  {
+   "field": "Fdate",
+   "label": "تاریخ فاکتور",
+   "type": "DateTime"
+  },
+  {
+   "field": "SubscribeBid",
+   "label": "شناسه دفتر خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "SubscribeTinT",
+   "label": "مولفه خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "SubscribeName",
+   "label": "نام خریدار",
+   "type": "String"
+  },
+  {
+   "field": "SubscribeRemain",
+   "label": "مانده دفتر خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "Tel1",
+   "label": "تلفن",
+   "type": "String"
+  },
+  {
+   "field": "Tel2",
+   "label": "تلفن 2",
+   "type": "String"
+  },
+  {
+   "field": "Fax",
+   "label": "فکس",
+   "type": "String"
+  },
+  {
+   "field": "SMS",
+   "label": "شماره پیامک",
+   "type": "String"
+  },
+  {
+   "field": "Address",
+   "label": "آدرس",
+   "type": "String"
+  },
+  {
+   "field": "Eshterak",
+   "label": "شماره اشتراک",
+   "type": "Int64"
+  },
+  {
+   "field": "SandoghBid",
+   "label": "شناسه صندوق",
+   "type": "Int64"
+  },
+  {
+   "field": "SandoghTinT",
+   "label": "مولفه صندوق",
+   "type": "Int64"
+  },
+  {
+   "field": "SandoghName",
+   "label": "نام صندوق",
+   "type": "String"
+  },
+  {
+   "field": "BidKala",
+   "label": "شناسه کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام لاتین کالا",
+   "type": "String"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شماره فنی کالا",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "tedad",
+   "label": "تعداد",
+   "type": "Double"
+  },
+  {
+   "field": "Vahed1",
+   "label": "واحد1",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed1",
+   "label": "لاتین واحد1",
+   "type": "String"
+  },
+  {
+   "field": "Fi",
+   "label": "فی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Jam",
+   "label": "جمع",
+   "type": "Double"
+  },
+  {
+   "field": "fromDatePayoff",
+   "label": "شروع تاریخ تخفیف",
+   "type": "DateTime"
+  },
+  {
+   "field": "toDatePayoff",
+   "label": "اتمام تاریخ تخفیف",
+   "type": "DateTime"
+  },
+  {
+   "field": "TextPayoff",
+   "label": "متن تخفیف",
+   "type": "String"
+  },
+  {
+   "field": "percentPayOff",
+   "label": "درصد تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "TextTop",
+   "label": "متن بالای فاکتور",
+   "type": "String"
+  },
+  {
+   "field": "TextDown",
+   "label": "متن پایین",
+   "type": "String"
+  },
+  {
+   "field": "JamFactor",
+   "label": "جمع فاکتور",
+   "type": "Double"
+  },
+  {
+   "field": "Takhfif",
+   "label": "تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "CheckPay",
+   "label": "مبلغ چکی",
+   "type": "Decimal"
+  },
+  {
+   "field": "NasiePay",
+   "label": "مبلغ نسیه",
+   "type": "Decimal"
+  },
+  {
+   "field": "AtmPay",
+   "label": "مبلغ کارتخوان",
+   "type": "Decimal"
+  },
+  {
+   "field": "SandoghPay",
+   "label": "مبلغ نقدی",
+   "type": "Decimal"
+  },
+  {
+   "field": "PayedBack",
+   "label": "",
+   "type": "Boolean"
+  },
+  {
+   "field": "StoreName",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "StoreID",
+   "label": "شناسه انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "totalPrice",
+   "label": "جمع کل مبلغ فاکتور",
+   "type": "Double"
+  },
+  {
+   "field": "avarez",
+   "label": "عوارض کالا",
+   "type": "Decimal"
+  },
+  {
+   "field": "maliat",
+   "label": "مالیات کالا",
+   "type": "Decimal"
+  },
+  {
+   "field": "avarezPercent",
+   "label": "درصد عوارض کالا",
+   "type": "Double"
+  },
+  {
+   "field": "maliatPercent",
+   "label": "درصد مالیات کالا",
+   "type": "Double"
+  },
+  {
+   "field": "TakhfifOrder",
+   "label": "تخفیف کالا",
+   "type": "Decimal"
+  },
+  {
+   "field": "AvarezFactor",
+   "label": "عوارض فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "MaliatFactor",
+   "label": "مالیات فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "IranCode",
+   "label": "بارکد ملی",
+   "type": "String"
+  },
+  {
+   "field": "RoundPayOff",
+   "label": "تخفیف گرد کردن",
+   "type": "Decimal"
+  },
+  {
+   "field": "FullTakhfif",
+   "label": "تخفیف کل",
+   "type": "Double"
+  },
+  {
+   "field": "AvarezMaliatFull",
+   "label": "جمع عوارض و مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "PeykBid",
+   "label": "کد دفتر پیک",
+   "type": "Int64"
+  },
+  {
+   "field": "PeykName",
+   "label": "نام پیک",
+   "type": "String"
+  },
+  {
+   "field": "AvarezePeyk",
+   "label": "مبلغ عوارض پیک",
+   "type": "Decimal"
+  },
+  {
+   "field": "MaliatePeyk",
+   "label": "مبلغ مالیات پیک",
+   "type": "Decimal"
+  },
+  {
+   "field": "mablaghePeyk",
+   "label": "مبلغ پیک",
+   "type": "Decimal"
+  },
+  {
+   "field": "SayerAshkhasName",
+   "label": "حساب سایر اشخاص",
+   "type": "String"
+  },
+  {
+   "field": "SayerPay",
+   "label": "مبلغ پرداختی به سایر اشخاص",
+   "type": "Int64"
+  },
+  {
+   "field": "ArzySandoghBID",
+   "label": "کد دفتر صندوق ارزی",
+   "type": "Int64"
+  },
+  {
+   "field": "ArzySandoghBName",
+   "label": "نام دفتر صندوق ارزی",
+   "type": "String"
+  },
+  {
+   "field": "ArzySandoghMoney",
+   "label": "مبلغ پرداختی به صندوق ارزی(به نوع ارز)",
+   "type": "Decimal"
+  },
+  {
+   "field": "ArzySandoghArzPrice",
+   "label": "فی ارز صندوق ارزی",
+   "type": "Decimal"
+  },
+  {
+   "field": "ArzySandoghMoneyRial",
+   "label": "مبلغ پرداختی به صندوق ارزی",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiMasrafKonande",
+   "label": "بهای مصرف کننده",
+   "type": "Decimal"
+  },
+  {
+   "field": "FCode",
+   "label": "شماره فاکتور دستی",
+   "type": "Int64"
+  },
+  {
+   "field": "Fdate_x0020_Shamsi",
+   "label": "تاریخ فاکتور  شمسی",
+   "type": "String"
+  },
+  {
+   "field": "fromDatePayoff_x0020_Shamsi",
+   "label": "شروع تاریخ تخفیف  شمسی",
+   "type": "String"
+  },
+  {
+   "field": "toDatePayoff_x0020_Shamsi",
+   "label": "اتمام تاریخ تخفیف  شمسی",
+   "type": "String"
+  }
+ ]
+}

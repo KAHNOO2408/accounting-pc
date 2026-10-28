@@ -1,0 +1,923 @@
+{
+ "source": "PrintInfoFrosh",
+ "reports": [
+  "FFTC.mrt",
+  "Ff   dolary.mrt",
+  "Ff.mrt",
+  "brg morkasi.mrt",
+  "faktor f moi rki.mrt",
+  "faktor f moi rki151.mrt",
+  "faktor forosh 151.mrt",
+  "faktor forosh darsd.mrt",
+  "faktor forosh dd151.mrt",
+  "faktor forosh j151.mrt",
+  "faktor forosh m151.mrt",
+  "faktor forosh o151.mrt",
+  "faktor forosh trh n151.mrt",
+  "faktor frosh amval.mrt",
+  "faktor frosh ee151.mrt",
+  "faktor frosh kadamat.mrt",
+  "faktor frosh motfrke.mrt",
+  "faktor frosh mtfrka sado.mrt",
+  "forsh sipa A5151.mrt",
+  "frosh amval sado.mrt",
+  "frosh d151.mrt",
+  "frosh kadmat sadh.mrt",
+  "frosh sipa 151.mrt",
+  "frosh trhe sipa151.mrt",
+  "frosha4 ts151.mrt",
+  "frosha5 r151.mrt",
+  "frosha5 ts151.mrt",
+  "froshkk151.mrt",
+  "froshsng151.mrt",
+  "froskhcc151.mrt",
+  "frosshn151.mrt",
+  "mobl151.mrt",
+  "mrmrit krb 1.mrt",
+  "psargad daraeaa151.mrt",
+  "psargad daraebb151.mrt",
+  "vahd montakab.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "Action",
+   "label": "اکشن",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "HavaleNum",
+   "label": "شماره حواله انبار",
+   "type": "String"
+  },
+  {
+   "field": "ShFactor",
+   "label": "شماره فاکتور",
+   "type": "Double"
+  },
+  {
+   "field": "shdarkhast",
+   "label": "شماره درخواست",
+   "type": "String"
+  },
+  {
+   "field": "SharhP",
+   "label": "شرح پیگرد",
+   "type": "String"
+  },
+  {
+   "field": "DteP",
+   "label": "تاریخ پیگرد",
+   "type": "DateTime"
+  },
+  {
+   "field": "Sharh",
+   "label": "شرح سند",
+   "type": "String"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "Kharidar",
+   "label": "خریدار",
+   "type": "String"
+  },
+  {
+   "field": "Kharidar_ID",
+   "label": "کد خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "kharidarTNT",
+   "label": "کد مولفه خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "Kharidar_TintName",
+   "label": "مولفه خریدار",
+   "type": "String"
+  },
+  {
+   "field": "Fi_kharidar",
+   "label": "فی ارز خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "Arsing_Karidar",
+   "label": "نوع ارز خریدار",
+   "type": "String"
+  },
+  {
+   "field": "MablaghFactorBKHT",
+   "label": "جمع اقلام  کالا بدون تخفیف (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghFactorBKHTSystem",
+   "label": "جمع اقلام  کالا بدون تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamTakhfifAghlam",
+   "label": "جمع تخفیف اقلام (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamTakhfifAghlam_system",
+   "label": "جمع تخفیف اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghFactorTBkha",
+   "label": "جمع اقلام کالا با تخفیف (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghFactorTBkhaSystem",
+   "label": "جمع اقلام کالا با تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablagKolFactor",
+   "label": "جمع فاکتور بدون تخفیف  (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablagKolFactorSystem",
+   "label": "جمع فاکتور بدون تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablagKolFactorT",
+   "label": "جمع فاکتور با تخفیف (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablagKolFactorTSystem",
+   "label": "جمع فاکتور با تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineHamelBarSystem",
+   "label": "هزینه حمل بار و عوارض پرداختنی بعهده فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineHamelBarKharidar",
+   "label": "هزینه حمل بار و عوارض پرداختنی بعهده فروشنده (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineEshantionSystem",
+   "label": "هزینه اشانتیون",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineEshantion2ArzKaridar",
+   "label": "هزینه اشانتیون(ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineBazaryabanSystem",
+   "label": "هزینه پورسانت",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineBazaryaban2ArzKaridar",
+   "label": "هزینه پورسانت  (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "Arzesh_ID",
+   "label": "کد حساب  عوارض",
+   "type": "Int64"
+  },
+  {
+   "field": "arzeshTNT",
+   "label": "کد مولفه  حساب  عوارض",
+   "type": "Int64"
+  },
+  {
+   "field": "Arzesh_TintName",
+   "label": "مولفه  حساب  عوارض",
+   "type": "String"
+  },
+  {
+   "field": "hesabArzesh",
+   "label": "حساب عوارض",
+   "type": "String"
+  },
+  {
+   "field": "MablaghArzesh2kharidar",
+   "label": "مبلغ عوارض  به ارز خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghArzeshSystem",
+   "label": "جمع عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "Yarane_ID",
+   "label": "کد حساب یارانه",
+   "type": "Int64"
+  },
+  {
+   "field": "yaraneTNT",
+   "label": "کد مولفه حساب یارانه",
+   "type": "Int64"
+  },
+  {
+   "field": "Yarane_TintName",
+   "label": "مولفه حساب یارانه",
+   "type": "String"
+  },
+  {
+   "field": "hesabyarane",
+   "label": "حساب یارانه",
+   "type": "String"
+  },
+  {
+   "field": "idyarane",
+   "label": "کد گروه یارانه",
+   "type": "Int64"
+  },
+  {
+   "field": "grohyarane",
+   "label": "گروه یارانه",
+   "type": "String"
+  },
+  {
+   "field": "JameYarane",
+   "label": "مبلغ یارانه به ارز خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "JameYaraneSystem",
+   "label": "مبلغ یارانه",
+   "type": "Decimal"
+  },
+  {
+   "field": "jamHazinehaSystem",
+   "label": "جمع هزینه های فاکتور بعهده فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "jamHazineha2kharidar",
+   "label": "جمع هزینه های فاکتور بعهده فروشنده (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKhadamatKaridar",
+   "label": "جمع فروش خدمات بدون تخفیف (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKhadamatSystem",
+   "label": "جمع فروش خدمات بدون تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamTakhfifKhadamatKharidar",
+   "label": "جمع تخفیف اقلام خدماتی (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamTakhfifKhadamatSystem",
+   "label": "جمع تخفیف اقلام خدماتی",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamVaznKalaFactor",
+   "label": "وزن فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKadamatTamamshode",
+   "label": "جمع فروش خدمات با تخفیف (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKadamatTamamshode_System",
+   "label": "جمع فروش خدمات با تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "NameCar",
+   "label": "نام وسیله نقلیه",
+   "type": "String"
+  },
+  {
+   "field": "NUmCar",
+   "label": "شماره وسیله نقلیه",
+   "type": "String"
+  },
+  {
+   "field": "Barname",
+   "label": "شماره بارنامه",
+   "type": "String"
+  },
+  {
+   "field": "Sherkat",
+   "label": "نام شرکت باربری",
+   "type": "String"
+  },
+  {
+   "field": "MabdaeHarekat",
+   "label": "مبدا حرکت",
+   "type": "String"
+  },
+  {
+   "field": "MaghsadHarekat",
+   "label": "مقصد حرکت",
+   "type": "String"
+  },
+  {
+   "field": "MarkazName",
+   "label": "مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "Markaz",
+   "label": "کد مرکز اسناد",
+   "type": "Int64"
+  },
+  {
+   "field": "SarfaslHazineHaBid",
+   "label": "کد عنوان هزینه پورسانت",
+   "type": "Int64"
+  },
+  {
+   "field": "SarfaslHazineHaName",
+   "label": "عنوان هزینه پورسانت",
+   "type": "String"
+  },
+  {
+   "field": "sarfaslhazineBTNT",
+   "label": "کد مولفه عنوان هزینه پورسانت",
+   "type": "Int64"
+  },
+  {
+   "field": "SarfaslHazine_TintName",
+   "label": "مولفه عنوان هزینه پورسانت",
+   "type": "String"
+  },
+  {
+   "field": "BazaryabId",
+   "label": "کد بازاریابان",
+   "type": "String"
+  },
+  {
+   "field": "BazaryabName",
+   "label": "بازاریابان",
+   "type": "String"
+  },
+  {
+   "field": "TypeFactor",
+   "label": "کد نوع فاکتور",
+   "type": "Int64"
+  },
+  {
+   "field": "Factor",
+   "label": "نوع فاکتور",
+   "type": "String"
+  },
+  {
+   "field": "ArchivePath",
+   "label": "مسیر بایگانی",
+   "type": "String"
+  },
+  {
+   "field": "NameEng",
+   "label": "خریدار (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "CompanyName",
+   "label": "شرکت",
+   "type": "String"
+  },
+  {
+   "field": "Manager",
+   "label": "مدیر شرکت",
+   "type": "String"
+  },
+  {
+   "field": "CountryCode",
+   "label": "پیش شماره تلفن کشور",
+   "type": "String"
+  },
+  {
+   "field": "CityCode",
+   "label": "پیش شماره تلفن شهر",
+   "type": "String"
+  },
+  {
+   "field": "Tel1",
+   "label": "تلفن فروشنده",
+   "type": "String"
+  },
+  {
+   "field": "Tel2",
+   "label": "همراه فروشنده",
+   "type": "String"
+  },
+  {
+   "field": "Fax",
+   "label": "فکس",
+   "type": "String"
+  },
+  {
+   "field": "SMS",
+   "label": "پیامک",
+   "type": "String"
+  },
+  {
+   "field": "Email",
+   "label": "پست الکترونیکی",
+   "type": "String"
+  },
+  {
+   "field": "Address",
+   "label": "آدرس خریدار",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصات خریدرا",
+   "type": "String"
+  },
+  {
+   "field": "CorporateCode",
+   "label": "کد اقتصادی خریدار",
+   "type": "String"
+  },
+  {
+   "field": "postal",
+   "label": "کد پستی",
+   "type": "String"
+  },
+  {
+   "field": "JamPardakhati",
+   "label": "جمع پرداختی (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamPardakhati_system",
+   "label": "جمع پرداختی",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamDrayafti",
+   "label": "جمع دریافتی (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamDrayafti_system",
+   "label": "جمع دریافتی",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamFator",
+   "label": "جمع کل فاکتور (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamFator_system",
+   "label": "جمع کل فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineKharidar_system",
+   "label": "هزینه سهم خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineKharidar",
+   "label": "هزینه سهم خریدار (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedRemainOld_System",
+   "label": "بدهی قبلی",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedRemainOld",
+   "label": "بدهی قبلی (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "BesRemainOld_system",
+   "label": "طلب قبلی",
+   "type": "Decimal"
+  },
+  {
+   "field": "BesRemainOld",
+   "label": "طلب قبلی (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedBesRemainOld_system",
+   "label": "مانده حساب از قبل",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedBesRemainOld",
+   "label": "مانده حساب از قبل (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedRemainNew_System",
+   "label": "کل مانده حساب بدهکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedRemainNew",
+   "label": "کل مانده حساب بدهکار(ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "BesRemainNew_system",
+   "label": "کل مانده حساب بستانکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "BesRemainNew",
+   "label": "کل مانده حساب بستانکار(ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedBesRemainNew_system",
+   "label": "کل مانده حساب بدهکار/ بستانکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedBesRemainNew",
+   "label": "کل مانده حساب بدهکار/ بستانکار (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumInnerChekVN",
+   "label": "جمع چک های دریافتی سر رسید شده",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumInnerChekVS",
+   "label": "جمع چک های دریافتی سر رسید نشده",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumOutterChekVN",
+   "label": "جمع چک های پرداختی سر رسید شده",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumOutterChekVS",
+   "label": "جمع چک های پرداختی سر رسید نشده",
+   "type": "Decimal"
+  },
+  {
+   "field": "PishPardakhtRemain",
+   "label": "جمع پیش پرداخت ها",
+   "type": "Decimal"
+  },
+  {
+   "field": "PishDaryaftRemain",
+   "label": "جمع پیش  دریافت ها",
+   "type": "Decimal"
+  },
+  {
+   "field": "Remain",
+   "label": "مانده حساب",
+   "type": "Decimal"
+  },
+  {
+   "field": "Checky",
+   "label": "اعتبار چکی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Naghdy",
+   "label": "اعتبار ریالی",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumOfInnerEntezamy",
+   "label": "جمع حساب های انتظامی دریافتی",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumOfOutterEntezamy",
+   "label": "جمع حساب های انتظامی پرداختی",
+   "type": "Decimal"
+  },
+  {
+   "field": "BidMaliat",
+   "label": "شناسه حساب مالیات",
+   "type": "Int64"
+  },
+  {
+   "field": "NameMaliat",
+   "label": "حساب مالیات",
+   "type": "String"
+  },
+  {
+   "field": "TintMaliat",
+   "label": "شناسه مولفه حساب مالیات",
+   "type": "Int64"
+  },
+  {
+   "field": "NameTintMaliat",
+   "label": "مولفه حساب مالیات",
+   "type": "String"
+  },
+  {
+   "field": "Aghlam",
+   "label": "عوارض و مالیات بر اقلام اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "Eshantion",
+   "label": "عوارض و مالیات بر اشانتیون اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "Khadamat",
+   "label": "عوارض و مالیات بر خدمات اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "Hazine",
+   "label": "عوارض و مالیات بر هزینه اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "Daramad",
+   "label": "عوارض و مالیات بر درآمد اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "JamMaliatF",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatF_sys",
+   "label": "جمع مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvaezAghlam_sys",
+   "label": "جمع عوارض اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezEshantion_sys",
+   "label": "جمع عوارض اشانتیون",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezKhadamat_sys",
+   "label": "جمع عوارض خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezHazine_sys",
+   "label": "جمع عوارض هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatAghlam_sys",
+   "label": "جمع مالیات اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatEshantion_sys",
+   "label": "جمع مالیات اشانتیون",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatKhadamat_sys",
+   "label": "جمع مالیات خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatHazine_sys",
+   "label": "جمع مالیات هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamFactorBMali",
+   "label": "جمع فاکتور بدون عملیات مالی",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamFactorBMali_sys",
+   "label": "جمع فاکتور بدون عملیات مالی(ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezDaramd_sys",
+   "label": "جمع عوارض درآمد",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatDaramad_sys",
+   "label": "جمع مالیات درآمد",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamTakhfif",
+   "label": "جمع تخفیف فاکتور (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamTakhfif_sys",
+   "label": "جمع تخفیف فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "MPakhshBID",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "MPakhshBName",
+   "label": "مسئول پخش",
+   "type": "String"
+  },
+  {
+   "field": "Region",
+   "label": "منطقه",
+   "type": "String"
+  },
+  {
+   "field": "FactorDate",
+   "label": "تاریخ فروش",
+   "type": "DateTime"
+  },
+  {
+   "field": "DteP_x0020_Shamsi",
+   "label": "تاریخ پیگرد شمسی",
+   "type": "String"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "FactorDate_x0020_Shamsi",
+   "label": "تاریخ فروش شمسی",
+   "type": "String"
+  },
+  {
+   "field": "Babat",
+   "label": "بابت (شرح دوم سند)",
+   "type": "String"
+  },
+  {
+   "field": "BCode",
+   "label": "کد خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "Eshterak",
+   "label": "کد اشتراک خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "MPakhshMob",
+   "label": "شماره همراه مسئول پخش",
+   "type": "String"
+  },
+  {
+   "field": "BazaryabMob",
+   "label": "شماره همراه بازاریاب",
+   "type": "String"
+  },
+  {
+   "field": "KharidarMoeinName",
+   "label": "معین خریدار",
+   "type": "String"
+  },
+  {
+   "field": "TasvieDateNumber",
+   "label": "تعداد روز تسویه",
+   "type": "Int32"
+  },
+  {
+   "field": "HType",
+   "label": "کد نوع شخص",
+   "type": "Int32"
+  },
+  {
+   "field": "mellinum",
+   "label": "شماره ملی",
+   "type": "String"
+  },
+  {
+   "field": "CorporateCode1",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "statecity",
+   "label": "استان",
+   "type": "String"
+  },
+  {
+   "field": "city",
+   "label": "شهرستان",
+   "type": "String"
+  },
+  {
+   "field": "TasvieDate",
+   "label": "تاریخ تسویه",
+   "type": "DateTime"
+  },
+  {
+   "field": "TasvieDate_x0020_Shamsi",
+   "label": "تاریخ تسویه  شمسی",
+   "type": "String"
+  },
+  {
+   "field": "JamMaliatMotafareghe_sys",
+   "label": "جمع مالیات اقلام متفرقه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezMotafareghe_sys",
+   "label": "جمع عوارض اقلام متفرقه",
+   "type": "Decimal"
+  },
+  {
+   "field": "TaxID",
+   "label": "شماره مالیاتی صورتحساب",
+   "type": "String"
+  },
+  {
+   "field": "ReferenceTaxID",
+   "label": "شماره مالیاتی صورتحساب مرجع",
+   "type": "String"
+  },
+  {
+   "field": "BatterySum1",
+   "label": "مانده یادداشت کالا 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "BatterySum2",
+   "label": "مانده یادداشت کالا 2",
+   "type": "Decimal"
+  },
+  {
+   "field": "BatterySum3",
+   "label": "مانده یادداشت کالا 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "ContactFullName",
+   "label": "نام و نام خانوادگی تحویل گیرنده",
+   "type": "String"
+  },
+  {
+   "field": "ContactMobile",
+   "label": "شماره همراه تحویل گیرنده",
+   "type": "String"
+  },
+  {
+   "field": "ContactTel",
+   "label": "شماره تلفن تحویل گیرنده",
+   "type": "String"
+  },
+  {
+   "field": "ContactEmail",
+   "label": "ایمیل تحویل گیرنده",
+   "type": "String"
+  },
+  {
+   "field": "ContactAddress",
+   "label": "آدرس تحویل گیرنده",
+   "type": "String"
+  },
+  {
+   "field": "CreatorUser_DocMabnaNum",
+   "label": "کاربر ثبت کننده - شماره ثابت",
+   "type": "String"
+  }
+ ]
+}

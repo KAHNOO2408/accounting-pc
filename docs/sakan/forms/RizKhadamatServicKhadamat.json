@@ -1,0 +1,243 @@
+{
+ "source": "RizKhadamatServicKhadamat",
+ "reports": [
+  "gozarsh kadmat dar srvs.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "shFactor",
+   "label": "شماره فاکتور",
+   "type": "Double"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "KharidarName",
+   "label": "خریدار",
+   "type": "String"
+  },
+  {
+   "field": "kharidarBid",
+   "label": "کد خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "bidkala",
+   "label": "کد خدمات",
+   "type": "Int64"
+  },
+  {
+   "field": "KhadamatName",
+   "label": "نام خدمات",
+   "type": "String"
+  },
+  {
+   "field": "KhadamatEnglishName",
+   "label": "نام خدمات (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "FiKhadamat",
+   "label": "فی خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "VahedId",
+   "label": "شناسه واحد",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedName",
+   "label": "واحد",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName",
+   "label": "واحد (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "Tedad",
+   "label": "تعداد",
+   "type": "Double"
+  },
+  {
+   "field": "FiKharidar",
+   "label": "فی",
+   "type": "Decimal"
+  },
+  {
+   "field": "TakhafifKharidar",
+   "label": "تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "JamBtakhKharidar",
+   "label": "جمع بدون تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "JamKharidar",
+   "label": "جمع",
+   "type": "Double"
+  },
+  {
+   "field": "DarsadTakhfiKhadamt",
+   "label": "درصد تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "garantiKhadamat",
+   "label": "گارانتی خدمات",
+   "type": "Boolean"
+  },
+  {
+   "field": "MablaghGaranti",
+   "label": "مبلغ گارانتی",
+   "type": "Double"
+  },
+  {
+   "field": "Markaz",
+   "label": "شناسه مرکز اسناد",
+   "type": "Int64"
+  },
+  {
+   "field": "MarkazName",
+   "label": "مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "garantiBid",
+   "label": "کد حساب گارانتی",
+   "type": "Int64"
+  },
+  {
+   "field": "GarantiName",
+   "label": "حساب گارانتی",
+   "type": "String"
+  },
+  {
+   "field": "garantiTnt",
+   "label": "شناسه مولفه حساب گارانتی",
+   "type": "Int64"
+  },
+  {
+   "field": "TintGaranti",
+   "label": "مولفه حساب گارانتی",
+   "type": "String"
+  },
+  {
+   "field": "TypeFactor",
+   "label": "شناسه فاکتور",
+   "type": "Int64"
+  },
+  {
+   "field": "Factor",
+   "label": "نوع فاکتور",
+   "type": "String"
+  },
+  {
+   "field": "Khadamat",
+   "label": "عوارض و مالیات بر خدمات اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "KhadamatVat_Moshtari",
+   "label": "عوارض و مالیات خدمات بعهده مشتری است",
+   "type": "Boolean"
+  },
+  {
+   "field": "SArzesh",
+   "label": "درصد عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzesh",
+   "label": "سهم عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "SMaliat",
+   "label": "درصد مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat",
+   "label": "سهم مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKol",
+   "label": "جمع کل",
+   "type": "Double"
+  },
+  {
+   "field": "kharidarTnt",
+   "label": "کد مولفه خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "TintKharidar",
+   "label": "شناسه مولفه  خریدار",
+   "type": "String"
+  },
+  {
+   "field": "arzeshBid",
+   "label": "شناسه حساب عوارض",
+   "type": "Int64"
+  },
+  {
+   "field": "ArzeshName",
+   "label": "حساب عوارض",
+   "type": "String"
+  },
+  {
+   "field": "arzeshTnt",
+   "label": "کد مولفه  حساب  عوارض",
+   "type": "Int64"
+  },
+  {
+   "field": "TintArzesh",
+   "label": "مولفه حساب عوارض",
+   "type": "String"
+  },
+  {
+   "field": "BidMaliat",
+   "label": "شناسه حساب مالیات",
+   "type": "Int64"
+  },
+  {
+   "field": "NameMaliat",
+   "label": "حساب مالیات",
+   "type": "String"
+  },
+  {
+   "field": "TintMaliat",
+   "label": "شناسه مولفه حساب مالیات",
+   "type": "Int64"
+  },
+  {
+   "field": "NameTintMaliat",
+   "label": "مولفه حساب مالیات",
+   "type": "String"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ شمسی",
+   "type": "String"
+  }
+ ]
+}

@@ -1,0 +1,115 @@
+{
+ "source": "SSalary_Doc",
+ "reports": [
+  "900935fishhokiksade.mrt",
+  "fishhokiksade.mrt",
+  "listhokoksade.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "hoghoghBid",
+   "label": "کد حساب حقوق",
+   "type": "Int64"
+  },
+  {
+   "field": "HoghoghName",
+   "label": "حساب حقوق",
+   "type": "String"
+  },
+  {
+   "field": "hoghoghtint",
+   "label": "مولفه حقوق",
+   "type": "Int64"
+  },
+  {
+   "field": "bimeBid",
+   "label": "کد حساب بیمه",
+   "type": "Int64"
+  },
+  {
+   "field": "bimetint",
+   "label": "مولفه بیمه",
+   "type": "Int64"
+  },
+  {
+   "field": "BimeName",
+   "label": "حساب بیمه",
+   "type": "String"
+  },
+  {
+   "field": "daraeBid",
+   "label": "کد حساب دارایی",
+   "type": "Int64"
+  },
+  {
+   "field": "daraetint",
+   "label": "مولفه دارایی",
+   "type": "Int64"
+  },
+  {
+   "field": "DaraeName",
+   "label": "حساب دارایی",
+   "type": "String"
+  },
+  {
+   "field": "taminBid",
+   "label": "کد حساب تامین اجتماعی",
+   "type": "Int64"
+  },
+  {
+   "field": "tamintint",
+   "label": "مولفه تامین اجتماعی",
+   "type": "Int64"
+  },
+  {
+   "field": "TaminName",
+   "label": "حساب تامین اجتماعی",
+   "type": "String"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "DteP",
+   "label": "تاریخ پیگرد",
+   "type": "DateTime"
+  },
+  {
+   "field": "SharhP",
+   "label": "شرح پیگرد",
+   "type": "String"
+  },
+  {
+   "field": "MarkazName",
+   "label": "عنوان مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "DteP_x0020_Shamsi",
+   "label": "تاریخ پیگرد شمسی",
+   "type": "String"
+  }
+ ]
+}

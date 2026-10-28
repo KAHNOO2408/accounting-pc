@@ -1,0 +1,123 @@
+{
+ "source": "TBD",
+ "reports": [
+  "trazname4.mrt"
+ ],
+ "fields": [
+  {
+   "field": "BID",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "remain",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedRemain",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "BesRemain",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "Bcode",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "Bscode",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "BName",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "BShortName",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "mahiat",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "BDaste",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "BGroup",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "strCode",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "bedgid",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "bedpos",
+   "label": "",
+   "type": "Double"
+  },
+  {
+   "field": "besgid",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "bespos",
+   "label": "",
+   "type": "Double"
+  },
+  {
+   "field": "bedname",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "besname",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "mid",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "mpos",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "Strcode",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "IsBase",
+   "label": "",
+   "type": "Boolean"
+  },
+  {
+   "field": "Remain",
+   "label": "",
+   "type": "Decimal"
+  }
+ ]
+}

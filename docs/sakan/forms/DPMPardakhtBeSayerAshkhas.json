@@ -1,0 +1,30 @@
+{
+ "source": "DPMPardakhtBeSayerAshkhas",
+ "reports": [
+  "frosshn151.mrt",
+  "psargad daraeaa151.mrt",
+  "rsid mali .mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "Money",
+   "label": "مبلغ",
+   "type": "Decimal"
+  },
+  {
+   "field": "Count",
+   "label": "تعداد",
+   "type": "Int32"
+  },
+  {
+   "field": "CreatorUser_DocMabnaNum",
+   "label": "کاربر ثبت کننده - شماره ثابت",
+   "type": "String"
+  }
+ ]
+}

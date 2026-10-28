@@ -1,0 +1,68 @@
+{
+ "source": "MotefaregheRizGroup",
+ "reports": [
+  "tjmiekridriz motfrke.mrt"
+ ],
+ "fields": [
+  {
+   "field": "HesabBid",
+   "label": "کد حساب",
+   "type": "Int64"
+  },
+  {
+   "field": "Bname",
+   "label": "نام حساب",
+   "type": "String"
+  },
+  {
+   "field": "Fi_system",
+   "label": "مبلغ به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "Takhfif_system",
+   "label": "تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JameKol_system",
+   "label": "جمع با تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzesh_system",
+   "label": "سهم عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineSystem",
+   "label": "هزینه سربار سهم خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "jambahazine_System",
+   "label": "جمع با احتساب هزینه سربار",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzesh_sys",
+   "label": "سهم عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat_sys",
+   "label": "سهم مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "Jamkole_sys",
+   "label": "جمع کل",
+   "type": "Decimal"
+  },
+  {
+   "field": "DoreName",
+   "label": "",
+   "type": "String"
+  }
+ ]
+}

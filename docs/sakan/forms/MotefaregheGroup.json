@@ -1,0 +1,78 @@
+{
+ "source": "MotefaregheGroup",
+ "reports": [
+  "tjmimkridmotfrke.mrt"
+ ],
+ "fields": [
+  {
+   "field": "FroshandeID",
+   "label": "کد  فروشنده",
+   "type": "Int64"
+  },
+  {
+   "field": "FroshandeName",
+   "label": "فروشنده",
+   "type": "String"
+  },
+  {
+   "field": "JamTakhfifSystem",
+   "label": "تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKalaSystem",
+   "label": "جمع (بدون تخفیف )",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamHazineKharidar_system",
+   "label": "هزینه سربار سهم خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghFactorSystem",
+   "label": "جمع فاکتور (با تخفیف)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamFactorBaHazine_system",
+   "label": "جمع فاکتور با احتساب هزینه سربار",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamVaznFactor",
+   "label": "وزن فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzeshF_sys",
+   "label": "جمع عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatF_sys",
+   "label": "جمع مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezHazine_sys",
+   "label": "جمع عوارض هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezMotafareghe_sys",
+   "label": "جمع عوارض اقلام متفرقه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatMotafareghe_sys",
+   "label": "جمع مالیات اقلام متفرقه",
+   "type": "Decimal"
+  },
+  {
+   "field": "DoreName",
+   "label": "",
+   "type": "String"
+  }
+ ]
+}

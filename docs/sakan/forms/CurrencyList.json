@@ -1,0 +1,33 @@
+{
+ "source": "CurrencyList",
+ "reports": [
+  "sort hsab sid vzyan.mrt"
+ ],
+ "fields": [
+  {
+   "field": "ArzID",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "ArzName",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "ArzSign",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "ArzPrice",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "Floatpoint",
+   "label": "",
+   "type": "Int32"
+  }
+ ]
+}

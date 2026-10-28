@@ -1,0 +1,243 @@
+{
+ "source": "khadamatlist",
+ "reports": [
+  "gzarsh az kadamat F.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "ShFactor",
+   "label": "شماره فاکتور",
+   "type": "Double"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "Kharidar",
+   "label": "طرف حساب",
+   "type": "String"
+  },
+  {
+   "field": "Kharidar_ID",
+   "label": "شناسه طرف حساب",
+   "type": "Int64"
+  },
+  {
+   "field": "Fi_kharidar",
+   "label": "فی ارز طرف حساب",
+   "type": "Decimal"
+  },
+  {
+   "field": "Arsing_Karidar",
+   "label": "ارز طرف حساب",
+   "type": "String"
+  },
+  {
+   "field": "bidkala",
+   "label": "شناسه خدمات",
+   "type": "Int64"
+  },
+  {
+   "field": "KhadamatName",
+   "label": "نام خدمات",
+   "type": "String"
+  },
+  {
+   "field": "KhadamatEnglishName",
+   "label": "نام خدمات (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "FiKhadamat",
+   "label": "مبلغ ثبت شده برای خدمات به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "VahedId",
+   "label": "شناسه واحد خدمات",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedName",
+   "label": "واحد خدمات",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName",
+   "label": "واحد خدمات (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "Tedad",
+   "label": "تعداد",
+   "type": "Double"
+  },
+  {
+   "field": "FiKharidar",
+   "label": "بهای خدمات (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "TakhafifKharidar",
+   "label": "تخفیف (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "JamBtakhKharidar",
+   "label": "جمع بدون تخفیف (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "JamKharidar",
+   "label": "جمع با تخفیف(ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "DarsadTakhfiKhadamt",
+   "label": "درصد تخفیف خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "TakhafifSystem",
+   "label": "تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "JamBtakhSystem",
+   "label": "جمع بدون تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "JamSystem",
+   "label": "جمع با تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "DarsadTakhfi",
+   "label": "درصد تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodSystem",
+   "label": "سود و زیان حاصله به ارز سیستم",
+   "type": "Double"
+  },
+  {
+   "field": "SodKharidar",
+   "label": "سود و زیان حاصله به ارز طرف حساب",
+   "type": "Double"
+  },
+  {
+   "field": "DarsadSod",
+   "label": "بهای خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "Markaz",
+   "label": "شناسه مرکز اسناد",
+   "type": "Int64"
+  },
+  {
+   "field": "MarkazName",
+   "label": "مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "TypeFactor",
+   "label": "شناسه فاکتور",
+   "type": "Int64"
+  },
+  {
+   "field": "Factor",
+   "label": "نوع فاکتور",
+   "type": "String"
+  },
+  {
+   "field": "Arzesh_ID",
+   "label": "کد حساب  عوارض",
+   "type": "Int64"
+  },
+  {
+   "field": "arzeshTNT",
+   "label": "کد مولفه  حساب  عوارض",
+   "type": "Int64"
+  },
+  {
+   "field": "Arzesh_TintName",
+   "label": "مولفه  حساب  عوارض",
+   "type": "String"
+  },
+  {
+   "field": "hesabArzesh",
+   "label": "حساب عوارض",
+   "type": "String"
+  },
+  {
+   "field": "BidMaliat",
+   "label": "شناسه حساب مالیات",
+   "type": "Int64"
+  },
+  {
+   "field": "NameMaliat",
+   "label": "حساب مالیات",
+   "type": "String"
+  },
+  {
+   "field": "TintMaliat",
+   "label": "شناسه مولفه حساب مالیات",
+   "type": "Int64"
+  },
+  {
+   "field": "NameTintMaliat",
+   "label": "مولفه حساب مالیات",
+   "type": "String"
+  },
+  {
+   "field": "Khadamat",
+   "label": "عوارض و مالیات بر خدمات اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "SArzesh",
+   "label": "درصد عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzesh",
+   "label": "سهم عوارض (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "SMaliat",
+   "label": "درصد مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat",
+   "label": "سهم مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "Jamkol",
+   "label": "جمع کل (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ شمسی",
+   "type": "String"
+  }
+ ]
+}

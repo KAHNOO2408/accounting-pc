@@ -1,0 +1,83 @@
+{
+ "source": "Haznie_Morakab_Books",
+ "reports": [
+  "hazina morkb.mrt"
+ ],
+ "fields": [
+  {
+   "field": "CodeType",
+   "label": "کد دریافت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "BName",
+   "label": "نام حساب",
+   "type": "String"
+  },
+  {
+   "field": "Money",
+   "label": "مبلغ کل هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "MoneyAvarez",
+   "label": "مبلغ عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "MoneyTax",
+   "label": "مبلغ مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "Darsad",
+   "label": "درصد",
+   "type": "Double"
+  },
+  {
+   "field": "MoneyHazine",
+   "label": "مبلغ هزینه ارزی",
+   "type": "Double"
+  },
+  {
+   "field": "JamKolRiali",
+   "label": "جمع کل با عوارض و مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiArz",
+   "label": "ارز دریافت کننده",
+   "type": "Decimal"
+  },
+  {
+   "field": "MoneyArzi",
+   "label": "مبلغ هزینه",
+   "type": "Double"
+  },
+  {
+   "field": "ArzSign",
+   "label": "ارز دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "Tozihat",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "typeA",
+   "label": "نوع رکورد",
+   "type": "String"
+  },
+  {
+   "field": "type",
+   "label": "شناسه",
+   "type": "Int32"
+  }
+ ]
+}

@@ -1,0 +1,73 @@
+{
+ "source": "Information (اطلاعات) 2",
+ "reports": [
+  "brg morkasi.mrt"
+ ],
+ "fields": [
+  {
+   "field": "userNamFamily",
+   "label": "کاربر جاری",
+   "type": "String"
+  },
+  {
+   "field": "DaftarName",
+   "label": "نام دفتر مالی",
+   "type": "String"
+  },
+  {
+   "field": "DaftarEngName",
+   "label": "نام لاتین دفتر مالی",
+   "type": "String"
+  },
+  {
+   "field": "DateStart",
+   "label": "شروع سال مالی",
+   "type": "DateTime"
+  },
+  {
+   "field": "DateEnd",
+   "label": "پایان سال مالی",
+   "type": "DateTime"
+  },
+  {
+   "field": "DateStartShamsi",
+   "label": "شروع سال مالی شمسی",
+   "type": "String"
+  },
+  {
+   "field": "DateEndShamsi",
+   "label": "پایان سال مالی شمسی",
+   "type": "String"
+  },
+  {
+   "field": "DateShamsi",
+   "label": "تاریخ امروز شمسی",
+   "type": "String"
+  },
+  {
+   "field": "ComputerName",
+   "label": "نام کامپیوتر",
+   "type": "String"
+  },
+  {
+   "field": "arzName",
+   "label": "ارز سیستم",
+   "type": "String"
+  },
+  {
+   "field": "ReportHeader",
+   "label": "سربرگ گزارشات",
+   "type": "String"
+  },
+  {
+   "field": "ReportFooter",
+   "label": "پابرگ گزارشات",
+   "type": "String"
+  },
+  {
+   "field": "Logo",
+   "label": "آرم شرکت",
+   "type": "Drawing.Image"
+  }
+ ]
+}

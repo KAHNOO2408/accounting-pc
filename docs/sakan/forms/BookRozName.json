@@ -1,0 +1,114 @@
+{
+ "source": "BookRozName",
+ "reports": [
+  "dftr roznama 2.mrt",
+  "sanad btrtip.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "bid",
+   "label": "کد دفتر",
+   "type": "String"
+  },
+  {
+   "field": "Sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "bed",
+   "label": "بدهکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "bes",
+   "label": "بستانکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "action",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ شمسی",
+   "type": "String"
+  },
+  {
+   "field": "Molahezat",
+   "label": "ملاحظات ردیف",
+   "type": "String"
+  },
+  {
+   "field": "Shar",
+   "label": "شرح ردیف",
+   "type": "String"
+  },
+  {
+   "field": "bname",
+   "label": "نام دفتر",
+   "type": "String"
+  },
+  {
+   "field": "CreatorUser_DocMabnaNum",
+   "label": "کاربر ثبت کننده - شماره ثابت",
+   "type": "String"
+  },
+  {
+   "field": "docmabnanum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "docnum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "dte",
+   "label": "تاریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "dte_x0020_Shamsi",
+   "label": "تاریخ شمسی",
+   "type": "String"
+  },
+  {
+   "field": "typ",
+   "label": "تشخیص",
+   "type": "String"
+  },
+  {
+   "field": "remain",
+   "label": "مانده",
+   "type": "String"
+  },
+  {
+   "field": "BCode",
+   "label": "",
+   "type": "Int64"
+  }
+ ]
+}

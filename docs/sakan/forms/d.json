@@ -1,0 +1,48 @@
+{
+ "source": "d",
+ "reports": [
+  "gozarshkyosk.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Etebar",
+   "label": "مبلغ اعتبار کارت",
+   "type": "Decimal"
+  },
+  {
+   "field": "Used",
+   "label": "مبلغ استفاده شده",
+   "type": "Decimal"
+  },
+  {
+   "field": "Remain",
+   "label": "مانده اعتبار کارت",
+   "type": "Decimal"
+  },
+  {
+   "field": "CreateDate",
+   "label": "تاریخ صدور کارت",
+   "type": "String"
+  },
+  {
+   "field": "ExpireDate",
+   "label": "تاریخ انقضاء",
+   "type": "String"
+  },
+  {
+   "field": "Status",
+   "label": "وضعیت",
+   "type": "String"
+  },
+  {
+   "field": "CustomerMessage",
+   "label": "پیغام مشتری",
+   "type": "String"
+  },
+  {
+   "field": "CardNo",
+   "label": "شماره کارت",
+   "type": "String"
+  }
+ ]
+}

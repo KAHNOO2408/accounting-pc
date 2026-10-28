@@ -1,0 +1,203 @@
+{
+ "source": "BedBesReport",
+ "reports": [
+  "Kaz mandh hsab.mrt"
+ ],
+ "fields": [
+  {
+   "field": "KBID",
+   "label": "کد دفتر کل",
+   "type": "Int64"
+  },
+  {
+   "field": "MBID",
+   "label": "کد دفتر معین",
+   "type": "Int64"
+  },
+  {
+   "field": "BID",
+   "label": "کد دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "BName",
+   "label": "نام دفتر",
+   "type": "String"
+  },
+  {
+   "field": "ArzSign",
+   "label": "علامت ارز",
+   "type": "String"
+  },
+  {
+   "field": "Bed",
+   "label": "بدهکاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "Bes",
+   "label": "بستانکاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "Remain",
+   "label": "مانده",
+   "type": "Decimal"
+  },
+  {
+   "field": "IsBed",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "IsBes",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "IsZero",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "tashkhis",
+   "label": "تشخیص",
+   "type": "String"
+  },
+  {
+   "field": "Manager",
+   "label": "مدیر",
+   "type": "String"
+  },
+  {
+   "field": "Tel1",
+   "label": "تلفن1",
+   "type": "String"
+  },
+  {
+   "field": "Tel2",
+   "label": "تلفن2",
+   "type": "String"
+  },
+  {
+   "field": "SMS",
+   "label": "تلفن3",
+   "type": "String"
+  },
+  {
+   "field": "Address",
+   "label": "آدرس",
+   "type": "String"
+  },
+  {
+   "field": "latinNme",
+   "label": "نام لاتین",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "ملاحظات",
+   "type": "String"
+  },
+  {
+   "field": "Moein",
+   "label": "معین طرف حساب",
+   "type": "String"
+  },
+  {
+   "field": "fiArz",
+   "label": "فی ارز",
+   "type": "Decimal"
+  },
+  {
+   "field": "BesDte",
+   "label": "تاریخ آخرین پرداختی",
+   "type": "DateTime"
+  },
+  {
+   "field": "BesPrice",
+   "label": "مبلغ آخرین پرداختی",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedDte",
+   "label": "تاریخ آخرین دریافتی",
+   "type": "DateTime"
+  },
+  {
+   "field": "BedPrice",
+   "label": "مبلغ آخرین دریافتی",
+   "type": "Decimal"
+  },
+  {
+   "field": "BazaryabName",
+   "label": "نام آخرین بازاریاب",
+   "type": "String"
+  },
+  {
+   "field": "LastKharidDate",
+   "label": "تاریخ آخرین خرید",
+   "type": "DateTime"
+  },
+  {
+   "field": "LastKharidMoney",
+   "label": "مبلغ آخرین خرید",
+   "type": "Decimal"
+  },
+  {
+   "field": "BesDte_x0020_Shamsi",
+   "label": "تاریخ آخرین پرداختی  شمسی",
+   "type": "String"
+  },
+  {
+   "field": "BedDte_x0020_Shamsi",
+   "label": "تاریخ آخرین دریافتی  شمسی",
+   "type": "String"
+  },
+  {
+   "field": "LastKharidDate_x0020_Shamsi",
+   "label": "تاریخ آخرین خرید  شمسی",
+   "type": "String"
+  },
+  {
+   "field": "bid",
+   "label": "کد دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "bname",
+   "label": "نام دفتر",
+   "type": "String"
+  },
+  {
+   "field": "arzsign",
+   "label": "علامت ارز",
+   "type": "String"
+  },
+  {
+   "field": "bed",
+   "label": "بدهکاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "bes",
+   "label": "بستانکاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "remain",
+   "label": "مانده",
+   "type": "Decimal"
+  },
+  {
+   "field": "isbed",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "isbes",
+   "label": "",
+   "type": "Decimal"
+  }
+ ]
+}

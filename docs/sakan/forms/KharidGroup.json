@@ -1,0 +1,93 @@
+{
+ "source": "KharidGroup",
+ "reports": [
+  "tajmieykarid1.mrt"
+ ],
+ "fields": [
+  {
+   "field": "FroshandeID",
+   "label": "کد فروشنده",
+   "type": "Int64"
+  },
+  {
+   "field": "FroshandeName",
+   "label": "نام فروشنده",
+   "type": "String"
+  },
+  {
+   "field": "JamTakhfifSystem",
+   "label": "جمع تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKalaSystem",
+   "label": "جمع کالا",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamHazineKharidar_system",
+   "label": "جمع هزینه خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamhazineFroshande_system",
+   "label": "جمع هزینه  فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamEshantionSystem",
+   "label": "جمع اشانتیون",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghFactorSystem",
+   "label": "مبلغ فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamCrdexSystem",
+   "label": "جمع با احتساب هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamVaznFactor",
+   "label": "جمع وزن",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzeshF_sys",
+   "label": "جمع عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatF_sys",
+   "label": "جمع مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezAghlam_sys",
+   "label": "عوارض اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezHazine_sys",
+   "label": "عوارض هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatAghlam_sys",
+   "label": "مالیات اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatHazine_sys",
+   "label": "مالیات هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "DoreName",
+   "label": "",
+   "type": "String"
+  }
+ ]
+}

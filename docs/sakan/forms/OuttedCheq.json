@@ -1,0 +1,145 @@
+{
+ "source": "OuttedCheq",
+ "reports": [
+  "Kaz chkhay s.mrt",
+  "gozarsh az hksadrkoli.mrt",
+  "hk sadr batfkik tarik.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "ChekNumber",
+   "label": "شماره چک",
+   "type": "Int64"
+  },
+  {
+   "field": "DateChek",
+   "label": "تاریخ سررسید چک",
+   "type": "DateTime"
+  },
+  {
+   "field": "ChekMoney",
+   "label": "مبلغ چک",
+   "type": "Decimal"
+  },
+  {
+   "field": "BID",
+   "label": "کد بانک",
+   "type": "Int64"
+  },
+  {
+   "field": "BName",
+   "label": "نام بانک",
+   "type": "String"
+  },
+  {
+   "field": "ArzSign",
+   "label": "علامت ارز",
+   "type": "String"
+  },
+  {
+   "field": "DaryaftKonandeBID",
+   "label": "کد دفتر دریافت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "DaryaftKonande",
+   "label": "نام دفتر دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "Property",
+   "label": "بابت",
+   "type": "String"
+  },
+  {
+   "field": "Sadere",
+   "label": "صادره",
+   "type": "Boolean"
+  },
+  {
+   "field": "VosolShode",
+   "label": "وصول شده",
+   "type": "Boolean"
+  },
+  {
+   "field": "VosolNashode",
+   "label": "وصول نشده",
+   "type": "Int32"
+  },
+  {
+   "field": "Bargashty",
+   "label": "برگشتی",
+   "type": "Boolean"
+  },
+  {
+   "field": "BatelShode",
+   "label": "باطل شده",
+   "type": "Boolean"
+  },
+  {
+   "field": "Markaz",
+   "label": "مرکز اسناد",
+   "type": "Int64"
+  },
+  {
+   "field": "SefareshID",
+   "label": "شماره سند سفارش",
+   "type": "Int64"
+  },
+  {
+   "field": "DteP",
+   "label": "تاریخ پیگرد",
+   "type": "DateTime"
+  },
+  {
+   "field": "VNDFR",
+   "label": "چک های صادره ای که اعلام سررسید نشده اند و تاریخ سررسیدشان فرا رسیده است",
+   "type": "Int32"
+  },
+  {
+   "field": "VNDFN",
+   "label": "چک های صادره ای که اعلام سررسید نشده اند و تاریخ سررسیدشان فرا نرسیده است",
+   "type": "Int32"
+  },
+  {
+   "field": "BargashtiBatelShode",
+   "label": "برگشتی باطل شده",
+   "type": "Boolean"
+  },
+  {
+   "field": "SharhP",
+   "label": "شرح پیگرد",
+   "type": "String"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "DateChek_x0020_Shamsi",
+   "label": "تاریخ سررسید چک شمسی",
+   "type": "String"
+  },
+  {
+   "field": "DteP_x0020_Shamsi",
+   "label": "تاریخ پیگرد شمسی",
+   "type": "String"
+  }
+ ]
+}

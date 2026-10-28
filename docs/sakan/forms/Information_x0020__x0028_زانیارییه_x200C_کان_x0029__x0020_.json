@@ -1,0 +1,58 @@
+{
+ "source": "Information (زانیارییه_x200C_کان)",
+ "reports": [
+  "gozarsh az riz frosh amval.mrt"
+ ],
+ "fields": [
+  {
+   "field": "userNamFamily",
+   "label": "کاربه_x200C_ری ئیستا",
+   "type": "String"
+  },
+  {
+   "field": "DaftarName",
+   "label": "ناوی ده_x200C_فته_x200C_ری ماڵێ",
+   "type": "String"
+  },
+  {
+   "field": "DaftarEngName",
+   "label": "ناوی لاتینی ده_x200C_فته_x200C_ری ماڵی",
+   "type": "String"
+  },
+  {
+   "field": "DateStart",
+   "label": "ده_x200C_ست پێکردنی ساڵی ماڵی",
+   "type": "DateTime"
+  },
+  {
+   "field": "DateEnd",
+   "label": "کۆتایی ساڵی ماڵی",
+   "type": "DateTime"
+  },
+  {
+   "field": "DateStartShamsi",
+   "label": "ده_x200C_ست پێکردنی ساڵی ماڵی هه_x200C_تاوی",
+   "type": "String"
+  },
+  {
+   "field": "DateEndShamsi",
+   "label": "کۆتایی ساڵی ماڵی هه_x200C_تاوی",
+   "type": "String"
+  },
+  {
+   "field": "DateShamsi",
+   "label": "ڕێکه_x200C_وتی ئه_x200C_مڕۆی هه_x200C_تاوی",
+   "type": "String"
+  },
+  {
+   "field": "ComputerName",
+   "label": "ناوی کۆمپیۆته_x200C_ر",
+   "type": "String"
+  },
+  {
+   "field": "arzName",
+   "label": "ئه_x200C_رزی سیسته_x200C_م",
+   "type": "String"
+  }
+ ]
+}

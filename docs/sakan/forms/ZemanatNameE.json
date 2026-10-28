@@ -1,0 +1,51 @@
+{
+ "source": "ZemanatNameE",
+ "reports": [
+  "RASNAD ANTZAMI D.MRT",
+  "Rantzami S.mrt",
+  "Rsid pas grftn antzami S.mrt",
+  "rsid pas dadn antzami.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره سند",
+   "type": "Int64"
+  },
+  {
+   "field": "ZemanatNameNumber",
+   "label": "شماره سریال",
+   "type": "Int64"
+  },
+  {
+   "field": "ZemanatNameMoney",
+   "label": "مبلغ",
+   "type": "Decimal"
+  },
+  {
+   "field": "ZemanatNameDate",
+   "label": "تاریخ سررسید",
+   "type": "DateTime"
+  },
+  {
+   "field": "ZemanatNameBankName",
+   "label": "نام بانک",
+   "type": "String"
+  },
+  {
+   "field": "ZemanatNameHoldenPlace",
+   "label": "مکان نگهداری",
+   "type": "String"
+  },
+  {
+   "field": "ZemanatNameHuman",
+   "label": "متلق به",
+   "type": "String"
+  },
+  {
+   "field": "ZemanatNameDate_x0020_Shamsi",
+   "label": "تاریخ سررسید شمسی",
+   "type": "String"
+  }
+ ]
+}

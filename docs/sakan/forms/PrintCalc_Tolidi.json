@@ -1,0 +1,148 @@
+{
+ "source": "PrintCalc_Tolidi",
+ "reports": [
+  "baravard.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Bid",
+   "label": "کد کالا    تولیدی",
+   "type": "Int32"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد    تولیدی",
+   "type": "String"
+  },
+  {
+   "field": "ShFani",
+   "label": "شماره فنی    تولیدی",
+   "type": "String"
+  },
+  {
+   "field": "BName",
+   "label": "نام کالا    تولیدی",
+   "type": "String"
+  },
+  {
+   "field": "StoreName",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "Number",
+   "label": "تعداد    تولیدی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Number2",
+   "label": "تعداد 2    تولیدی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Number3",
+   "label": "تعداد 3    تولیدی",
+   "type": "Decimal"
+  },
+  {
+   "field": "VahedId",
+   "label": "کد واحد    تولیدی",
+   "type": "Int32"
+  },
+  {
+   "field": "Vahed",
+   "label": "واحد    تولیدی",
+   "type": "String"
+  },
+  {
+   "field": "Vahed2Id",
+   "label": "کد واحد 2    تولیدی",
+   "type": "Int32"
+  },
+  {
+   "field": "Vahed2",
+   "label": "واحد 2    تولیدی",
+   "type": "String"
+  },
+  {
+   "field": "Vahed3Id",
+   "label": "کد واحد 3    تولیدی",
+   "type": "Int32"
+  },
+  {
+   "field": "Vahed3",
+   "label": "واحد3    تولیدی",
+   "type": "String"
+  },
+  {
+   "field": "FiForosh",
+   "label": "فی فروش    تولیدی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Tozihat",
+   "label": "توضیحات    تولیدی",
+   "type": "String"
+  },
+  {
+   "field": "VahedPos",
+   "label": "اندیس واحد جاری    تولیدی",
+   "type": "Int32"
+  },
+  {
+   "field": "StoreId",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "Nesbat21",
+   "label": "نسبت واحد 3 به 1    تولیدی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Nesbat31",
+   "label": "نسبت واحد 3 به 1    تولیدی",
+   "type": "Decimal"
+  },
+  {
+   "field": "CalcedFiAOutFi",
+   "label": "قیمت تمام شده بر اساس فی خروجی از انبار",
+   "type": "Decimal"
+  },
+  {
+   "field": "CalcedFiALastBuyFi",
+   "label": "قیمت تمام شده بر اساس اخرین فی خرید",
+   "type": "Decimal"
+  },
+  {
+   "field": "CalcedFiADailyFi",
+   "label": "قیمت تمام شده بر اساس فی روز بازار",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodPercentAOutFi",
+   "label": "درصد سود بر اساس فی خروجی از انبار",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodPercentALastBuyFi",
+   "label": "درصد سود بر اساس آخرین فی خرید",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodPercentADailyFi",
+   "label": "درصد سود بر اساس فی روز بازار",
+   "type": "Decimal"
+  },
+  {
+   "field": "SelectedVID",
+   "label": "واحد منتخب    تولیدی",
+   "type": "Int32"
+  },
+  {
+   "field": "Nesbat",
+   "label": "نسبت محاسبه",
+   "type": "Decimal"
+  }
+ ]
+}

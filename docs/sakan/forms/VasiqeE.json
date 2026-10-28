@@ -1,0 +1,46 @@
+{
+ "source": "VasiqeE",
+ "reports": [
+  "RASNAD ANTZAMI D.MRT",
+  "Rantzami S.mrt",
+  "Rsid pas grftn antzami S.mrt",
+  "rsid pas dadn antzami.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "VasiqeNumber",
+   "label": "شماره سریال",
+   "type": "Int64"
+  },
+  {
+   "field": "VasiqeMoney",
+   "label": "مبلغ",
+   "type": "Decimal"
+  },
+  {
+   "field": "VasiqeDate",
+   "label": "تاریخ سررسید",
+   "type": "DateTime"
+  },
+  {
+   "field": "VasiqeType",
+   "label": "نوع",
+   "type": "String"
+  },
+  {
+   "field": "VasiqeHuman",
+   "label": "متعلق به",
+   "type": "String"
+  },
+  {
+   "field": "VasiqeDate_x0020_Shamsi",
+   "label": "تاریخ سررسید شمسی",
+   "type": "String"
+  }
+ ]
+}

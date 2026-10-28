@@ -1,0 +1,61 @@
+{
+ "source": "SalaryKosorat",
+ "reports": [
+  "fish hokok.mrt",
+  "fish pshrafte3.mrt",
+  "gozarsh az kosirat.mrt",
+  "list  kosorat koli.mrt"
+ ],
+ "fields": [
+  {
+   "field": "jid",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "شناسه دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "PersonelCode",
+   "label": "کد پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "nme",
+   "label": "نام پرسنل",
+   "type": "String"
+  },
+  {
+   "field": "KosoratNme",
+   "label": "نام کسورات",
+   "type": "String"
+  },
+  {
+   "field": "KosoratPrice",
+   "label": "مبلغ کسورات",
+   "type": "Decimal"
+  },
+  {
+   "field": "gid",
+   "label": "شناسه دوره",
+   "type": "Int64"
+  },
+  {
+   "field": "gname",
+   "label": "نام دوره حقوقی",
+   "type": "String"
+  },
+  {
+   "field": "MarkazName",
+   "label": "نام مرکز",
+   "type": "String"
+  }
+ ]
+}

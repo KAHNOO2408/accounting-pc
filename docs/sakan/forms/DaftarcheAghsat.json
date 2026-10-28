@@ -1,0 +1,83 @@
+{
+ "source": "DaftarcheAghsat",
+ "reports": [
+  "dftr gast jadid.mrt"
+ ],
+ "fields": [
+  {
+   "field": "bname",
+   "label": "نام طرف حساب",
+   "type": "String"
+  },
+  {
+   "field": "dbid",
+   "label": "کد طرف حساب",
+   "type": "Int64"
+  },
+  {
+   "field": "fullmoney",
+   "label": "کل مبلغ اقساط",
+   "type": "Decimal"
+  },
+  {
+   "field": "glsdate",
+   "label": "تاریخ سررسید قسط",
+   "type": "DateTime"
+  },
+  {
+   "field": "glmoney",
+   "label": "مبلغ قسط",
+   "type": "Decimal"
+  },
+  {
+   "field": "glsude",
+   "label": "سود متعلقه",
+   "type": "Decimal"
+  },
+  {
+   "field": "count",
+   "label": "تعداد اقساط",
+   "type": "Int32"
+  },
+  {
+   "field": "ssdate",
+   "label": "تاریخ شروع محاسبه سود",
+   "type": "DateTime"
+  },
+  {
+   "field": "gsdate",
+   "label": "تاریخ شروع پرداخت اقساط",
+   "type": "DateTime"
+  },
+  {
+   "field": "babat",
+   "label": "بابت",
+   "type": "String"
+  },
+  {
+   "field": "spersent",
+   "label": "درصد سود",
+   "type": "Decimal"
+  },
+  {
+   "field": "jpersent",
+   "label": "درصد جریمه",
+   "type": "Decimal"
+  },
+  {
+   "field": "glsdate_x0020_Shamsi",
+   "label": "تاریخ سررسید قسط شمسی",
+   "type": "String"
+  },
+  {
+   "field": "ssdate_x0020_Shamsi",
+   "label": "تاریخ شروع محاسبه سود شمسی",
+   "type": "String"
+  },
+  {
+   "field": "gsdate_x0020_Shamsi",
+   "label": "تاریخ شروع پرداخت اقساط شمسی",
+   "type": "String"
+  }
+ ]
+}

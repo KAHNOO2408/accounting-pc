@@ -1,0 +1,43 @@
+{
+ "source": "MAll",
+ "reports": [
+  "Kazriz motlbat.mrt"
+ ],
+ "fields": [
+  {
+   "field": "TBID",
+   "label": "کد حساب",
+   "type": "Int64"
+  },
+  {
+   "field": "BName",
+   "label": "عـنوان حــساب",
+   "type": "String"
+  },
+  {
+   "field": "FMoney",
+   "label": "مبلغ قسط",
+   "type": "Decimal"
+  },
+  {
+   "field": "GLSDate",
+   "label": "تاریخ سررسید",
+   "type": "DateTime"
+  },
+  {
+   "field": "GLSDate_x0020_Shamsi",
+   "label": "تاریخ سررسید شمسی",
+   "type": "String"
+  },
+  {
+   "field": "GSDate",
+   "label": "تاریخ سررسید",
+   "type": "DateTime"
+  },
+  {
+   "field": "GSDate_x0020_Shamsi",
+   "label": "تاریخ سررسید شمسی",
+   "type": "String"
+  }
+ ]
+}

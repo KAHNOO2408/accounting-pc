@@ -1,0 +1,63 @@
+{
+ "source": "BookMoein",
+ "reports": [
+  "daftr moain.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "Sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "Date",
+   "label": "تاریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "BID",
+   "label": "کد دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "BName",
+   "label": "نام دفتر",
+   "type": "String"
+  },
+  {
+   "field": "Bed",
+   "label": "بدهکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "Bes",
+   "label": "بستانکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "Type",
+   "label": "تشخیص",
+   "type": "String"
+  },
+  {
+   "field": "Remian",
+   "label": "مانده",
+   "type": "Decimal"
+  },
+  {
+   "field": "Date_x0020_Shamsi",
+   "label": "تاریخ شمسی",
+   "type": "String"
+  }
+ ]
+}

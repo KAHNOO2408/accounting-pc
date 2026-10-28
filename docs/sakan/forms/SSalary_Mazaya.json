@@ -1,0 +1,35 @@
+{
+ "source": "SSalary_Mazaya",
+ "reports": [
+  "900935fishhokiksade.mrt",
+  "fishhokiksade.mrt",
+  "listhokoksade.mrt"
+ ],
+ "fields": [
+  {
+   "field": "PersonBid",
+   "label": "شناسه کارمند",
+   "type": "Int64"
+  },
+  {
+   "field": "DocmabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "price",
+   "label": "مبلغ مزایا",
+   "type": "Decimal"
+  },
+  {
+   "field": "isMazaya",
+   "label": "مزایا",
+   "type": "Boolean"
+  }
+ ]
+}

@@ -1,0 +1,138 @@
+{
+ "source": "EntezamyReport",
+ "reports": [
+  "gozarsh asnad antzami.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "SNumber",
+   "label": "شماره سند انتظامی",
+   "type": "Int64"
+  },
+  {
+   "field": "SMoney",
+   "label": "مبلغ",
+   "type": "Decimal"
+  },
+  {
+   "field": "SDate",
+   "label": "تاریخ سررسید",
+   "type": "DateTime"
+  },
+  {
+   "field": "BankName",
+   "label": "نام بانک",
+   "type": "String"
+  },
+  {
+   "field": "HoldenPlace",
+   "label": "مکان نگهداری",
+   "type": "String"
+  },
+  {
+   "field": "Human",
+   "label": "شخص دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "DBID",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "PBID",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "DBIDName",
+   "label": "نام دفتر طرف حساب انتظامی",
+   "type": "String"
+  },
+  {
+   "field": "PBIDName",
+   "label": "نام دفتر حساب انتظامی",
+   "type": "String"
+  },
+  {
+   "field": "OutterCheq",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "InnerCheq",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "OutterSefte",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "InnerSefte",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "OutterZemanatName",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "InnerZemanatName",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "OutterVasiqe",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "InnerVasiqe",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "Type",
+   "label": "نوع سند انتظامی",
+   "type": "String"
+  },
+  {
+   "field": "aodati",
+   "label": "",
+   "type": "Boolean"
+  },
+  {
+   "field": "mojod",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "SDate_x0020_Shamsi",
+   "label": "تاریخ سررسید شمسی",
+   "type": "String"
+  }
+ ]
+}

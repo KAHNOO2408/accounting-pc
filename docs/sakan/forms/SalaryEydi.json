@@ -1,0 +1,63 @@
+{
+ "source": "SalaryEydi",
+ "reports": [
+  "gozarsh aydy.mrt"
+ ],
+ "fields": [
+  {
+   "field": "eydiCode",
+   "label": "شماره عیدی",
+   "type": "Int64"
+  },
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "ناسه دفتر پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "nme",
+   "label": "نام",
+   "type": "String"
+  },
+  {
+   "field": "personelCode",
+   "label": "کد پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "empVahed",
+   "label": "واحد",
+   "type": "String"
+  },
+  {
+   "field": "price",
+   "label": "مبلغ",
+   "type": "Decimal"
+  },
+  {
+   "field": "moafmaliat",
+   "label": "سقف معافیت مالیاتی",
+   "type": "Decimal"
+  },
+  {
+   "field": "moafBime",
+   "label": "سقف معافیت بیمه",
+   "type": "Decimal"
+  },
+  {
+   "field": "gname",
+   "label": "نام دوره پرداخت عیدی",
+   "type": "String"
+  },
+  {
+   "field": "gid",
+   "label": "شناسه دوره",
+   "type": "Int64"
+  }
+ ]
+}

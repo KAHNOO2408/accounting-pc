@@ -1,0 +1,208 @@
+{
+ "source": "kalaPreFactor",
+ "reports": [
+  "pish factor.mrt"
+ ],
+ "fields": [
+  {
+   "field": "shvp",
+   "label": "شماره واحد پیش فرض",
+   "type": "Decimal"
+  },
+  {
+   "field": "ShFactor",
+   "label": "شماره فاکتور",
+   "type": "Double"
+  },
+  {
+   "field": "KalaCode",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام کالا (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شمار فنی",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصات کالا",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "number",
+   "label": "تعداد",
+   "type": "Double"
+  },
+  {
+   "field": "FiVahed1",
+   "label": "فی واحد",
+   "type": "Decimal"
+  },
+  {
+   "field": "Shvahed",
+   "label": "شماره واحد",
+   "type": "Decimal"
+  },
+  {
+   "field": "VahedNAme3",
+   "label": "واحد",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName3",
+   "label": "واحد لاتین",
+   "type": "String"
+  },
+  {
+   "field": "Jam1",
+   "label": "جمع بدون تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "Takhfif",
+   "label": "تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadTakhfif",
+   "label": "درصد تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadAvarez",
+   "label": "درصد عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarez",
+   "label": "سهم عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadTax",
+   "label": "درصد مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat",
+   "label": "سهم مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamT",
+   "label": "جمع بعد از تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "JamKol",
+   "label": "جمع کل",
+   "type": "Double"
+  },
+  {
+   "field": "Tozihat",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "Type",
+   "label": "شناسه اقلام",
+   "type": "String"
+  },
+  {
+   "field": "TypeName",
+   "label": "نوع اقلام",
+   "type": "String"
+  },
+  {
+   "field": "Vahed2",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "Vahed3",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "number2",
+   "label": "",
+   "type": "Double"
+  },
+  {
+   "field": "number3",
+   "label": "",
+   "type": "Double"
+  },
+  {
+   "field": "FiMasrafKonande",
+   "label": "بهای مصرف کننده",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiVahed2",
+   "label": "فی به واحد دوم",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiVahed3",
+   "label": "فی به واحد سوم",
+   "type": "Decimal"
+  },
+  {
+   "field": "Takhfif1",
+   "label": "تخفیف 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "Takhfif2",
+   "label": "تخفیف 2",
+   "type": "Decimal"
+  },
+  {
+   "field": "TakhfifN",
+   "label": "تخفیف تعدادی",
+   "type": "Decimal"
+  },
+  {
+   "field": "VolId1",
+   "label": "کد واحد اول",
+   "type": "Decimal"
+  },
+  {
+   "field": "VolId2",
+   "label": "کد واحد دوم",
+   "type": "Int64"
+  },
+  {
+   "field": "VolId3",
+   "label": "کد واحد سوم",
+   "type": "Int64"
+  },
+  {
+   "field": "vahed",
+   "label": "نام واحد منتخب",
+   "type": "String"
+  },
+  {
+   "field": "weight",
+   "label": "وزن کالا",
+   "type": "Double"
+  }
+ ]
+}

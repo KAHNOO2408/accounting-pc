@@ -1,0 +1,95 @@
+{
+ "source": "SSalary_Karmand",
+ "reports": [
+  "900935fishhokiksade.mrt",
+  "fishhokiksade.mrt",
+  "listhokoksade.mrt"
+ ],
+ "fields": [
+  {
+   "field": "personBid",
+   "label": "شناسه کارمند",
+   "type": "Int64"
+  },
+  {
+   "field": "persontint",
+   "label": "مولفه کارمند",
+   "type": "Int64"
+  },
+  {
+   "field": "PersonName",
+   "label": "نام کارمند",
+   "type": "String"
+  },
+  {
+   "field": "VamBid",
+   "label": "شناسه وام",
+   "type": "Int64"
+  },
+  {
+   "field": "Vamtint",
+   "label": "مولفه وام",
+   "type": "Int64"
+  },
+  {
+   "field": "VamName",
+   "label": "حساب وام",
+   "type": "String"
+  },
+  {
+   "field": "BimeKarfarma",
+   "label": "بیمه سهم کارفرما",
+   "type": "Decimal"
+  },
+  {
+   "field": "sandoghBid",
+   "label": "شناسه صندوق",
+   "type": "Int64"
+  },
+  {
+   "field": "sandoghtint",
+   "label": "مولفه صندوق",
+   "type": "Int64"
+  },
+  {
+   "field": "SandoghName",
+   "label": "حساب صندوق",
+   "type": "String"
+  },
+  {
+   "field": "bankhavale",
+   "label": "شماره حواله بانک",
+   "type": "Int64"
+  },
+  {
+   "field": "price",
+   "label": "مبلغ پرداختی",
+   "type": "Decimal"
+  },
+  {
+   "field": "BookRemain",
+   "label": "مانده دفتر",
+   "type": "Decimal"
+  },
+  {
+   "field": "KosoratJam",
+   "label": "جمع کسورات",
+   "type": "Decimal"
+  },
+  {
+   "field": "MazayaJam",
+   "label": "جمع مزایا",
+   "type": "Decimal"
+  },
+  {
+   "field": "PersonelID",
+   "label": "شماره پرسنلی",
+   "type": "String"
+  },
+  {
+   "field": "Property",
+   "label": "توضیحات",
+   "type": "String"
+  }
+ ]
+}

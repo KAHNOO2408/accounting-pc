@@ -1,0 +1,179 @@
+{
+ "source": "Bargasht_Hazine",
+ "reports": [
+  "brgasht dramd.mrt",
+  "brgasht hzine.mrt"
+ ],
+ "fields": [
+  {
+   "field": "ID",
+   "label": "کد",
+   "type": "Int64"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "BidOne",
+   "label": "کد دریافت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "DaryaftKon",
+   "label": "نام دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "TntOne",
+   "label": "مشخصه دریافت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "BidTwo",
+   "label": "کد هزینه",
+   "type": "Int64"
+  },
+  {
+   "field": "nameHazine",
+   "label": "نام حساب هزینه",
+   "type": "String"
+  },
+  {
+   "field": "TntTwo",
+   "label": "مشخصه حساب هزینه",
+   "type": "Int64"
+  },
+  {
+   "field": "BidAvarez",
+   "label": "کد حساب عوارض",
+   "type": "Int64"
+  },
+  {
+   "field": "NameAvarez",
+   "label": "نام حساب عوارض",
+   "type": "String"
+  },
+  {
+   "field": "TntAvarez",
+   "label": "مشخصه حساب عوارض",
+   "type": "Int64"
+  },
+  {
+   "field": "BidTax",
+   "label": "کد حساب مالیات",
+   "type": "Int64"
+  },
+  {
+   "field": "NameTax",
+   "label": "نام حساب مالیات",
+   "type": "String"
+  },
+  {
+   "field": "TntTax",
+   "label": "مشخصه حساب مالیات",
+   "type": "Int64"
+  },
+  {
+   "field": "MoneyAvarez",
+   "label": "مبلغ عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadAvarez",
+   "label": "درصد عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "monetTax",
+   "label": "مبلغ مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadTax",
+   "label": "درصد مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "Money",
+   "label": "مبلغ هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumMoney",
+   "label": "جمع کل",
+   "type": "Decimal"
+  },
+  {
+   "field": "Babat",
+   "label": "بابت",
+   "type": "String"
+  },
+  {
+   "field": "NameMotafareghe",
+   "label": "نام متفرقه",
+   "type": "String"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "Sharh",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "Action",
+   "label": "اکشن",
+   "type": "Int64"
+  },
+  {
+   "field": "ArchivePath",
+   "label": "مسیر بایگانی",
+   "type": "String"
+  },
+  {
+   "field": "DteP",
+   "label": "تاریخ پیگرد",
+   "type": "DateTime"
+  },
+  {
+   "field": "SharhP",
+   "label": "شرح پیگرد",
+   "type": "String"
+  },
+  {
+   "field": "Markaz",
+   "label": "کد مرکز اسناد",
+   "type": "Int64"
+  },
+  {
+   "field": "MarkazName",
+   "label": "مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "FiTarfhesab",
+   "label": "فی دریافت کننده",
+   "type": "Decimal"
+  },
+  {
+   "field": "ArzTarafHesab",
+   "label": "ارز دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "DteP_x0020_Shamsi",
+   "label": "تاریخ پیگرد شمسی",
+   "type": "String"
+  }
+ ]
+}

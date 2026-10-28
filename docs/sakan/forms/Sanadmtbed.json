@@ -1,0 +1,40 @@
+{
+ "source": "Sanadmtbed",
+ "reports": [
+  "Sanad KT.mrt",
+  "Sand K mT.mrt",
+  "snad33.mrt"
+ ],
+ "fields": [
+  {
+   "field": "KOLBID",
+   "label": "کد کل",
+   "type": "Int64"
+  },
+  {
+   "field": "KolCode",
+   "label": "کۆدی گشتی",
+   "type": "Int64"
+  },
+  {
+   "field": "MoeinBID",
+   "label": "کد معین",
+   "type": "Int64"
+  },
+  {
+   "field": "MoeinCode",
+   "label": "کۆدی موعین",
+   "type": "Int64"
+  },
+  {
+   "field": "MoeinBName",
+   "label": "نام معین",
+   "type": "String"
+  },
+  {
+   "field": "MoeinMoney",
+   "label": "مبلغ معین",
+   "type": "Decimal"
+  }
+ ]
+}

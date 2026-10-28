@@ -1,0 +1,52 @@
+{
+ "source": "Sanadinfo",
+ "reports": [
+  "Sanad KT.mrt",
+  "Sand K mT.mrt",
+  "kol.mrt",
+  "snad33.mrt",
+  "tafzili.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "NPPageNumber",
+   "label": "شماره دفتر روزنامه",
+   "type": "Int64"
+  },
+  {
+   "field": "SharheSanad",
+   "label": "شــــرح سند",
+   "type": "String"
+  },
+  {
+   "field": "BabateSanad",
+   "label": "بابت",
+   "type": "String"
+  },
+  {
+   "field": "Action",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ شمسی",
+   "type": "String"
+  }
+ ]
+}

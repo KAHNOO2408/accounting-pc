@@ -1,0 +1,48 @@
+{
+ "source": "SalaryAlbasePersonel",
+ "reports": [
+  "gozarsh az albsa .mrt"
+ ],
+ "fields": [
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "کد دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "nme",
+   "label": "نام",
+   "type": "String"
+  },
+  {
+   "field": "personelCode",
+   "label": "کد پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "cardcode",
+   "label": "شماره کارت",
+   "type": "String"
+  },
+  {
+   "field": "shoesize",
+   "label": "سایز کفش",
+   "type": "Int32"
+  },
+  {
+   "field": "shalvarSize",
+   "label": "سایز شلوار",
+   "type": "Int32"
+  },
+  {
+   "field": "lebassize",
+   "label": "سایز لباس",
+   "type": "String"
+  }
+ ]
+}

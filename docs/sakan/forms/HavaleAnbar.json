@@ -1,0 +1,611 @@
+{
+ "source": "HavaleAnbar",
+ "reports": [
+  "havala anbar.mrt",
+  "hvale be tfkik kardks tjmi2.mrt",
+  "hvale1.mrt",
+  "hvaletjmi1.mrt"
+ ],
+ "fields": [
+  {
+   "field": "tcid",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "action",
+   "label": "اکشن",
+   "type": "Int64"
+  },
+  {
+   "field": "docnum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "havalenum",
+   "label": "شماره حواله انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "docmabnanum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "sharh",
+   "label": "شرح سند",
+   "type": "String"
+  },
+  {
+   "field": "babat",
+   "label": "شرح 2 سند",
+   "type": "String"
+  },
+  {
+   "field": "mbid",
+   "label": "کد دفتر معین",
+   "type": "Int64"
+  },
+  {
+   "field": "moein",
+   "label": "نام دفتر معین",
+   "type": "String"
+  },
+  {
+   "field": "dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "archivepath",
+   "label": "مسیر بایگانی",
+   "type": "String"
+  },
+  {
+   "field": "markazname",
+   "label": "نام مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "frasiname",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "englishname",
+   "label": "نام لاتین کالا",
+   "type": "String"
+  },
+  {
+   "field": "fanyno",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "properties",
+   "label": "مشخصه کالا",
+   "type": "String"
+  },
+  {
+   "field": "tedad",
+   "label": "تعداد1",
+   "type": "Decimal"
+  },
+  {
+   "field": "tedad2",
+   "label": "تعداد2",
+   "type": "Decimal"
+  },
+  {
+   "field": "tedad3",
+   "label": "تعداد3",
+   "type": "Decimal"
+  },
+  {
+   "field": "vahed1",
+   "label": "واحد1",
+   "type": "String"
+  },
+  {
+   "field": "engvahed1",
+   "label": "لاتین واحد1",
+   "type": "String"
+  },
+  {
+   "field": "vahed2",
+   "label": "واحد2",
+   "type": "String"
+  },
+  {
+   "field": "engvahed2",
+   "label": "لاتین واحد2",
+   "type": "String"
+  },
+  {
+   "field": "vahed3",
+   "label": "واحد3",
+   "type": "String"
+  },
+  {
+   "field": "engvahed3",
+   "label": "لاتین واحد3",
+   "type": "String"
+  },
+  {
+   "field": "fi",
+   "label": "فی1",
+   "type": "Decimal"
+  },
+  {
+   "field": "fi2",
+   "label": "فی2",
+   "type": "Decimal"
+  },
+  {
+   "field": "fi3",
+   "label": "فی3",
+   "type": "Decimal"
+  },
+  {
+   "field": "sefareshid",
+   "label": "شماره سفارش",
+   "type": "Int64"
+  },
+  {
+   "field": "serial",
+   "label": "سریال",
+   "type": "String"
+  },
+  {
+   "field": "each2equal1",
+   "label": "نسبت 1 به 2",
+   "type": "Decimal"
+  },
+  {
+   "field": "each1equal3",
+   "label": "نسبت 1 به 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "storeid",
+   "label": "شناسه انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "storename",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "storedar",
+   "label": "انباردار",
+   "type": "String"
+  },
+  {
+   "field": "exportstoreid",
+   "label": "کد انبار صادره",
+   "type": "Int64"
+  },
+  {
+   "field": "exportstorename",
+   "label": "نام انبار صادره",
+   "type": "String"
+  },
+  {
+   "field": "exportstoredar",
+   "label": "نام انباردار انبار صادره",
+   "type": "String"
+  },
+  {
+   "field": "namecar",
+   "label": "نام وسیله نقلیه",
+   "type": "String"
+  },
+  {
+   "field": "numcar",
+   "label": "شماره وسیله نقلیه",
+   "type": "String"
+  },
+  {
+   "field": "barname",
+   "label": "شماره بارنامه",
+   "type": "String"
+  },
+  {
+   "field": "sherkat",
+   "label": "نام شرکت باربری",
+   "type": "String"
+  },
+  {
+   "field": "bidtarfhesab",
+   "label": "کد طرف حساب",
+   "type": "Int64"
+  },
+  {
+   "field": "nametarafhesab",
+   "label": "نام طرف حساب",
+   "type": "String"
+  },
+  {
+   "field": "vazn",
+   "label": "وزن کالا",
+   "type": "Double"
+  },
+  {
+   "field": "nameeng",
+   "label": "نام لاتین",
+   "type": "String"
+  },
+  {
+   "field": "companyname",
+   "label": "شرکت",
+   "type": "String"
+  },
+  {
+   "field": "manager",
+   "label": "مدیر شرکت",
+   "type": "String"
+  },
+  {
+   "field": "countrycode",
+   "label": "پیش شماره کشور",
+   "type": "String"
+  },
+  {
+   "field": "citycode",
+   "label": "پیش شماره شهرستان",
+   "type": "String"
+  },
+  {
+   "field": "tel1",
+   "label": "تلفن",
+   "type": "String"
+  },
+  {
+   "field": "tel2",
+   "label": "همراه",
+   "type": "String"
+  },
+  {
+   "field": "fax",
+   "label": "فکس",
+   "type": "String"
+  },
+  {
+   "field": "sms",
+   "label": "پیامک",
+   "type": "String"
+  },
+  {
+   "field": "email",
+   "label": "پست الکترونیک",
+   "type": "String"
+  },
+  {
+   "field": "address",
+   "label": "آدرس",
+   "type": "String"
+  },
+  {
+   "field": "properties1",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "corporatecode",
+   "label": "کد اقتصادی",
+   "type": "String"
+  },
+  {
+   "field": "postal",
+   "label": "کد پستی",
+   "type": "String"
+  },
+  {
+   "field": "checky",
+   "label": "اعتبار چکی",
+   "type": "Decimal"
+  },
+  {
+   "field": "naghdy",
+   "label": "اعتبار نقدی",
+   "type": "Decimal"
+  },
+  {
+   "field": "htype",
+   "label": "کد نوع شخص",
+   "type": "Int32"
+  },
+  {
+   "field": "mellinum",
+   "label": "شماره ملی",
+   "type": "String"
+  },
+  {
+   "field": "statecity",
+   "label": "استان",
+   "type": "String"
+  },
+  {
+   "field": "city",
+   "label": "شهرستان",
+   "type": "String"
+  },
+  {
+   "field": "shdarkhast",
+   "label": "شماره درخواست",
+   "type": "String"
+  },
+  {
+   "field": "mpakhshbname",
+   "label": "نام مسئول پخش",
+   "type": "String"
+  },
+  {
+   "field": "mpakhshmob",
+   "label": "شماره همراه مسئول پخش",
+   "type": "String"
+  },
+  {
+   "field": "dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "Action",
+   "label": "اکشن",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "HavaleNum",
+   "label": "شماره حواله انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "Sharh",
+   "label": "شرح سند",
+   "type": "String"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "ArchivePath",
+   "label": "مسیر بایگانی",
+   "type": "String"
+  },
+  {
+   "field": "MarkazName",
+   "label": "نام مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام لاتین کالا",
+   "type": "String"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصه کالا",
+   "type": "String"
+  },
+  {
+   "field": "Vahed1",
+   "label": "واحد1",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed1",
+   "label": "لاتین واحد1",
+   "type": "String"
+  },
+  {
+   "field": "Vahed2",
+   "label": "واحد2",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed2",
+   "label": "لاتین واحد2",
+   "type": "String"
+  },
+  {
+   "field": "Vahed3",
+   "label": "واحد3",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed3",
+   "label": "لاتین واحد3",
+   "type": "String"
+  },
+  {
+   "field": "SefareshId",
+   "label": "شماره سفارش",
+   "type": "Int64"
+  },
+  {
+   "field": "Serial",
+   "label": "سریال",
+   "type": "String"
+  },
+  {
+   "field": "Each2Equal1",
+   "label": "نسبت 1 به 2",
+   "type": "Double"
+  },
+  {
+   "field": "Each1Equal3",
+   "label": "نسبت 1 به 3",
+   "type": "Double"
+  },
+  {
+   "field": "StoreName",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "StoreDar",
+   "label": "انباردار",
+   "type": "String"
+  },
+  {
+   "field": "exportStoreName",
+   "label": "نام انبار صادره",
+   "type": "String"
+  },
+  {
+   "field": "exportStoreDar",
+   "label": "نام انباردار انبار صادره",
+   "type": "String"
+  },
+  {
+   "field": "NameCar",
+   "label": "نام وسیله نقلیه",
+   "type": "String"
+  },
+  {
+   "field": "NUmCar",
+   "label": "شماره وسیله نقلیه",
+   "type": "String"
+  },
+  {
+   "field": "Barname",
+   "label": "شماره بارنامه",
+   "type": "String"
+  },
+  {
+   "field": "Sherkat",
+   "label": "نام شرکت باربری",
+   "type": "String"
+  },
+  {
+   "field": "BIDTarfhesab",
+   "label": "کد طرف حساب",
+   "type": "Int64"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "mpakhsh",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "mpakhshname",
+   "label": "نام مسئول پخش",
+   "type": "String"
+  },
+  {
+   "field": "bazaryabbid",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "bazaryabname",
+   "label": "نام بازاریاب",
+   "type": "String"
+  },
+  {
+   "field": "mforosh",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "mforoshname",
+   "label": "نام مسئول فروش",
+   "type": "String"
+  },
+  {
+   "field": "tozihat",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "bid",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "tarafhesabmoeinname",
+   "label": "معین خریدار",
+   "type": "String"
+  },
+  {
+   "field": "factordate",
+   "label": "تاریخ فروش",
+   "type": "DateTime"
+  },
+  {
+   "field": "factordate_x0020_Shamsi",
+   "label": "تاریخ فروش شمسی",
+   "type": "String"
+  },
+  {
+   "field": "MPakhsh",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "MPakhshName",
+   "label": "نام مسئول پخش",
+   "type": "String"
+  },
+  {
+   "field": "tarafhesabMoeinName",
+   "label": "معین خریدار",
+   "type": "String"
+  },
+  {
+   "field": "BazaryabName",
+   "label": "نام بازاریاب",
+   "type": "String"
+  },
+  {
+   "field": "FactorDate",
+   "label": "تاریخ فروش",
+   "type": "DateTime"
+  },
+  {
+   "field": "FactorDate_x0020_Shamsi",
+   "label": "تاریخ فروش شمسی",
+   "type": "String"
+  }
+ ]
+}

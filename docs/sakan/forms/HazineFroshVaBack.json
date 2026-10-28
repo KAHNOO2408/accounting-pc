@@ -1,0 +1,153 @@
+{
+ "source": "HazineFroshVaBack",
+ "reports": [
+  "gozarsh az hazian F.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Action",
+   "label": "اکشن",
+   "type": "Int64"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "ShFactor",
+   "label": "شماره فاکتور",
+   "type": "Double"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "Sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "Markaz",
+   "label": "شناسه مرکز اسناد",
+   "type": "Int64"
+  },
+  {
+   "field": "MarkazName",
+   "label": "مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "BidDaryaft",
+   "label": "شناسه حساب دریافت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "DaryaftKonnde",
+   "label": "حساب دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "TintDaryaft",
+   "label": "شناسه مولفه حساب دریافت کننده",
+   "type": "Int64"
+  },
+  {
+   "field": "TintNameDaryaft",
+   "label": "مولفه حساب دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "FiArzDaryaft",
+   "label": "فی ارز حساب دریافت کننده",
+   "type": "Decimal"
+  },
+  {
+   "field": "ArzDaryaft",
+   "label": "ارز حساب دریافت کننده",
+   "type": "String"
+  },
+  {
+   "field": "BidHazine",
+   "label": "شناسه عنوان هزینه",
+   "type": "Int64"
+  },
+  {
+   "field": "OnvanHazine",
+   "label": "عنوان هزینه",
+   "type": "String"
+  },
+  {
+   "field": "TintOnvanHazine",
+   "label": "شناسه مولفه عنوان هزینه",
+   "type": "String"
+  },
+  {
+   "field": "TintNameOnvanhazine",
+   "label": "مولفه عنوان هزینه",
+   "type": "String"
+  },
+  {
+   "field": "FiArzOnvanHazine",
+   "label": "فی ارز  عنوان هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "ArzOnvanHazine",
+   "label": "ارز  عنوان هزینه",
+   "type": "String"
+  },
+  {
+   "field": "DarsadHazine",
+   "label": "درصد مبلغ هزینه",
+   "type": "Double"
+  },
+  {
+   "field": "Mony_Daryaft",
+   "label": "مبلغ هزینه به ارز حساب دریافت کننده",
+   "type": "Decimal"
+  },
+  {
+   "field": "Mony_System",
+   "label": "مبلغ هزینه به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "Molahezat",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "TypeFactor",
+   "label": "شناسه فاکتور",
+   "type": "Int64"
+  },
+  {
+   "field": "Factor",
+   "label": "نوع فاکتور",
+   "type": "String"
+  },
+  {
+   "field": "Hazine",
+   "label": "عوارض و مالیات بر هزینه اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "Daramad",
+   "label": "عوارض و مالیات بر درآمد اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ شمسی",
+   "type": "String"
+  }
+ ]
+}

@@ -1,0 +1,488 @@
+{
+ "source": "AnbarGardani",
+ "reports": [
+  "Kazanbar gardani.mrt"
+ ],
+ "fields": [
+  {
+   "field": "action",
+   "label": "اکشن",
+   "type": "Int32"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "DteP",
+   "label": "تاریخ پیگرد",
+   "type": "DateTime"
+  },
+  {
+   "field": "SharhP",
+   "label": "شرح پیگرد",
+   "type": "String"
+  },
+  {
+   "field": "Sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "EzafatBid",
+   "label": "شناسه اضافات",
+   "type": "Int64"
+  },
+  {
+   "field": "EzafatHesabName",
+   "label": "حساب اضافات",
+   "type": "String"
+  },
+  {
+   "field": "KosoratBid",
+   "label": "شناسه کسورات",
+   "type": "Int64"
+  },
+  {
+   "field": "KosoratHesabName",
+   "label": "حساب کسرات",
+   "type": "String"
+  },
+  {
+   "field": "ArchivePath",
+   "label": "مسیر بایگانی",
+   "type": "String"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "MarkazId",
+   "label": "شناسه مرکز",
+   "type": "Int64"
+  },
+  {
+   "field": "MarkazName",
+   "label": "نام مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "UserInfo",
+   "label": "کاربر",
+   "type": "String"
+  },
+  {
+   "field": "storeid",
+   "label": "شناسه انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "StoreName",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "StoreDar",
+   "label": "انبار دار",
+   "type": "String"
+  },
+  {
+   "field": "Bid",
+   "label": "شناسه کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام لاتین کالا",
+   "type": "String"
+  },
+  {
+   "field": "SerialKala",
+   "label": "سریال کالا",
+   "type": "String"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصه کالا",
+   "type": "String"
+  },
+  {
+   "field": "JamTedad",
+   "label": "موجودی فعلی1",
+   "type": "Double"
+  },
+  {
+   "field": "JamTedad2",
+   "label": "موجودی فعلی2",
+   "type": "Double"
+  },
+  {
+   "field": "JamTedad3",
+   "label": "موجودی فعلی3",
+   "type": "Double"
+  },
+  {
+   "field": "tedad",
+   "label": "تعداد کسر یا اضافه1",
+   "type": "Double"
+  },
+  {
+   "field": "tedad2",
+   "label": "تعداد کسر یا اضافه2",
+   "type": "Double"
+  },
+  {
+   "field": "tedad3",
+   "label": "تعداد کسر یا اضافه3",
+   "type": "Double"
+  },
+  {
+   "field": "Vahed1",
+   "label": "واحد1",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed1",
+   "label": "لاتین واحد1",
+   "type": "String"
+  },
+  {
+   "field": "Vahed2",
+   "label": "واحد2",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed2",
+   "label": "لاتین واحد2",
+   "type": "String"
+  },
+  {
+   "field": "Vahed3",
+   "label": "واحد3",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed3",
+   "label": "لاتین واحد3",
+   "type": "String"
+  },
+  {
+   "field": "fi",
+   "label": "فی1",
+   "type": "Double"
+  },
+  {
+   "field": "Fi2",
+   "label": "فی2",
+   "type": "Decimal"
+  },
+  {
+   "field": "Fi3",
+   "label": "فی 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKol",
+   "label": "جمع کل",
+   "type": "Decimal"
+  },
+  {
+   "field": "MojodiFinal",
+   "label": "موجودی نهایی1",
+   "type": "Double"
+  },
+  {
+   "field": "MojodiFinal2",
+   "label": "موجودی نهایی2",
+   "type": "Double"
+  },
+  {
+   "field": "MojodiFinal3",
+   "label": "موجودی نهایی 3",
+   "type": "Double"
+  },
+  {
+   "field": "MaliatHesab",
+   "label": "حساب مالیات",
+   "type": "String"
+  },
+  {
+   "field": "MoneyMaliat",
+   "label": "مبلغ مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "AvarezHesab",
+   "label": "حساب عوارض",
+   "type": "String"
+  },
+  {
+   "field": "MoneyAvarez",
+   "label": "مبلغ عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "DteP_x0020_Shamsi",
+   "label": "تاریخ پیگرد شمسی",
+   "type": "String"
+  },
+  {
+   "field": "Tedad2",
+   "label": "تعداد کسر یا اضافه2",
+   "type": "Double"
+  },
+  {
+   "field": "Tedad3",
+   "label": "تعداد کسر یا اضافه3",
+   "type": "Double"
+  },
+  {
+   "field": "docnum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "dtep",
+   "label": "تاریخ پیگرد",
+   "type": "DateTime"
+  },
+  {
+   "field": "sharhp",
+   "label": "شرح پیگرد",
+   "type": "String"
+  },
+  {
+   "field": "sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "ezafatbid",
+   "label": "شناسه اضافات",
+   "type": "Int64"
+  },
+  {
+   "field": "ezafathesabname",
+   "label": "حساب اضافات",
+   "type": "String"
+  },
+  {
+   "field": "kosoratbid",
+   "label": "شناسه کسورات",
+   "type": "Int64"
+  },
+  {
+   "field": "kosorathesabname",
+   "label": "حساب کسرات",
+   "type": "String"
+  },
+  {
+   "field": "archivepath",
+   "label": "مسیر بایگانی",
+   "type": "String"
+  },
+  {
+   "field": "docmabnanum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "markazid",
+   "label": "شناسه مرکز",
+   "type": "Int64"
+  },
+  {
+   "field": "markazname",
+   "label": "نام مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "userinfo",
+   "label": "کاربر",
+   "type": "String"
+  },
+  {
+   "field": "storename",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "storedar",
+   "label": "انبار دار",
+   "type": "String"
+  },
+  {
+   "field": "bid",
+   "label": "شناسه کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "frasiname",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "englishname",
+   "label": "نام لاتین کالا",
+   "type": "String"
+  },
+  {
+   "field": "serialkala",
+   "label": "سریال کالا",
+   "type": "String"
+  },
+  {
+   "field": "fanyno",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "properties",
+   "label": "مشخصه کالا",
+   "type": "String"
+  },
+  {
+   "field": "jamtedad",
+   "label": "موجودی فعلی1",
+   "type": "Double"
+  },
+  {
+   "field": "jamtedad2",
+   "label": "موجودی فعلی2",
+   "type": "Decimal"
+  },
+  {
+   "field": "jamtedad3",
+   "label": "موجودی فعلی3",
+   "type": "Decimal"
+  },
+  {
+   "field": "vahed1",
+   "label": "واحد1",
+   "type": "String"
+  },
+  {
+   "field": "engvahed1",
+   "label": "لاتین واحد1",
+   "type": "String"
+  },
+  {
+   "field": "vahed2",
+   "label": "واحد2",
+   "type": "String"
+  },
+  {
+   "field": "engvahed2",
+   "label": "لاتین واحد2",
+   "type": "String"
+  },
+  {
+   "field": "vahed3",
+   "label": "واحد3",
+   "type": "String"
+  },
+  {
+   "field": "engvahed3",
+   "label": "لاتین واحد3",
+   "type": "String"
+  },
+  {
+   "field": "fi2",
+   "label": "فی2",
+   "type": "Decimal"
+  },
+  {
+   "field": "fi3",
+   "label": "فی 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "jamkol",
+   "label": "جمع کل",
+   "type": "Double"
+  },
+  {
+   "field": "mojodifinal",
+   "label": "موجودی نهایی1",
+   "type": "Double"
+  },
+  {
+   "field": "mojodifinal2",
+   "label": "موجودی نهایی2",
+   "type": "Decimal"
+  },
+  {
+   "field": "mojodifinal3",
+   "label": "موجودی نهایی 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "maliathesab",
+   "label": "حساب مالیات",
+   "type": "String"
+  },
+  {
+   "field": "moneymaliat",
+   "label": "مبلغ مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "avarezhesab",
+   "label": "حساب عوارض",
+   "type": "String"
+  },
+  {
+   "field": "moneyavarez",
+   "label": "مبلغ عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "dtep_x0020_Shamsi",
+   "label": "تاریخ پیگرد شمسی",
+   "type": "String"
+  }
+ ]
+}

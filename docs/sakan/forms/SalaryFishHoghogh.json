@@ -1,0 +1,629 @@
+{
+ "source": "SalaryFishHoghogh",
+ "reports": [
+  "fish hokok.mrt",
+  "fish pshrafte3.mrt"
+ ],
+ "fields": [
+  {
+   "field": "jid",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "شناسه دفتر پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "nme",
+   "label": "نام پرسنل",
+   "type": "String"
+  },
+  {
+   "field": "fatherName",
+   "label": "نام پدر",
+   "type": "String"
+  },
+  {
+   "field": "shsh",
+   "label": "شماره شناسنامه",
+   "type": "String"
+  },
+  {
+   "field": "mahaleSodor",
+   "label": "محل صدور",
+   "type": "String"
+  },
+  {
+   "field": "DteSodor",
+   "label": "تاریخ صدور",
+   "type": "DateTime"
+  },
+  {
+   "field": "DteBirth",
+   "label": "تاریخ تولد",
+   "type": "DateTime"
+  },
+  {
+   "field": "sex",
+   "label": "جنسیت",
+   "type": "String"
+  },
+  {
+   "field": "meliat",
+   "label": "ملیت",
+   "type": "String"
+  },
+  {
+   "field": "married",
+   "label": "وضعیت تاهل",
+   "type": "String"
+  },
+  {
+   "field": "pic",
+   "label": "تصویر",
+   "type": "Byte[]"
+  },
+  {
+   "field": "tel",
+   "label": "تلفن",
+   "type": "String"
+  },
+  {
+   "field": "mobile",
+   "label": "تلفن همراه",
+   "type": "String"
+  },
+  {
+   "field": "address",
+   "label": "نشانی",
+   "type": "String"
+  },
+  {
+   "field": "melinum",
+   "label": "شماره ملی",
+   "type": "String"
+  },
+  {
+   "field": "lebassize",
+   "label": "سایز لباس",
+   "type": "String"
+  },
+  {
+   "field": "shalvarSize",
+   "label": "سایز شلوار",
+   "type": "Int32"
+  },
+  {
+   "field": "shoesize",
+   "label": "سایز کفش",
+   "type": "Int32"
+  },
+  {
+   "field": "moarefNme",
+   "label": "نام معرف",
+   "type": "String"
+  },
+  {
+   "field": "moarefnesbat",
+   "label": "نسبت معرف",
+   "type": "String"
+  },
+  {
+   "field": "moarefAddress",
+   "label": "نشانی معرف",
+   "type": "String"
+  },
+  {
+   "field": "moareftel",
+   "label": "تلفن معرف",
+   "type": "String"
+  },
+  {
+   "field": "moarefmobile",
+   "label": "موبایل معرف",
+   "type": "String"
+  },
+  {
+   "field": "personelCode",
+   "label": "کد پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "cardcode",
+   "label": "شماره کارت پرسنلی",
+   "type": "String"
+  },
+  {
+   "field": "jobName",
+   "label": "نام شغل",
+   "type": "String"
+  },
+  {
+   "field": "IsHard",
+   "label": "مشاغل سخت",
+   "type": "Boolean"
+  },
+  {
+   "field": "parttype",
+   "label": "نام بخش مربوطه",
+   "type": "String"
+  },
+  {
+   "field": "emptype",
+   "label": "کارمند",
+   "type": "String"
+  },
+  {
+   "field": "empdaywork",
+   "label": "روز کارمند",
+   "type": "Int32"
+  },
+  {
+   "field": "estekhdamtype",
+   "label": "نوع استخدام",
+   "type": "String"
+  },
+  {
+   "field": "empSemat",
+   "label": "سمت",
+   "type": "String"
+  },
+  {
+   "field": "empDteEstekhdam",
+   "label": "تاریخ استخدام",
+   "type": "DateTime"
+  },
+  {
+   "field": "empbimeNumber",
+   "label": "شماره بیمه",
+   "type": "String"
+  },
+  {
+   "field": "empVahed",
+   "label": "واحد",
+   "type": "String"
+  },
+  {
+   "field": "hokmText",
+   "label": "متن حکم",
+   "type": "String"
+  },
+  {
+   "field": "beforeMaliatPrice",
+   "label": "مبلغ معافیت مالیاتی",
+   "type": "Decimal"
+  },
+  {
+   "field": "beforeMaliatText",
+   "label": "متن معافیت مالیاتی",
+   "type": "String"
+  },
+  {
+   "field": "SanavatPrice",
+   "label": "مبلغ حق سنوات",
+   "type": "Decimal"
+  },
+  {
+   "field": "SanavatBime",
+   "label": "احتساب سنوات در بیمه",
+   "type": "Boolean"
+  },
+  {
+   "field": "SanavatMaliat",
+   "label": "احتساب سنوات در مالیات",
+   "type": "Boolean"
+  },
+  {
+   "field": "MorkhasiDay",
+   "label": "مرخصی استحقاقی تا پایان سال",
+   "type": "Int32"
+  },
+  {
+   "field": "BankName",
+   "label": "نام بانک",
+   "type": "String"
+  },
+  {
+   "field": "BankShobe",
+   "label": "نام شعبه",
+   "type": "String"
+  },
+  {
+   "field": "HesabType",
+   "label": "نوح حساب",
+   "type": "String"
+  },
+  {
+   "field": "HesabNumber",
+   "label": "شماره حساب",
+   "type": "String"
+  },
+  {
+   "field": "BankCardNumber",
+   "label": "شماره کارت اعتباری",
+   "type": "String"
+  },
+  {
+   "field": "madrak",
+   "label": "مدرک تحصیلی",
+   "type": "String"
+  },
+  {
+   "field": "HoghPardazesh",
+   "label": "پردازش حقوق",
+   "type": "String"
+  },
+  {
+   "field": "MonthHour",
+   "label": "ماهیانه ساعتی",
+   "type": "Double"
+  },
+  {
+   "field": "DayHour",
+   "label": "روزانه ساعتی",
+   "type": "Double"
+  },
+  {
+   "field": "IsHide",
+   "label": "غیرفعال",
+   "type": "Boolean"
+  },
+  {
+   "field": "hoghoghMahiane",
+   "label": "حقوق ماهیانه",
+   "type": "Decimal"
+  },
+  {
+   "field": "haghSanavat",
+   "label": "حق سنوات",
+   "type": "Decimal"
+  },
+  {
+   "field": "haghShift",
+   "label": "حق شیفت",
+   "type": "Decimal"
+  },
+  {
+   "field": "ezafeKari",
+   "label": "اضافه کاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "haghMamoriat",
+   "label": "حق ماموریت",
+   "type": "Decimal"
+  },
+  {
+   "field": "padash",
+   "label": "پاداش",
+   "type": "Decimal"
+  },
+  {
+   "field": "PardakhthayeMoavaghe",
+   "label": "پرداخت های معوقه",
+   "type": "Decimal"
+  },
+  {
+   "field": "SayerPardakhthayeNaghdy",
+   "label": "سایر پرداخت های نقدی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Safar",
+   "label": "هزینه های سفر و فوق العاده ماموریت",
+   "type": "Decimal"
+  },
+  {
+   "field": "BazKharid",
+   "label": "بازخرید مرخصی و سنوات",
+   "type": "Decimal"
+  },
+  {
+   "field": "KosoratPrice",
+   "label": "کسورات",
+   "type": "Decimal"
+  },
+  {
+   "field": "eydi",
+   "label": "عیدی",
+   "type": "Decimal"
+  },
+  {
+   "field": "bazKharidAyamMorkhasi",
+   "label": "بازخرید ایام مرخصی",
+   "type": "Decimal"
+  },
+  {
+   "field": "kasrKar",
+   "label": "کسر کار",
+   "type": "Decimal"
+  },
+  {
+   "field": "gheybat",
+   "label": "غیبت",
+   "type": "Decimal"
+  },
+  {
+   "field": "morkhasiBedoneHoghogh",
+   "label": "مرخصی بدون حقوق",
+   "type": "Decimal"
+  },
+  {
+   "field": "jarime",
+   "label": "جریمه",
+   "type": "Decimal"
+  },
+  {
+   "field": "vam",
+   "label": "وام",
+   "type": "Decimal"
+  },
+  {
+   "field": "mosaede",
+   "label": "مساعده",
+   "type": "Decimal"
+  },
+  {
+   "field": "dasmozdeMahaneMashmoleBime",
+   "label": "دستمزد ماهانه مشمول بیمه",
+   "type": "Decimal"
+  },
+  {
+   "field": "dasmozdeMahaneGheireMashmoleBime",
+   "label": "دستمزد ماهانه غیر مشمول بیمه",
+   "type": "Decimal"
+  },
+  {
+   "field": "dasmozdeMahaneMashmoleMaliat",
+   "label": "دستمزد ماهانه مشمول مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "moafiathayeMaliati",
+   "label": "معافیت مالیاتی خاص",
+   "type": "Decimal"
+  },
+  {
+   "field": "dasmozdeMahaneMashmoleMaliatMoredeMohasebe",
+   "label": "دستمزد ماهانه مشمولا مالیات مورد محاسبه",
+   "type": "Decimal"
+  },
+  {
+   "field": "maliat",
+   "label": "مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "bimeSahmBimeShode",
+   "label": "بیمه سهم بیمه شده",
+   "type": "Decimal"
+  },
+  {
+   "field": "bimeSahmKarfarma",
+   "label": "بیمه سهم کارفرما",
+   "type": "Decimal"
+  },
+  {
+   "field": "bimeBikariSahmKarfarma",
+   "label": "بیمه بیکاری سهم کارفرما",
+   "type": "Decimal"
+  },
+  {
+   "field": "bimeMashagheleSakht",
+   "label": "بیمه مشاغل سخت",
+   "type": "Decimal"
+  },
+  {
+   "field": "zakhireMazayaPayanKhedmat",
+   "label": "ذخیره مزایای پایان خدمت",
+   "type": "Decimal"
+  },
+  {
+   "field": "maBeTafavotZakhireMazayaPayanKhedmat",
+   "label": "ما به تفاوت مزایای پایان خدمت",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghePardakhti",
+   "label": "مبلغ پرداختی",
+   "type": "Decimal"
+  },
+  {
+   "field": "TarkCount",
+   "label": "تعداد روزهای ترک کار",
+   "type": "Int32"
+  },
+  {
+   "field": "MorkhasiEstelajiCount",
+   "label": "تعداد روزهای مرخصی استعلاجی",
+   "type": "Int32"
+  },
+  {
+   "field": "MorkhasiEsteghaghiCount",
+   "label": "تعداد روزهای مرخصی استحقاقی",
+   "type": "Int32"
+  },
+  {
+   "field": "MorkhasiWithoutSalaryCount",
+   "label": "تعداد روزهای مرخصی بدون حقوق",
+   "type": "Int32"
+  },
+  {
+   "field": "KasrKarCount",
+   "label": "تعداد ساعت کسر کار",
+   "type": "Double"
+  },
+  {
+   "field": "EzafeKarCount",
+   "label": "تعداد ساعت اضافه کار",
+   "type": "Double"
+  },
+  {
+   "field": "GheybatCount",
+   "label": "تعداد روزهای غیبت",
+   "type": "Int32"
+  },
+  {
+   "field": "MamoriatCount",
+   "label": "روز ماموریت",
+   "type": "Int32"
+  },
+  {
+   "field": "WorkCount",
+   "label": "تعداد روزهای کاری",
+   "type": "Int32"
+  },
+  {
+   "field": "DoreWorkDaysCount",
+   "label": "تعداد روزهای کاری در دوره حقوقی",
+   "type": "Int32"
+  },
+  {
+   "field": "HolidayCount",
+   "label": "تعداد روزهای تعطیل",
+   "type": "Int32"
+  },
+  {
+   "field": "MamoriatPrice",
+   "label": "مبلغ حق ماموریت دوره",
+   "type": "Decimal"
+  },
+  {
+   "field": "DailySalary",
+   "label": "حقوق روزانه",
+   "type": "Decimal"
+  },
+  {
+   "field": "MaliatDailySalary",
+   "label": "مالیات در دستمزد روزانه",
+   "type": "Boolean"
+  },
+  {
+   "field": "HourEzafe",
+   "label": "دستمزد هرساعت اضافه کار",
+   "type": "Decimal"
+  },
+  {
+   "field": "MaliatEzafe",
+   "label": "مالیات در اضافه کار",
+   "type": "Boolean"
+  },
+  {
+   "field": "BimeEzafe",
+   "label": "بیمه در اضافه کار",
+   "type": "Boolean"
+  },
+  {
+   "field": "ShiftDaily",
+   "label": "مبلغ حق شیفت روزانه",
+   "type": "Decimal"
+  },
+  {
+   "field": "MaliatShift",
+   "label": "مالیات در شیفت",
+   "type": "Boolean"
+  },
+  {
+   "field": "BimeShift",
+   "label": "بیمه در ضیفت",
+   "type": "Boolean"
+  },
+  {
+   "field": "HourKasr",
+   "label": "جریمه هر ساعت کسر کار",
+   "type": "Decimal"
+  },
+  {
+   "field": "DailyGheybat",
+   "label": "جریمه هر روز غیبت",
+   "type": "Decimal"
+  },
+  {
+   "field": "DailyMorkhasiWithoutSalary",
+   "label": "جریمه هر روز مرخصی بدون حقوق",
+   "type": "Decimal"
+  },
+  {
+   "field": "MamoriatMaliat",
+   "label": "مالیات در ماموریت",
+   "type": "Boolean"
+  },
+  {
+   "field": "MamoriatBime",
+   "label": "بیمه در ماموریت",
+   "type": "Boolean"
+  },
+  {
+   "field": "DoreName",
+   "label": "نام دوره حقوقی",
+   "type": "String"
+  },
+  {
+   "field": "doreid",
+   "label": "کد دوره",
+   "type": "Int64"
+  },
+  {
+   "field": "RemainBook",
+   "label": "مانده از قبل",
+   "type": "Decimal"
+  },
+  {
+   "field": "RemainVam",
+   "label": "مانده مرخصی",
+   "type": "Decimal"
+  },
+  {
+   "field": "RemainMorkhasi",
+   "label": "مانده مرخصی",
+   "type": "Double"
+  },
+  {
+   "field": "MazayaMashmoleBime",
+   "label": "مزایای ماهانه مشمول بیمه",
+   "type": "Decimal"
+  },
+  {
+   "field": "MamoriatCount1",
+   "label": "",
+   "type": "Int32"
+  },
+  {
+   "field": "MamoriatHourCount",
+   "label": "ساعت ماموریت",
+   "type": "Decimal"
+  },
+  {
+   "field": "NightyShiftHourCount",
+   "label": "ساعت شیفت شب کاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "AsryShiftHourCount",
+   "label": "ساعت شیفت عصر کاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "DteSodor_x0020_Shamsi",
+   "label": "تاریخ صدور شمسی",
+   "type": "String"
+  },
+  {
+   "field": "DteBirth_x0020_Shamsi",
+   "label": "تاریخ تولد شمسی",
+   "type": "String"
+  },
+  {
+   "field": "empDteEstekhdam_x0020_Shamsi",
+   "label": "تاریخ استخدام شمسی",
+   "type": "String"
+  }
+ ]
+}

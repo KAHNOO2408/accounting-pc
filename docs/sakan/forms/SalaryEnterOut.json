@@ -1,0 +1,78 @@
+{
+ "source": "SalaryEnterOut",
+ "reports": [
+  "gozarsh az vorod korosh .mrt"
+ ],
+ "fields": [
+  {
+   "field": "enid",
+   "label": "شماره تردد",
+   "type": "Int64"
+  },
+  {
+   "field": "pid",
+   "label": "شناسه پرسنل",
+   "type": "Int64"
+  },
+  {
+   "field": "Bid",
+   "label": "شناسه دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "cardcode",
+   "label": "شماره کارت",
+   "type": "String"
+  },
+  {
+   "field": "personelCode",
+   "label": "کد پرسنلی",
+   "type": "Int64"
+  },
+  {
+   "field": "nme",
+   "label": "نام",
+   "type": "String"
+  },
+  {
+   "field": "enterdte",
+   "label": "ساعت تردد",
+   "type": "TimeSpan"
+  },
+  {
+   "field": "dte",
+   "label": "تاریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "type",
+   "label": "کد نوع تردد",
+   "type": "Int32"
+  },
+  {
+   "field": "sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "TypeTxt",
+   "label": "نوع تردد",
+   "type": "String"
+  },
+  {
+   "field": "gid",
+   "label": "شناسه دوره",
+   "type": "Int64"
+  },
+  {
+   "field": "gname",
+   "label": "نام دوره",
+   "type": "String"
+  },
+  {
+   "field": "dte_x0020_Shamsi",
+   "label": "تاریخ شمسی",
+   "type": "String"
+  }
+ ]
+}

@@ -1,0 +1,36 @@
+{
+ "source": "Sanadkmbed",
+ "reports": [
+  "Sanad KT.mrt",
+  "Sand K mT.mrt",
+  "kol.mrt",
+  "snad33.mrt"
+ ],
+ "fields": [
+  {
+   "field": "KolCode",
+   "label": "کۆدی گشتی",
+   "type": "Int64"
+  },
+  {
+   "field": "KolBID",
+   "label": "KOLBID",
+   "type": "Int64"
+  },
+  {
+   "field": "KolBName",
+   "label": "نام کل",
+   "type": "String"
+  },
+  {
+   "field": "KolMoney",
+   "label": "مبلغ کل",
+   "type": "Decimal"
+  },
+  {
+   "field": "KOLBID",
+   "label": "کد کل",
+   "type": "Int64"
+  }
+ ]
+}

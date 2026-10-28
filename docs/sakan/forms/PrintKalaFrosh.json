@@ -1,0 +1,518 @@
+{
+ "source": "PrintKalaFrosh",
+ "reports": [
+  "FFTC.mrt",
+  "Ff   dolary.mrt",
+  "Ff.mrt",
+  "brg morkasi.mrt",
+  "faktor f moi rki.mrt",
+  "faktor f moi rki151.mrt",
+  "faktor forosh 151.mrt",
+  "faktor forosh darsd.mrt",
+  "faktor forosh dd151.mrt",
+  "faktor forosh j151.mrt",
+  "faktor forosh m151.mrt",
+  "faktor forosh o151.mrt",
+  "faktor forosh trh n151.mrt",
+  "faktor frosh amval.mrt",
+  "faktor frosh ee151.mrt",
+  "faktor frosh kadamat.mrt",
+  "faktor frosh motfrke.mrt",
+  "faktor frosh mtfrka sado.mrt",
+  "forsh sipa A5151.mrt",
+  "frosh amval sado.mrt",
+  "frosh d151.mrt",
+  "frosh kadmat sadh.mrt",
+  "frosh sipa 151.mrt",
+  "frosh trhe sipa151.mrt",
+  "frosha4 ts151.mrt",
+  "frosha5 r151.mrt",
+  "frosha5 ts151.mrt",
+  "froshkk151.mrt",
+  "froshsng151.mrt",
+  "froskhcc151.mrt",
+  "frosshn151.mrt",
+  "mobl151.mrt",
+  "mrmrit krb 1.mrt",
+  "psargad daraeaa151.mrt",
+  "psargad daraebb151.mrt",
+  "vahd montakab.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "SanadSefaresh",
+   "label": "سند سفارش",
+   "type": "Double"
+  },
+  {
+   "field": "SID",
+   "label": "شماره سند سفارش",
+   "type": "Int64"
+  },
+  {
+   "field": "CodeKala",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا _نام خدمات",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام کالا _نام خدمات(لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "IranCode",
+   "label": "ایران کد",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصات کالا",
+   "type": "String"
+  },
+  {
+   "field": "Aid",
+   "label": "کد انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "AName",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "VahedId1",
+   "label": "کد واحد 1",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedName1",
+   "label": "واحد1",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName1",
+   "label": "واحد 1 (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "TedadVahed1",
+   "label": "تعداد واحد 1",
+   "type": "Double"
+  },
+  {
+   "field": "FiVahed1",
+   "label": "فی واحد 1(ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiVahed1System",
+   "label": "فی واحد 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "VhahedId2",
+   "label": "کد واحد 2",
+   "type": "Int64"
+  },
+  {
+   "field": "VhaedName2",
+   "label": "واحد 2",
+   "type": "String"
+  },
+  {
+   "field": "VhaedEnglishName2",
+   "label": "واحد 2 (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "NesbatV2BV1",
+   "label": "نسبت واحد 2 به واحد 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "TedadVahed2",
+   "label": "تعداد واحد 2",
+   "type": "Double"
+  },
+  {
+   "field": "Fivahed2",
+   "label": "فی واحد 2 (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "Fivahed2System",
+   "label": "فی واحد 2",
+   "type": "Decimal"
+  },
+  {
+   "field": "VahedId3",
+   "label": "کد واحد 3",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedNAme3",
+   "label": "واحد 3",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName3",
+   "label": "واحد 3 (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "NesbatV3BV1",
+   "label": "نسبت واحد 3 به واحد 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "TedadVahed3",
+   "label": "تعداد واحد 3",
+   "type": "Double"
+  },
+  {
+   "field": "Fivahed3",
+   "label": "فی واحد 3 (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "Fivahed3System",
+   "label": "فی واحد 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "Jam1",
+   "label": "جمع بدون تخفیف (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "Jam1System",
+   "label": "جمع بدون تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "Takhfif",
+   "label": "تخفیف (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "TakhfifSystem",
+   "label": "تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "DarsadTakhfif",
+   "label": "درصد تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahemBazaryab",
+   "label": "سهم بازاریابی (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "SBazaryabSystem",
+   "label": "سهم بازاریابی",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadBazarYaban",
+   "label": "درصد بازاریابی",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadArzesh",
+   "label": "درصد عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahemArzesh",
+   "label": "سهم  عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "SMaliat",
+   "label": "درصد مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat",
+   "label": "سهم مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKol",
+   "label": "جمع کل (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "DarsadYarane",
+   "label": "درصد یارانه",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahemYarane",
+   "label": "سهم یارانه (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahemYaraneSystem",
+   "label": "سهم یارانه",
+   "type": "Decimal"
+  },
+  {
+   "field": "Shserial",
+   "label": "شماره سریال",
+   "type": "String"
+  },
+  {
+   "field": "Tozihat",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "VazenKalaBeV1",
+   "label": "وزن به واحد 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamVazenKala",
+   "label": "جمع وزن کالا",
+   "type": "Double"
+  },
+  {
+   "field": "JamKalaKaridar",
+   "label": "جمع با تخفیف (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "JamKalaKaridarSystem",
+   "label": "جمع با تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "TypAghlam",
+   "label": "نوع کالا",
+   "type": "String"
+  },
+  {
+   "field": "TypAghlam_int",
+   "label": "کد نوع اقلام",
+   "type": "Int32"
+  },
+  {
+   "field": "Aghlam",
+   "label": "عوارض و مالیات بر اقلام اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "FiMasrafKonande",
+   "label": "بهای مصرف کننده",
+   "type": "Decimal"
+  },
+  {
+   "field": "Takhfif1",
+   "label": "تخفیف1",
+   "type": "Decimal"
+  },
+  {
+   "field": "Takhfif2",
+   "label": "تخفیف2",
+   "type": "Decimal"
+  },
+  {
+   "field": "TakhfifN",
+   "label": "تخفیف تعدادی",
+   "type": "Decimal"
+  },
+  {
+   "field": "MainVahedId",
+   "label": "واحد منتخب",
+   "type": "Int64"
+  },
+  {
+   "field": "jamesatr",
+   "label": "جمع سطر",
+   "type": "PrintKalaFrosh.JamKol_x0020__x002B__x0020_double.Parse_x0028_PrintKalaFrosh.SahemYaraneToString_x0028__x0029__x0029_"
+  },
+  {
+   "field": "Takhfif3",
+   "label": "تخفیف اشانتیون",
+   "type": "Decimal"
+  },
+  {
+   "field": "rownumber",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "HesabBid",
+   "label": "عنوان حساب",
+   "type": "Int64"
+  },
+  {
+   "field": "BName",
+   "label": "نام حساب",
+   "type": "String"
+  },
+  {
+   "field": "HesabTNT",
+   "label": "شناسه مولفه حساب اموال",
+   "type": "Int64"
+  },
+  {
+   "field": "Fi",
+   "label": "فی فروش به ارز خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "Fi_system",
+   "label": "مبلغ به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "Hazine",
+   "label": "هزینه (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineSystem",
+   "label": "هزینه به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamBaKasrHazine",
+   "label": "جمع با احتساب هزینه بعهده فروشنده به ارز خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamBaKasrHazine_System",
+   "label": "جمع با احتساب هزینه بعهده فروشنده به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "SArzesh",
+   "label": "درصد عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzesh",
+   "label": "سهم عوارض (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "Smaliat",
+   "label": "درصد مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiKharid",
+   "label": "فی خرید به ارز خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "sodVaZianKhales",
+   "label": "سود و زیان خالص به ارز خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "sodVaZianKhales_system",
+   "label": "سود و زیان خالص به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "sodVaZianNaKhales",
+   "label": "سود و زیان ناخالص به ارز خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "sodVaZianNaKhales_System",
+   "label": "سود و زیان ناخالص به ارز سیستم",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadSodVazianKhales",
+   "label": "درصد سود و زیان خالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadSodVazianNaKhales",
+   "label": "درصد سود و زیان ناخالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "sstid",
+   "label": "کد مالیاتی کالا",
+   "type": "String"
+  },
+  {
+   "field": "sstidkh",
+   "label": "کد مالیاتی خدمات",
+   "type": "String"
+  },
+  {
+   "field": "barcodekh",
+   "label": "بارکد خدمات",
+   "type": "String"
+  },
+  {
+   "field": "RemainTedad",
+   "label": "تعداد 1 امانی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Remaintedad2",
+   "label": "تعداد 2 امانی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Remaintedad3",
+   "label": "تعداد 3 امانی",
+   "type": "Decimal"
+  },
+  {
+   "field": "TasvieAllTedad",
+   "label": "تعداد کل تسویه",
+   "type": "Decimal"
+  },
+  {
+   "field": "FBarcode",
+   "label": "بارکد فرعی",
+   "type": "String"
+  },
+  {
+   "field": "FBarcodeTitle",
+   "label": "مشخصه بارکد",
+   "type": "String"
+  },
+  {
+   "field": "TasvieDate",
+   "label": "روز تسویه",
+   "type": "Int32"
+  },
+  {
+   "field": "CreatorUser_DocMabnaNum",
+   "label": "کاربر ثبت کننده - شماره ثابت",
+   "type": "String"
+  }
+ ]
+}

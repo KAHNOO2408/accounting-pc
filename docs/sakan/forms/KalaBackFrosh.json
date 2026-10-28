@@ -1,0 +1,421 @@
+{
+ "source": "KalaBackFrosh",
+ "reports": [
+  "bargasht az frish ty dore jary.mrt",
+  "bargasht az frosh m167.mrt",
+  "bargasht az frosh ty dore jary sadh.mrt",
+  "bargsht az forosh ty dore kbl.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "SanadFrosh",
+   "label": "سند فروش",
+   "type": "Single"
+  },
+  {
+   "field": "SanadSefaresh",
+   "label": "سند سفارش",
+   "type": "Double"
+  },
+  {
+   "field": "CodeKala",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام کالا (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شمار فنی",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "IranCode",
+   "label": "ایران کد",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصات کالا",
+   "type": "String"
+  },
+  {
+   "field": "Aid",
+   "label": "شناسه انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "AName",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "Vahed1",
+   "label": "شناسه واحد اول",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedName1",
+   "label": "واحد 1",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName1",
+   "label": "واحد 1 لاتین",
+   "type": "String"
+  },
+  {
+   "field": "TedadV1",
+   "label": "تعداد1",
+   "type": "Double"
+  },
+  {
+   "field": "FiFroshV1",
+   "label": "فی فروش 1(ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiFroshV1_system",
+   "label": "فی فروش 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiOteadV1",
+   "label": "فی برگشت 1 (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiOteadV1_system",
+   "label": "فی برگشت 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "Vahed2",
+   "label": "شناسه واحد دوم",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedNmae2",
+   "label": "واحد دوم",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName2",
+   "label": "واحد دوم (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "NesbatV2BV1",
+   "label": "نسبت واحد 2 به 1",
+   "type": "Double"
+  },
+  {
+   "field": "TedadFroshV2",
+   "label": "تعداد 2",
+   "type": "Double"
+  },
+  {
+   "field": "FiFroshV2",
+   "label": "فی فروش 2 (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiFroshV2_system",
+   "label": "فی فروش 2",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiOteadV2",
+   "label": "فی برگشت از فروش2 (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiOteadV2_system",
+   "label": "فی برگشت از فروش 2",
+   "type": "Decimal"
+  },
+  {
+   "field": "Vahed3",
+   "label": "شناسه واحد سوم",
+   "type": "Int64"
+  },
+  {
+   "field": "VahedName3",
+   "label": "واحد 3",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName3",
+   "label": "واحد 3 لاتین",
+   "type": "String"
+  },
+  {
+   "field": "NesbatV3BV2",
+   "label": "نسبت واحد 3 به واحد 1",
+   "type": "Double"
+  },
+  {
+   "field": "TedadFroshV3",
+   "label": "تعداد3",
+   "type": "Double"
+  },
+  {
+   "field": "FiFroshV3",
+   "label": "فی فروش 3(ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiFroshV3_system",
+   "label": "فی فروش 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiOteadV3",
+   "label": "فی برگشت  از فروش 3 (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiOteadV3_system",
+   "label": "فی برگشت از فروش 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "jamFrosh",
+   "label": "جمع فروش (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "jamFrosh_system",
+   "label": "جمع فروش",
+   "type": "Double"
+  },
+  {
+   "field": "Takhfif",
+   "label": "جمع تخفیف ارزی",
+   "type": "Double"
+  },
+  {
+   "field": "Takhfif_system",
+   "label": "تخفیف",
+   "type": "Double"
+  },
+  {
+   "field": "DarsadTakhfif",
+   "label": "درصد تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadKasrMarjoei",
+   "label": "درصد کسر مرجوعی",
+   "type": "Decimal"
+  },
+  {
+   "field": "kasrMarjoei",
+   "label": "کسر مرجوعی (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "kasrMarjoei_system",
+   "label": "کسر مرجوعی",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineBFroshande",
+   "label": "هزینه بعهده فروشنده (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineBFroshande_system",
+   "label": "هزینه بعهده فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadArzesh",
+   "label": "درصد عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "ArzeshAfzode",
+   "label": "سهم عوارض (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadYarane",
+   "label": "درصد یارانه",
+   "type": "Decimal"
+  },
+  {
+   "field": "Yarane",
+   "label": "سهم یارانه (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "Yarane_system",
+   "label": "سهم یارانه",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadBarzarYabi",
+   "label": "درصد بازاریابی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Bazaryabi",
+   "label": "سهم بازاریابی (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "Bazaryabi_system",
+   "label": "سهم بازاریابی",
+   "type": "Decimal"
+  },
+  {
+   "field": "jamFiOutedFrosh",
+   "label": "جمع برگشت از فروش (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "jamFiOutedFrosh_system",
+   "label": "جمع برگشت از فروش",
+   "type": "Double"
+  },
+  {
+   "field": "Tozihat",
+   "label": "توضیحات",
+   "type": "String"
+  },
+  {
+   "field": "Shserial",
+   "label": "شماره سریال",
+   "type": "String"
+  },
+  {
+   "field": "Vazenvahed1",
+   "label": "وزن به واحد اول",
+   "type": "Double"
+  },
+  {
+   "field": "Jamvazn",
+   "label": "جمع وزن کالا",
+   "type": "Double"
+  },
+  {
+   "field": "AghlamType",
+   "label": "نوع اقلام",
+   "type": "String"
+  },
+  {
+   "field": "AghlamType_int",
+   "label": "شناسه نوع اقلام",
+   "type": "Int32"
+  },
+  {
+   "field": "SMaliat",
+   "label": "درصد مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat",
+   "label": "سهم مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "jamKol",
+   "label": "جمع کل (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "jamKol_sys",
+   "label": "جمع کل",
+   "type": "Double"
+  },
+  {
+   "field": "Aghlam",
+   "label": "عوارض و مالیات بر اقلام اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "MPakhshName",
+   "label": "مسئول پخش",
+   "type": "String"
+  },
+  {
+   "field": "Region",
+   "label": "منطقه",
+   "type": "String"
+  },
+  {
+   "field": "FactorDate",
+   "label": "تاریخ فاکتور",
+   "type": "DateTime"
+  },
+  {
+   "field": "FactorDate_x0020_Shamsi",
+   "label": "تاریخ فاکتور شمسی",
+   "type": "String"
+  },
+  {
+   "field": "FiFroshSalGhablV1",
+   "label": "فی فروش سال قبل  1 (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "FiFroshSalGhablV1_system",
+   "label": "فی فروش سال قبل 1",
+   "type": "Double"
+  },
+  {
+   "field": "FiFroshSalGhablV2",
+   "label": "فی فروش سال قبل 2 (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiFroshSalGhablV2_system",
+   "label": "فی فروش سال قبل 2",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiFroshSalGhablV3",
+   "label": "فی فروش سال قبل (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiFroshSalGhablV3_System",
+   "label": "فی فروش سال قبل 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamVazn",
+   "label": "جمع وزن کالا",
+   "type": "Double"
+  },
+  {
+   "field": "JamKol",
+   "label": "جمع کل (ارزی)",
+   "type": "Double"
+  },
+  {
+   "field": "JamKol_sys",
+   "label": "جمع کل",
+   "type": "Double"
+  }
+ ]
+}

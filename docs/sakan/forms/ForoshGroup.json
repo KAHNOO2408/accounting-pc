@@ -1,0 +1,208 @@
+{
+ "source": "ForoshGroup",
+ "reports": [
+  "frosh tjmi.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Kharidar",
+   "label": "خریدار",
+   "type": "String"
+  },
+  {
+   "field": "Kharidar_ID",
+   "label": "کد خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "MablaghFactorBKHTSystem",
+   "label": "جمع اقلام  کالا بدون تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamTakhfifAghlam_system",
+   "label": "جمع تخفیف اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghFactorTBkhaSystem",
+   "label": "جمع اقلام کالا با تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablagKolFactorSystem",
+   "label": "جمع فاکتور بدون تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablagKolFactorTSystem",
+   "label": "جمع فاکتور با تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineHamelBarKharidar",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineEshantionSystem",
+   "label": "هزینه اشانتیون",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineBazaryabanSystem",
+   "label": "هزینه پورسانت",
+   "type": "Decimal"
+  },
+  {
+   "field": "JameYaraneSystem",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "Jam_Cardex",
+   "label": "قیمت تمام شده فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "jamHazinehaSystem",
+   "label": "جمع هزینه های فاکتور بعهده فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "sodkhales2ArzSystem",
+   "label": "سود و زیان خالص حاصله از فروش کالا",
+   "type": "Decimal"
+  },
+  {
+   "field": "sodNAkhales2ArzSystem",
+   "label": "سود و زیان نا خالص حاصله از فروش کالا",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKhadamatSystem",
+   "label": "جمع فروش خدمات بدون تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamTakhfifKhadamatSystem",
+   "label": "جمع تخفیف اقلام خدماتی",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamVaznKalaFactor",
+   "label": "وزن فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKadamatTamamshode_System",
+   "label": "جمع فروش خدمات با تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodKomisionSystem",
+   "label": "سود حاصله از حق کمیسیون",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamFator_system",
+   "label": "جمع فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineKharidar_system",
+   "label": "هزینه بعهده خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghArzeshSystem",
+   "label": "جمع عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatF_sys",
+   "label": "جمع مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvaezAghlam_sys",
+   "label": "جمع عوارض اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezEshantion_sys",
+   "label": "جمع عوارض اشانتیون",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezKhadamat_sys",
+   "label": "جمع عوارض خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezMotafareghe_sys",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezAmval_sys",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezHazine_sys",
+   "label": "جمع عوارض هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatAghlam_sys",
+   "label": "جمع مالیات اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatEshantion_sys",
+   "label": "جمع مالیات اشانتیون",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatKhadamat_sys",
+   "label": "جمع مالیات خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamFactorBMali_sys",
+   "label": "جمع فاکتور بدون عملیات مالی(ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezDaramd_sys",
+   "label": "جمع عوارض درآمد",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatDaramad_sys",
+   "label": "جمع مالیات درآمد",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamTakhfif_sys",
+   "label": "جمع تخفیف فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineHamelBarSystem",
+   "label": "هزینه حمل بار و عوارض پرداختنی بعهده فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatHazine_sys",
+   "label": "جمع مالیات هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "DoreName",
+   "label": "",
+   "type": "String"
+  }
+ ]
+}

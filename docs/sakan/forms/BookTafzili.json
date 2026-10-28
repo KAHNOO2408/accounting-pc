@@ -1,0 +1,167 @@
+{
+ "source": "BookTafzili",
+ "reports": [
+  "1145tafzili.mrt",
+  "daftr tfzili.mrt",
+  "dftr tfsili.mrt",
+  "dftr tfsili1.mrt",
+  "gozarsh tfsili listi1145.mrt"
+ ],
+ "fields": [
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "Sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "Molahezat",
+   "label": "ملاحظات",
+   "type": "String"
+  },
+  {
+   "field": "DocId",
+   "label": "کد ردیف",
+   "type": "Int64"
+  },
+  {
+   "field": "KBID",
+   "label": "کد دفتر کل",
+   "type": "Int64"
+  },
+  {
+   "field": "MBID",
+   "label": "کد دفتر معین",
+   "type": "Int64"
+  },
+  {
+   "field": "BID",
+   "label": "کد دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "BName",
+   "label": "نام دفتر",
+   "type": "String"
+  },
+  {
+   "field": "Bed",
+   "label": "بدهکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "Bes",
+   "label": "بستانکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "Type",
+   "label": "تشخیص",
+   "type": "String"
+  },
+  {
+   "field": "Remian",
+   "label": "مانده",
+   "type": "Decimal"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "Action",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "endremain",
+   "label": "مانده نهایی",
+   "type": "Decimal"
+  },
+  {
+   "field": "LastRemain",
+   "label": "مانده قبلی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ شمسی",
+   "type": "String"
+  },
+  {
+   "field": "docid",
+   "label": "کد ردیف",
+   "type": "Int64"
+  },
+  {
+   "field": "docmabnanum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "docnum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "sharh",
+   "label": "شرح",
+   "type": "String"
+  },
+  {
+   "field": "bid",
+   "label": "کد دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "bname",
+   "label": "نام دفتر",
+   "type": "String"
+  },
+  {
+   "field": "bed",
+   "label": "بدهکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "bes",
+   "label": "بستانکار",
+   "type": "Decimal"
+  },
+  {
+   "field": "dte",
+   "label": "",
+   "type": "DateTime"
+  },
+  {
+   "field": "type",
+   "label": "تشخیص",
+   "type": "String"
+  },
+  {
+   "field": "remian",
+   "label": "مانده",
+   "type": "Decimal"
+  },
+  {
+   "field": "action",
+   "label": "",
+   "type": "Int64"
+  },
+  {
+   "field": "dte_x0020_Shamsi",
+   "label": "dte شمسی",
+   "type": "String"
+  }
+ ]
+}

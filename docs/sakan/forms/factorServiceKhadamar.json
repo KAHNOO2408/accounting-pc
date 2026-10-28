@@ -1,0 +1,393 @@
+{
+ "source": "factorServiceKhadamar",
+ "reports": [
+  "gzarsh az faktor srvis .mrt"
+ ],
+ "fields": [
+  {
+   "field": "Action",
+   "label": "اکشن",
+   "type": "Int64"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "DteP",
+   "label": "تاریخ پیگرد",
+   "type": "DateTime"
+  },
+  {
+   "field": "SharhP",
+   "label": "شرح پیگرد",
+   "type": "String"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ",
+   "type": "DateTime"
+  },
+  {
+   "field": "Sharh",
+   "label": "شرح سند",
+   "type": "String"
+  },
+  {
+   "field": "Markaz",
+   "label": "شناسه مرکز اسناد",
+   "type": "Int64"
+  },
+  {
+   "field": "MarkazName",
+   "label": "مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "shFactor",
+   "label": "شماره فاکتور",
+   "type": "Double"
+  },
+  {
+   "field": "pazireshNumber",
+   "label": "شماره پذیرش",
+   "type": "Int64"
+  },
+  {
+   "field": "kharidarBid",
+   "label": "کد خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "KharidarName",
+   "label": "خریدار",
+   "type": "String"
+  },
+  {
+   "field": "kharidarTnt",
+   "label": "شناسه مولفه خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "TintKharidar",
+   "label": "مولفه خریدار",
+   "type": "String"
+  },
+  {
+   "field": "arzeshBid",
+   "label": "شناسه حساب عوارض",
+   "type": "Int64"
+  },
+  {
+   "field": "ArzeshName",
+   "label": "حساب عوارض",
+   "type": "String"
+  },
+  {
+   "field": "arzeshTnt",
+   "label": "شناسه مولفه حساب  عوارض",
+   "type": "Int64"
+  },
+  {
+   "field": "TintArzesh",
+   "label": "مولفه حساب عوارض",
+   "type": "String"
+  },
+  {
+   "field": "garantiBid",
+   "label": "شناسه حساب گارانتی",
+   "type": "Int64"
+  },
+  {
+   "field": "GarantiName",
+   "label": "حساب گارانتی",
+   "type": "String"
+  },
+  {
+   "field": "garantiTnt",
+   "label": "شناسه مولفه حساب گارانتی",
+   "type": "Int64"
+  },
+  {
+   "field": "TintGaranti",
+   "label": "مولفه حساب گارانتی",
+   "type": "String"
+  },
+  {
+   "field": "servicekarBid",
+   "label": "کد سرویسکار",
+   "type": "Int64"
+  },
+  {
+   "field": "Sieviskar",
+   "label": "نام سرویس کار",
+   "type": "String"
+  },
+  {
+   "field": "MablaghFactorBKHT",
+   "label": "جمع اقلام کالا بدون تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumTakhfifAghlam",
+   "label": "جمع تخفیف اقلام کالا",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghFactorTBkha",
+   "label": "جمع اقلام کالا با تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablagKolFactor",
+   "label": "جمع فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumHazineFroshandeh",
+   "label": "جمع هزینه بعهده فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzeshF",
+   "label": "مبلغ ارزش افزوده",
+   "type": "Decimal"
+  },
+  {
+   "field": "Jam_Cardex",
+   "label": "قیمت تمام شده",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodKhales",
+   "label": "سود و زیان خالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadSodKhales",
+   "label": "درصد سود و زیان خالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodNaKhales",
+   "label": "سود و زیان ناخالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "DarsadSodNakhales",
+   "label": "درصد سود و زیان ناخالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumKhadamat",
+   "label": "جمع خدمات بدون تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumTakhfifKhadamat",
+   "label": "تخفیف خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "jamKhadamat",
+   "label": "جمع خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "jamKhadamatSystem",
+   "label": "جمع خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodHaselKomision",
+   "label": "سود حاصل از حق کمیسیون",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahmgarantiAghlam",
+   "label": "سهم گارانتی اقلام کالا",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahmgarantiKhadamat",
+   "label": "سهم گارانتی خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "sahmGaranti",
+   "label": "مبلغ گارانتی",
+   "type": "Decimal"
+  },
+  {
+   "field": "NameCar",
+   "label": "نام وسیله نقلیه",
+   "type": "String"
+  },
+  {
+   "field": "NUmCar",
+   "label": "شماره وسیله نقلیه",
+   "type": "String"
+  },
+  {
+   "field": "Barname",
+   "label": "شماره بارنامه",
+   "type": "String"
+  },
+  {
+   "field": "Sherkat",
+   "label": "نام شرکت باربری",
+   "type": "String"
+  },
+  {
+   "field": "MabdaeHarekat",
+   "label": "مبدا حرکت",
+   "type": "String"
+  },
+  {
+   "field": "MaghsadHarekat",
+   "label": "مقصد حرکت",
+   "type": "String"
+  },
+  {
+   "field": "TypeFactor",
+   "label": "شناسه فاکتور",
+   "type": "Int64"
+  },
+  {
+   "field": "Factor",
+   "label": "نوع فاکتور",
+   "type": "String"
+  },
+  {
+   "field": "BidMaliat",
+   "label": "شناسه حساب مالیات",
+   "type": "Int64"
+  },
+  {
+   "field": "NameMaliat",
+   "label": "حساب مالیات",
+   "type": "String"
+  },
+  {
+   "field": "TintMaliat",
+   "label": "شناسه مولفه حساب مالیات",
+   "type": "Int64"
+  },
+  {
+   "field": "NameTintMaliat",
+   "label": "مولفه حساب مالیات",
+   "type": "String"
+  },
+  {
+   "field": "HazineKharidar_system",
+   "label": "هزینه بعهده خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineKharidar",
+   "label": "هزینه بعهده خریدار (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarez_F",
+   "label": "جمع عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamTax_F",
+   "label": "جمع مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarez_Aghlam",
+   "label": "جمع عوارض اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarez_Khadamat",
+   "label": "جمع عوارض خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat_Aghlam",
+   "label": "جمع مالیات اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat_Khadamat",
+   "label": "جمع مالیات خدمات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarez_Hazine",
+   "label": "جمع عوارض هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat_Hazine",
+   "label": "جمع مالیات هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarez_Daramad",
+   "label": "جمع عوارض درآمد",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat_Daramad",
+   "label": "جمع مالیات دآمد",
+   "type": "Decimal"
+  },
+  {
+   "field": "JameBedonMali",
+   "label": "جمع فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "KalaVat_Moshtari",
+   "label": "عوارض و مالیات اقلام بعهده مشتری است",
+   "type": "Boolean"
+  },
+  {
+   "field": "KhadamatVat_Moshtari",
+   "label": "عوارض و مالیات خدمات بعهده مشتری است",
+   "type": "Boolean"
+  },
+  {
+   "field": "Aghlam",
+   "label": "عوارض و مالیات بر اقلام اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "Khadamat",
+   "label": "عوارض و مالیات بر خدمات اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "Hazine",
+   "label": "عوارض و مالیات بر هزینه اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "Daramad",
+   "label": "عوارض و مالیات بر درآمد اعمال شد",
+   "type": "Boolean"
+  },
+  {
+   "field": "DteP_x0020_Shamsi",
+   "label": "تاریخ پیگرد شمسی",
+   "type": "String"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ شمسی",
+   "type": "String"
+  }
+ ]
+}

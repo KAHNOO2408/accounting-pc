@@ -1,0 +1,1098 @@
+{
+ "source": "MojodiKala",
+ "reports": [
+  "22Kazmojodi kala.mrt",
+  "22form bazaryab.mrt",
+  "Kazmojodi kala.mrt",
+  "form bazaryab22.mrt",
+  "form kymat gozari frosh22.mrt",
+  "mojodkalay3.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "FanyNo",
+   "label": "ش فنی",
+   "type": "String"
+  },
+  {
+   "field": "Bid",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام کالا لاتین",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصه کالا",
+   "type": "String"
+  },
+  {
+   "field": "Each2Equal1",
+   "label": "نسبت 1 به 2",
+   "type": "Decimal"
+  },
+  {
+   "field": "Each1Equal3",
+   "label": "نسبت 1 به 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "SellPrice1",
+   "label": "بهای فروش 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "SellPrice2",
+   "label": "بهای فروش 2",
+   "type": "Decimal"
+  },
+  {
+   "field": "SellPrice3",
+   "label": "بهای فروش 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "BuyPrice1",
+   "label": "فی خرید1",
+   "type": "Decimal"
+  },
+  {
+   "field": "BuyPrice2",
+   "label": "فی خرید2",
+   "type": "Decimal"
+  },
+  {
+   "field": "BuyPrice3",
+   "label": "فی خرید3",
+   "type": "Decimal"
+  },
+  {
+   "field": "HamkarPrice1",
+   "label": "بهای همکار1",
+   "type": "Decimal"
+  },
+  {
+   "field": "HamkarPrice2",
+   "label": "بهای همکار2",
+   "type": "Decimal"
+  },
+  {
+   "field": "HamkarPrice3",
+   "label": "بهای همکار3",
+   "type": "Decimal"
+  },
+  {
+   "field": "SecondPrice1",
+   "label": "بهای دوم فروش1",
+   "type": "Decimal"
+  },
+  {
+   "field": "SecondPrice2",
+   "label": "بهای دوم فروش2",
+   "type": "Decimal"
+  },
+  {
+   "field": "SecondPrice3",
+   "label": "بهای دوم فروش3",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiMasrafKonande",
+   "label": "بهای مصرف کننده",
+   "type": "Decimal"
+  },
+  {
+   "field": "BuyFirstTedad",
+   "label": "تعداد موجودی ابتدای دوره",
+   "type": "Double"
+  },
+  {
+   "field": "BuyFirstTedad2",
+   "label": "تعداد2 موجودی ابتدای دوره",
+   "type": "Double"
+  },
+  {
+   "field": "BuyFirstTedad3",
+   "label": "تعداد3 موجودی ابتدای دوره",
+   "type": "Double"
+  },
+  {
+   "field": "BuyFirstRial",
+   "label": "ریال موجودی ابتدای دوره",
+   "type": "Double"
+  },
+  {
+   "field": "MixBuildTedad",
+   "label": "تعداد تولید",
+   "type": "Double"
+  },
+  {
+   "field": "MixBuildTedad2",
+   "label": "تعداد2 تولید",
+   "type": "Double"
+  },
+  {
+   "field": "MixBuildTedad3",
+   "label": "تعداد3 تولید",
+   "type": "Double"
+  },
+  {
+   "field": "MixBuildRial",
+   "label": "ريال تولید",
+   "type": "Double"
+  },
+  {
+   "field": "DamagedTedad",
+   "label": "تعداد ضایعات و مصرف",
+   "type": "Double"
+  },
+  {
+   "field": "DamagedTedad2",
+   "label": "تعداد2 ضایعات و مصرف",
+   "type": "Double"
+  },
+  {
+   "field": "DamagedTedad3",
+   "label": "تعداد3 ضایعات و مصرف",
+   "type": "Double"
+  },
+  {
+   "field": "DamagedRial",
+   "label": "ريال ضایعات و مصرف",
+   "type": "Double"
+  },
+  {
+   "field": "GharziTedad",
+   "label": "تعداد دریافتی امانی",
+   "type": "Double"
+  },
+  {
+   "field": "GharziTedad2",
+   "label": "تعداد 2دریافتی امانی",
+   "type": "Double"
+  },
+  {
+   "field": "GharziTedad3",
+   "label": "تعداد3 دریافتی امانی",
+   "type": "Double"
+  },
+  {
+   "field": "GharziRial",
+   "label": "ریال دریافتی امانی",
+   "type": "Double"
+  },
+  {
+   "field": "TrasnferFromCardexTedad",
+   "label": "تعداد انتقال از کاردکس ها",
+   "type": "Double"
+  },
+  {
+   "field": "TransferFromCardexTedad2",
+   "label": "تعداد2 انتقال از کاردکس ها",
+   "type": "Double"
+  },
+  {
+   "field": "TransferFromCardexTedad3",
+   "label": "تعداد3 انتقال از کاردکس ها",
+   "type": "Double"
+  },
+  {
+   "field": "TrasnferFromCardexRial",
+   "label": "ريال انتقال از کاردکس ها",
+   "type": "Double"
+  },
+  {
+   "field": "TransferToCardexTedad",
+   "label": "تعداد انتقال به کاردکس ها",
+   "type": "Double"
+  },
+  {
+   "field": "TransferToCardexTedad2",
+   "label": "تعداد2 انتقال به کاردکس ها",
+   "type": "Double"
+  },
+  {
+   "field": "TransferToCardexTedad3",
+   "label": "تعداد3 انتقال به کاردکس ها",
+   "type": "Double"
+  },
+  {
+   "field": "TransferToCardexRial",
+   "label": "ريال انتقال به کاردکس ها",
+   "type": "Double"
+  },
+  {
+   "field": "TransferToStoreTedad",
+   "label": "تعداد انتقال به انبار",
+   "type": "Double"
+  },
+  {
+   "field": "TransferToStoreTedad2",
+   "label": "تعداد2 انتقال به انبار",
+   "type": "Double"
+  },
+  {
+   "field": "TransferToStoreTedad3",
+   "label": "تعداد3 انتقال به انبار",
+   "type": "Double"
+  },
+  {
+   "field": "TransferToStoreRial",
+   "label": "مبلغ انتقال به انبار",
+   "type": "Double"
+  },
+  {
+   "field": "TransferFromStoreTedad",
+   "label": "تعداد انتقال از انبار",
+   "type": "Double"
+  },
+  {
+   "field": "TransferFromStoreTedad2",
+   "label": "تعداد2 انتقال از انبار",
+   "type": "Double"
+  },
+  {
+   "field": "TransferFromStoreTedad3",
+   "label": "تعداد3 انتقال از انبار",
+   "type": "Double"
+  },
+  {
+   "field": "TransferFromStoreRial",
+   "label": "ریال انتقال از انبار",
+   "type": "Double"
+  },
+  {
+   "field": "AmaniTedad",
+   "label": "تعداد پرداختی امانی",
+   "type": "Double"
+  },
+  {
+   "field": "AmaniTedad2",
+   "label": "تعداد2 پرداختی امانی",
+   "type": "Double"
+  },
+  {
+   "field": "AmaniTedad3",
+   "label": "تعداد3 پرداختی امانی",
+   "type": "Double"
+  },
+  {
+   "field": "AmaniRial",
+   "label": "ریال پرداختی امانی",
+   "type": "Double"
+  },
+  {
+   "field": "SellTedad",
+   "label": "تعداد فروش",
+   "type": "Double"
+  },
+  {
+   "field": "SellTedad2",
+   "label": "تعداد2 فروش",
+   "type": "Double"
+  },
+  {
+   "field": "SellTedad3",
+   "label": "تعداد3 فروش",
+   "type": "Double"
+  },
+  {
+   "field": "SellRial",
+   "label": "ريال فروش",
+   "type": "Double"
+  },
+  {
+   "field": "RejectSellTedad",
+   "label": "تعداد برگشت از فروش",
+   "type": "Double"
+  },
+  {
+   "field": "RejectSellTedad2",
+   "label": "تعداد2 برگشت از فروش",
+   "type": "Double"
+  },
+  {
+   "field": "RejectSellTedad3",
+   "label": "تعداد3 برگشت از فروش",
+   "type": "Double"
+  },
+  {
+   "field": "RejectSellRial",
+   "label": "ريال برگشت از فروش",
+   "type": "Double"
+  },
+  {
+   "field": "RejectBuyTedad",
+   "label": "تعداد برگشت از خرید",
+   "type": "Double"
+  },
+  {
+   "field": "RejectBuyTedad2",
+   "label": "تعداد2 برگشت از خرید",
+   "type": "Double"
+  },
+  {
+   "field": "RejectBuyTedad3",
+   "label": "تعداد3 برگشت از خرید",
+   "type": "Double"
+  },
+  {
+   "field": "RejectBuyRial",
+   "label": "ريال برگشت از خرید",
+   "type": "Double"
+  },
+  {
+   "field": "BuyTedad",
+   "label": "تعداد خرید",
+   "type": "Double"
+  },
+  {
+   "field": "BuyTedad2",
+   "label": "تعداد2 خرید",
+   "type": "Double"
+  },
+  {
+   "field": "BuyTedad3",
+   "label": "تعداد3 خرید",
+   "type": "Double"
+  },
+  {
+   "field": "BuyRial",
+   "label": "ريال خرید",
+   "type": "Double"
+  },
+  {
+   "field": "EzafatTedad",
+   "label": "تعداد اضافات انبارگردانی",
+   "type": "Double"
+  },
+  {
+   "field": "EzafatTedad2",
+   "label": "تعداد2 اضافات انبارگردانی",
+   "type": "Double"
+  },
+  {
+   "field": "EzafatTedad3",
+   "label": "تعداد3 اضافات انبارگردانی",
+   "type": "Double"
+  },
+  {
+   "field": "EzafatRial",
+   "label": "ريال اضافات انبارگردانی",
+   "type": "Double"
+  },
+  {
+   "field": "KosoratTedad",
+   "label": "تعداد کسورات انبارگردانی",
+   "type": "Double"
+  },
+  {
+   "field": "KosoratTedad2",
+   "label": "تعداد2 کسورات انبارگردانی",
+   "type": "Double"
+  },
+  {
+   "field": "KosoratTedad3",
+   "label": "تعداد3 کسورات انبارگردانی",
+   "type": "Double"
+  },
+  {
+   "field": "KosoratRial",
+   "label": "ريال کسورات انبارگردانی",
+   "type": "Double"
+  },
+  {
+   "field": "MojodiTedad1",
+   "label": "تعداد موجودی",
+   "type": "Decimal"
+  },
+  {
+   "field": "MojodiTedad2",
+   "label": "تعداد2 موجودی",
+   "type": "Decimal"
+  },
+  {
+   "field": "MojodiTedad3",
+   "label": "تعداد3 موجودی",
+   "type": "Decimal"
+  },
+  {
+   "field": "MojodiRial",
+   "label": "ريال موجودی",
+   "type": "Double"
+  },
+  {
+   "field": "ID1",
+   "label": "شناسه واحد 1",
+   "type": "Int64"
+  },
+  {
+   "field": "Vahed1",
+   "label": "واحد 1",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed1",
+   "label": "لاتین واحد 1",
+   "type": "String"
+  },
+  {
+   "field": "ID2",
+   "label": "شناسه واحد 2",
+   "type": "Int64"
+  },
+  {
+   "field": "Vahed2",
+   "label": "واحد 2",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed2",
+   "label": "لاتین واحد 2",
+   "type": "String"
+  },
+  {
+   "field": "ID3",
+   "label": "شناسه واحد 3",
+   "type": "Int64"
+  },
+  {
+   "field": "Vahed3",
+   "label": "واحد 1",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed3",
+   "label": "لاتین واحد 3",
+   "type": "String"
+  },
+  {
+   "field": "BuyKhalesRial",
+   "label": "ریال خرید خالص",
+   "type": "Double"
+  },
+  {
+   "field": "BuyKhalesTedad",
+   "label": "تعداد خرید خالص",
+   "type": "Double"
+  },
+  {
+   "field": "BuyKhalesTedad2",
+   "label": "تعداد2 خرید خالص",
+   "type": "Double"
+  },
+  {
+   "field": "BuyKhalesTedad3",
+   "label": "تعداد3 خرید خالص",
+   "type": "Double"
+  },
+  {
+   "field": "KhalesSellRial",
+   "label": "ریال فروش خالص",
+   "type": "Double"
+  },
+  {
+   "field": "KhalesSellTedad",
+   "label": "تعداد فروش خالص",
+   "type": "Double"
+  },
+  {
+   "field": "KhalesSellTedad2",
+   "label": "تعداد2 فروش خاص",
+   "type": "Double"
+  },
+  {
+   "field": "KhalesSellTedad3",
+   "label": "تعداد3 فروش خالص",
+   "type": "Double"
+  },
+  {
+   "field": "MojodiFi",
+   "label": "معدل فی",
+   "type": "Double"
+  },
+  {
+   "field": "KhalesGerefteEshantion",
+   "label": "تعداد اشانتیون گرفته شده خالص",
+   "type": "Double"
+  },
+  {
+   "field": "KhalesGerefteEshantionTedad2",
+   "label": "تعداد2 اشانتیون گرفته شده خالص",
+   "type": "Double"
+  },
+  {
+   "field": "KhalesGerefteEshantionTedad3",
+   "label": "تعداد3 اشانتیون گرفته شده خالص",
+   "type": "Double"
+  },
+  {
+   "field": "KhalesGerefteEshantionRial",
+   "label": "ریال اشانتیون گرفته شده خالص",
+   "type": "Double"
+  },
+  {
+   "field": "KhalesDadeEshantion",
+   "label": "تعداد اشانتیون داده شده خالص",
+   "type": "Double"
+  },
+  {
+   "field": "KhalesDadeEshantionTedad2",
+   "label": "تعداد2 اشانتیون داده شده خالص",
+   "type": "Double"
+  },
+  {
+   "field": "KhalesDadeEshantionTedad3",
+   "label": "تعداد3 اشانتیون داده شده خالص",
+   "type": "Double"
+  },
+  {
+   "field": "KhalesDadeEshantionRial",
+   "label": "ریال اشانتیون داده شده خالص",
+   "type": "Double"
+  },
+  {
+   "field": "RemainSerial",
+   "label": "سریال های باقیمانده",
+   "type": "String"
+  },
+  {
+   "field": "DoreName",
+   "label": "دوره",
+   "type": "String"
+  },
+  {
+   "field": "barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "fanyno",
+   "label": "ش فنی",
+   "type": "String"
+  },
+  {
+   "field": "bid",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "frasiname",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "englishname",
+   "label": "نام کالا لاتین",
+   "type": "String"
+  },
+  {
+   "field": "properties",
+   "label": "مشخصه کالا",
+   "type": "String"
+  },
+  {
+   "field": "buyfirsttedad",
+   "label": "تعداد موجودی ابتدای دوره",
+   "type": "Double"
+  },
+  {
+   "field": "buyfirsttedad2",
+   "label": "تعداد2 موجودی ابتدای دوره",
+   "type": "Decimal"
+  },
+  {
+   "field": "buyfirsttedad3",
+   "label": "تعداد3 موجودی ابتدای دوره",
+   "type": "Decimal"
+  },
+  {
+   "field": "buyfirstrial",
+   "label": "ریال موجودی ابتدای دوره",
+   "type": "Double"
+  },
+  {
+   "field": "mixbuildtedad",
+   "label": "تعداد تولید",
+   "type": "Double"
+  },
+  {
+   "field": "mixbuildtedad2",
+   "label": "تعداد2 تولید",
+   "type": "Decimal"
+  },
+  {
+   "field": "mixbuildtedad3",
+   "label": "تعداد3 تولید",
+   "type": "Decimal"
+  },
+  {
+   "field": "mixbuildrial",
+   "label": "ريال تولید",
+   "type": "Double"
+  },
+  {
+   "field": "damagedtedad",
+   "label": "تعداد ضایعات و مصرف",
+   "type": "Double"
+  },
+  {
+   "field": "damagedtedad2",
+   "label": "تعداد2 ضایعات و مصرف",
+   "type": "Decimal"
+  },
+  {
+   "field": "damagedtedad3",
+   "label": "تعداد3 ضایعات و مصرف",
+   "type": "Decimal"
+  },
+  {
+   "field": "damagedrial",
+   "label": "ريال ضایعات و مصرف",
+   "type": "Double"
+  },
+  {
+   "field": "gharzitedad",
+   "label": "تعداد دریافتی امانی",
+   "type": "Double"
+  },
+  {
+   "field": "gharzitedad2",
+   "label": "تعداد 2دریافتی امانی",
+   "type": "Decimal"
+  },
+  {
+   "field": "gharzitedad3",
+   "label": "تعداد3 دریافتی امانی",
+   "type": "Decimal"
+  },
+  {
+   "field": "gharzirial",
+   "label": "ریال دریافتی امانی",
+   "type": "Double"
+  },
+  {
+   "field": "trasnferfromcardextedad",
+   "label": "تعداد انتقال از کاردکس ها",
+   "type": "Double"
+  },
+  {
+   "field": "transferfromcardextedad2",
+   "label": "تعداد2 انتقال از کاردکس ها",
+   "type": "Decimal"
+  },
+  {
+   "field": "transferfromcardextedad3",
+   "label": "تعداد3 انتقال از کاردکس ها",
+   "type": "Decimal"
+  },
+  {
+   "field": "trasnferfromcardexrial",
+   "label": "ريال انتقال از کاردکس ها",
+   "type": "Double"
+  },
+  {
+   "field": "transfertocardextedad",
+   "label": "تعداد انتقال به کاردکس ها",
+   "type": "Double"
+  },
+  {
+   "field": "transfertocardextedad2",
+   "label": "تعداد2 انتقال به کاردکس ها",
+   "type": "Decimal"
+  },
+  {
+   "field": "transfertocardextedad3",
+   "label": "تعداد3 انتقال به کاردکس ها",
+   "type": "Decimal"
+  },
+  {
+   "field": "transfertocardexrial",
+   "label": "ريال انتقال به کاردکس ها",
+   "type": "Double"
+  },
+  {
+   "field": "amanitedad",
+   "label": "تعداد پرداختی امانی",
+   "type": "Double"
+  },
+  {
+   "field": "amanitedad2",
+   "label": "تعداد2 پرداختی امانی",
+   "type": "Decimal"
+  },
+  {
+   "field": "amanitedad3",
+   "label": "تعداد3 پرداختی امانی",
+   "type": "Decimal"
+  },
+  {
+   "field": "amanirial",
+   "label": "ریال پرداختی امانی",
+   "type": "Double"
+  },
+  {
+   "field": "selltedad",
+   "label": "تعداد فروش",
+   "type": "Double"
+  },
+  {
+   "field": "selltedad2",
+   "label": "تعداد2 فروش",
+   "type": "Decimal"
+  },
+  {
+   "field": "selltedad3",
+   "label": "تعداد3 فروش",
+   "type": "Decimal"
+  },
+  {
+   "field": "sellrial",
+   "label": "ريال فروش",
+   "type": "Double"
+  },
+  {
+   "field": "rejectselltedad",
+   "label": "تعداد برگشت از فروش",
+   "type": "Double"
+  },
+  {
+   "field": "rejectselltedad2",
+   "label": "تعداد2 برگشت از فروش",
+   "type": "Decimal"
+  },
+  {
+   "field": "rejectselltedad3",
+   "label": "تعداد3 برگشت از فروش",
+   "type": "Decimal"
+  },
+  {
+   "field": "rejectsellrial",
+   "label": "ريال برگشت از فروش",
+   "type": "Double"
+  },
+  {
+   "field": "rejectbuytedad",
+   "label": "تعداد برگشت از خرید",
+   "type": "Double"
+  },
+  {
+   "field": "rejectbuytedad2",
+   "label": "تعداد2 برگشت از خرید",
+   "type": "Decimal"
+  },
+  {
+   "field": "rejectbuytedad3",
+   "label": "تعداد3 برگشت از خرید",
+   "type": "Decimal"
+  },
+  {
+   "field": "rejectbuyrial",
+   "label": "ريال برگشت از خرید",
+   "type": "Double"
+  },
+  {
+   "field": "buytedad",
+   "label": "تعداد خرید",
+   "type": "Double"
+  },
+  {
+   "field": "buytedad2",
+   "label": "تعداد2 خرید",
+   "type": "Decimal"
+  },
+  {
+   "field": "buytedad3",
+   "label": "تعداد3 خرید",
+   "type": "Decimal"
+  },
+  {
+   "field": "buyrial",
+   "label": "ريال خرید",
+   "type": "Double"
+  },
+  {
+   "field": "ezafattedad",
+   "label": "تعداد اضافات انبارگردانی",
+   "type": "Double"
+  },
+  {
+   "field": "ezafattedad2",
+   "label": "تعداد2 اضافات انبارگردانی",
+   "type": "Decimal"
+  },
+  {
+   "field": "ezafattedad3",
+   "label": "تعداد3 اضافات انبارگردانی",
+   "type": "Decimal"
+  },
+  {
+   "field": "ezafatrial",
+   "label": "ريال اضافات انبارگردانی",
+   "type": "Double"
+  },
+  {
+   "field": "kosorattedad",
+   "label": "تعداد کسورات انبارگردانی",
+   "type": "Double"
+  },
+  {
+   "field": "kosorattedad2",
+   "label": "تعداد2 کسورات انبارگردانی",
+   "type": "Decimal"
+  },
+  {
+   "field": "kosorattedad3",
+   "label": "تعداد3 کسورات انبارگردانی",
+   "type": "Decimal"
+  },
+  {
+   "field": "kosoratrial",
+   "label": "ريال کسورات انبارگردانی",
+   "type": "Double"
+  },
+  {
+   "field": "mojoditedad1",
+   "label": "تعداد موجودی",
+   "type": "Double"
+  },
+  {
+   "field": "mojoditedad2",
+   "label": "تعداد2 موجودی",
+   "type": "Decimal"
+  },
+  {
+   "field": "mojoditedad3",
+   "label": "تعداد3 موجودی",
+   "type": "Decimal"
+  },
+  {
+   "field": "mojodirial",
+   "label": "ريال موجودی",
+   "type": "Double"
+  },
+  {
+   "field": "id1",
+   "label": "شناسه واحد 1",
+   "type": "Int64"
+  },
+  {
+   "field": "vahed1",
+   "label": "واحد 1",
+   "type": "String"
+  },
+  {
+   "field": "engvahed1",
+   "label": "لاتین واحد 1",
+   "type": "String"
+  },
+  {
+   "field": "id2",
+   "label": "شناسه واحد 2",
+   "type": "Int64"
+  },
+  {
+   "field": "vahed2",
+   "label": "واحد 2",
+   "type": "String"
+  },
+  {
+   "field": "engvahed2",
+   "label": "لاتین واحد 2",
+   "type": "String"
+  },
+  {
+   "field": "id3",
+   "label": "شناسه واحد 3",
+   "type": "Int64"
+  },
+  {
+   "field": "vahed3",
+   "label": "واحد 1",
+   "type": "String"
+  },
+  {
+   "field": "engvahed3",
+   "label": "لاتین واحد 3",
+   "type": "String"
+  },
+  {
+   "field": "buykhalesrial",
+   "label": "ریال خرید خالص",
+   "type": "Double"
+  },
+  {
+   "field": "buykhalestedad",
+   "label": "تعداد خرید خالص",
+   "type": "Double"
+  },
+  {
+   "field": "buykhalestedad2",
+   "label": "تعداد2 خرید خالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "buykhalestedad3",
+   "label": "تعداد3 خرید خالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "khalessellrial",
+   "label": "ریال فروش خالص",
+   "type": "Double"
+  },
+  {
+   "field": "khalesselltedad",
+   "label": "تعداد فروش خالص",
+   "type": "Double"
+  },
+  {
+   "field": "khalesselltedad2",
+   "label": "تعداد2 فروش خاص",
+   "type": "Decimal"
+  },
+  {
+   "field": "khalesselltedad3",
+   "label": "تعداد3 فروش خالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "mojodifi",
+   "label": "معدل فی",
+   "type": "Double"
+  },
+  {
+   "field": "khalesgerefteeshantion",
+   "label": "تعداد اشانتیون گرفته شده خالص",
+   "type": "Double"
+  },
+  {
+   "field": "khalesgerefteeshantiontedad2",
+   "label": "تعداد2 اشانتیون گرفته شده خالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "khalesgerefteeshantiontedad3",
+   "label": "تعداد3 اشانتیون گرفته شده خالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "khalesgerefteeshantionrial",
+   "label": "ریال اشانتیون گرفته شده خالص",
+   "type": "Double"
+  },
+  {
+   "field": "khalesdadeeshantion",
+   "label": "تعداد اشانتیون داده شده خالص",
+   "type": "Double"
+  },
+  {
+   "field": "khalesdadeeshantiontedad2",
+   "label": "تعداد2 اشانتیون داده شده خالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "khalesdadeeshantiontedad3",
+   "label": "تعداد3 اشانتیون داده شده خالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "khalesdadeeshantionrial",
+   "label": "ریال اشانتیون داده شده خالص",
+   "type": "Double"
+  },
+  {
+   "field": "uFiForosh",
+   "label": "ریال فروش",
+   "type": "Decimal"
+  },
+  {
+   "field": "RejectSellRialJari",
+   "label": "قیمت تمام شده برگشت از فروش دوره جاری",
+   "type": "Double"
+  },
+  {
+   "field": "RejectSellRialGhabl",
+   "label": "قیمت تمام شده برگشت از فروش دوره قبل",
+   "type": "Double"
+  },
+  {
+   "field": "ufiRejectSellghable",
+   "label": "ریال برگشت از فروش دوره قبل",
+   "type": "Decimal"
+  },
+  {
+   "field": "ufiRejectSelljari",
+   "label": "ریال برگشت از فروش دوره جاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "ufiRejectBuy",
+   "label": "ریال برگشت از خرید",
+   "type": "Decimal"
+  },
+  {
+   "field": "ufikharid",
+   "label": "جمع خرید با تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "MojodiTedad1F",
+   "label": "موجودی فعلی تعدادی 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "MojodiTedad2F",
+   "label": "موجودی فعلی تعدادی 2",
+   "type": "Decimal"
+  },
+  {
+   "field": "MojodiTedad3F",
+   "label": "موجودی فعلی تعدادی 3",
+   "type": "Decimal"
+  },
+  {
+   "field": "MojodiRialF",
+   "label": "موجودی فعلی ریالی",
+   "type": "Double"
+  },
+  {
+   "field": "MojodiFiF",
+   "label": "معدل فی فعلی",
+   "type": "Double"
+  },
+  {
+   "field": "BidOfLastMoein_Bid",
+   "label": "کد حساب معین سطح آخر - کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "NameOfLastMoein_Bid",
+   "label": "نام حساب معین سطح آخر - کد کالا",
+   "type": "String"
+  },
+  {
+   "field": "BidOfKol_Bid",
+   "label": "کد حساب کل - کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "NameOfKol_Bid",
+   "label": "نام حساب کل - کد کالا",
+   "type": "String"
+  }
+ ]
+}

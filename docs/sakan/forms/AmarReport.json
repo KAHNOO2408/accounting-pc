@@ -1,0 +1,48 @@
+{
+ "source": "AmarReport",
+ "reports": [
+  "gozarsh az vazeyat hsab.mrt"
+ ],
+ "fields": [
+  {
+   "field": "BID",
+   "label": "کد دفتر",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام دفتر",
+   "type": "String"
+  },
+  {
+   "field": "SumInnerChekVN",
+   "label": "جمع چک های دریافتی سررسید نشده",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumInnerChekVS",
+   "label": "جمع چک های دریافتی سررسید شده",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumOutterChekVN",
+   "label": "جمع چک های پرداختی سررسید نشده",
+   "type": "Decimal"
+  },
+  {
+   "field": "SumOutterChekVS",
+   "label": "جمع چک های پرداختی سررسید شده",
+   "type": "Decimal"
+  },
+  {
+   "field": "BedRemain",
+   "label": "مبلغ بدهکاری",
+   "type": "Decimal"
+  },
+  {
+   "field": "BesRemain",
+   "label": "مبلغ بستانکاری",
+   "type": "Decimal"
+  }
+ ]
+}

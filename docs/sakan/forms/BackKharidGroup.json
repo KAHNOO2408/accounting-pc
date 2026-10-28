@@ -1,0 +1,108 @@
+{
+ "source": "BackKharidGroup",
+ "reports": [
+  "tjmiebrkasht azkrid1.mrt"
+ ],
+ "fields": [
+  {
+   "field": "FroshandeID",
+   "label": "کد خریدار",
+   "type": "Int64"
+  },
+  {
+   "field": "FroshandeName",
+   "label": "خریدار",
+   "type": "String"
+  },
+  {
+   "field": "JamTakhfifSystem",
+   "label": "تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKalaSystem",
+   "label": "جمع اقلام بدون تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamHazineKharidar_system",
+   "label": "هزینه سهم خریدار",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamhazineFroshande_system",
+   "label": "هزینه سهم فروشنده",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamEshantionSystem",
+   "label": "جمع اشانتیون",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghFactorSystem",
+   "label": "مبلغ فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamCrdexSystem",
+   "label": "قیمت خروجی از کاردکس",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamVaznFactor",
+   "label": "وزن فاکتور",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamArzeshF_sys",
+   "label": "جمع عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatF_sys",
+   "label": "جمع مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezAghlam_sys",
+   "label": "جمع عوارض اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamAvarezHazine_sys",
+   "label": "جمع عوارض هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatAghlam_sys",
+   "label": "جمع مالیات اقلام",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliatHazine_sys",
+   "label": "جمع مالیات هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodZianNakhalesSystem",
+   "label": "سود زیان خالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodZianKhalesSystem",
+   "label": "سود زیان ناخالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "DoreName",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "سود_x0020_یا_x0020_زیان",
+   "label": "sodyazyan",
+   "type": "BackKharidGroup.MablaghFactorSystem-BackKharidGroup.JamCrdexSystem"
+  }
+ ]
+}

@@ -1,0 +1,198 @@
+{
+ "source": "RizBackForoshGroup",
+ "reports": [
+  "tjmirizbrgsht az frosh.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Bid",
+   "label": "کۆدی کاڵا",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "ناوی کاڵا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "ناوی کاڵا (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "FanyNo",
+   "label": "ژماره_x200C_ی فه_x200C_نی",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "نیشانیگه_x200C_لی کاڵا",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکۆد",
+   "type": "String"
+  },
+  {
+   "field": "IranCode",
+   "label": "ئێران کۆد",
+   "type": "String"
+  },
+  {
+   "field": "Tedad",
+   "label": "ئه_x200C_ژمار 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "VahedName1",
+   "label": "یه_x200C_که_x200C_ی یه_x200C_که_x200C_م",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName1",
+   "label": "یه_x200C_که_x200C_ی یه_x200C_که_x200C_م (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "VahedNmae2",
+   "label": "یه_x200C_که_x200C_ی دووهه_x200C_م",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName2",
+   "label": "یه_x200C_که_x200C_ی دووهه_x200C_م (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "VahedName3",
+   "label": "یه_x200C_که_x200C_ی سێهه_x200C_م",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName3",
+   "label": "یه_x200C_که_x200C_ی سێهه_x200C_م (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "TedadV1",
+   "label": "ئه_x200C_ژمار 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "jamFrosh_system",
+   "label": "سه_x200C_رجه_x200C_می فرۆش",
+   "type": "Decimal"
+  },
+  {
+   "field": "jamFiOutedFrosh_system",
+   "label": "سەرجەمی وەرگەڕاو لەفرۆش",
+   "type": "Decimal"
+  },
+  {
+   "field": "FiFroshSalGhablV1_system",
+   "label": "نرخی فرۆشی ساڵی ڕابردووی 1",
+   "type": "Double"
+  },
+  {
+   "field": "Bargashti",
+   "label": "ئەژماری وەرگەڕاو بە یەکەی 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "TedadFroshV2",
+   "label": "ئه_x200C_ژمار 2",
+   "type": "Double"
+  },
+  {
+   "field": "TedadFroshV3",
+   "label": "ئه_x200C_ژمار 3",
+   "type": "Double"
+  },
+  {
+   "field": "Takhfif_system",
+   "label": "داشکان",
+   "type": "Decimal"
+  },
+  {
+   "field": "kasrMarjoei_system",
+   "label": "داشکانی وه_x200C_رگه_x200C_ڕاو",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineBFroshande_system",
+   "label": "خه_x200C_رج به_x200C_ئه_x200C_ستۆی فرۆشیار",
+   "type": "Decimal"
+  },
+  {
+   "field": "Yarane_system",
+   "label": "به_x200C_شی سووبسید",
+   "type": "Decimal"
+  },
+  {
+   "field": "Bazaryabi_system",
+   "label": "به_x200C_شی بازاڕدۆزه_x200C_ری",
+   "type": "Decimal"
+  },
+  {
+   "field": "GhimatKardex_system",
+   "label": "نرخی ته_x200C_واوکراو",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineHamelBarSystem",
+   "label": "ناوی کۆمپانیای باربه_x200C_ری",
+   "type": "Decimal"
+  },
+  {
+   "field": "HazineHamelBarKharidar",
+   "label": "سه_x200C_ره_x200C_تای ڕێگا",
+   "type": "Decimal"
+  },
+  {
+   "field": "MablaghFactorTBkhaSystem",
+   "label": "کۆتایی ڕێگا",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahmHazineSystem",
+   "label": "به_x200C_شی خه_x200C_رج",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodKhalesSystem",
+   "label": "قازانج و زیانی په_x200C_تی",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodNaKhalesKharidar",
+   "label": "قازانج و زیانی ناپەتی (ئەرزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodNaKhalesSystem",
+   "label": "قازانج و زیانی ناپه_x200C_تی",
+   "type": "Decimal"
+  },
+  {
+   "field": "darsadSodNaKhales",
+   "label": "",
+   "type": "Decimal"
+  },
+  {
+   "field": "ArzeshAfzode_system",
+   "label": "به_x200C_شی پیتاک",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat",
+   "label": "به_x200C_شی ماڵیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "DoreName",
+   "label": "",
+   "type": "String"
+  }
+ ]
+}

@@ -1,0 +1,173 @@
+{
+ "source": "RizServiceGroup",
+ "reports": [
+  "tjmiriz srvis kdmat.mrt"
+ ],
+ "fields": [
+  {
+   "field": "CodeKala",
+   "label": "کد کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام کالا (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصات کالا",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "IranCode",
+   "label": "ایران کد",
+   "type": "String"
+  },
+  {
+   "field": "VahedName1",
+   "label": "واحد اول",
+   "type": "String"
+  },
+  {
+   "field": "VahedEnglishName1",
+   "label": "واحد اول لاتین",
+   "type": "String"
+  },
+  {
+   "field": "TedadVahed1",
+   "label": "تعداد 1",
+   "type": "Decimal"
+  },
+  {
+   "field": "VhaedName2",
+   "label": "واحد دوم",
+   "type": "String"
+  },
+  {
+   "field": "VhaedEnglishName2",
+   "label": "واحد دوم (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "TedadVahed2",
+   "label": "تعداد 2",
+   "type": "Double"
+  },
+  {
+   "field": "VahedNAme3",
+   "label": "واحد سوم",
+   "type": "String"
+  },
+  {
+   "field": "TedadVahed3",
+   "label": "تعداد 3",
+   "type": "Double"
+  },
+  {
+   "field": "VahedEnglishName3",
+   "label": "واحد سوم (لاتین)",
+   "type": "String"
+  },
+  {
+   "field": "Jam1",
+   "label": "جمع بدون تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "Takhfif",
+   "label": "تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamT",
+   "label": "جمع",
+   "type": "Decimal"
+  },
+  {
+   "field": "VazenKalaBeV1",
+   "label": "وزن کالا به واحد 1",
+   "type": "Double"
+  },
+  {
+   "field": "JamVazenKala",
+   "label": "جمع وزن کالا",
+   "type": "Double"
+  },
+  {
+   "field": "GhimatCardex",
+   "label": "قیمت تمام شده",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahmHazine",
+   "label": "سهم هزینه",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahemHazineGaranti",
+   "label": "سهم هزینه گارانتی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Hazine",
+   "label": "هزینه ها",
+   "type": "Decimal"
+  },
+  {
+   "field": "Sodkhales",
+   "label": "سود و زیان خالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "SodNakhales",
+   "label": "سود و زیان ناخالص",
+   "type": "Decimal"
+  },
+  {
+   "field": "mablaghgaranti",
+   "label": "مبلغ گارانتی",
+   "type": "Decimal"
+  },
+  {
+   "field": "SahemArzesh",
+   "label": "سهم عوارض",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamMaliat",
+   "label": "سهم مالیات",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamT1",
+   "label": "جمع بعد از تخفیف",
+   "type": "Decimal"
+  },
+  {
+   "field": "JamKol",
+   "label": "جمع کل (ارزی)",
+   "type": "Decimal"
+  },
+  {
+   "field": "DoreName",
+   "label": "",
+   "type": "String"
+  }
+ ]
+}

@@ -1,0 +1,123 @@
+{
+ "source": "PrintCalc_Masrafi",
+ "reports": [
+  "baravard.mrt"
+ ],
+ "fields": [
+  {
+   "field": "Bid",
+   "label": "کد کالا    مصرفی",
+   "type": "Int32"
+  },
+  {
+   "field": "ShFani",
+   "label": "شماره فنی    مصرفی",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد    مصرفی",
+   "type": "String"
+  },
+  {
+   "field": "VahedPos",
+   "label": "اندیس واحد جاری    مصرفی",
+   "type": "Int32"
+  },
+  {
+   "field": "BName",
+   "label": "نام کالا    مصرفی",
+   "type": "String"
+  },
+  {
+   "field": "StoreName",
+   "label": "نام انبار    مصرفی",
+   "type": "String"
+  },
+  {
+   "field": "Number",
+   "label": "تعداد    مصرفی",
+   "type": "Decimal"
+  },
+  {
+   "field": "VahedId",
+   "label": "کد واحد    مصرفی",
+   "type": "Int32"
+  },
+  {
+   "field": "Vahed",
+   "label": "واحد    مصرفی",
+   "type": "String"
+  },
+  {
+   "field": "StoreId",
+   "label": "کد انبار    مصرفی",
+   "type": "Int32"
+  },
+  {
+   "field": "Tozihat",
+   "label": "",
+   "type": "String"
+  },
+  {
+   "field": "Vahed2Id",
+   "label": "کد واحد 2    مصرفی",
+   "type": "Int32"
+  },
+  {
+   "field": "Vahed2",
+   "label": "واحد 2    مصرفی",
+   "type": "String"
+  },
+  {
+   "field": "Vahed3Id",
+   "label": "کد واحد 3    مصرفی",
+   "type": "Int32"
+  },
+  {
+   "field": "Vahed3",
+   "label": "واحد 3    مصرفی",
+   "type": "String"
+  },
+  {
+   "field": "Number2",
+   "label": "تعداد 2    مصرفی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Number3",
+   "label": "تعداد 3    مصرفی",
+   "type": "Decimal"
+  },
+  {
+   "field": "OutFi",
+   "label": "فی خروجی از انبار    مصرفی",
+   "type": "Decimal"
+  },
+  {
+   "field": "LastFi",
+   "label": "آخرین فی خرید    مصرفی",
+   "type": "Decimal"
+  },
+  {
+   "field": "DailyFi",
+   "label": "فی روز بازار    مصرفی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Nesbat21",
+   "label": "نسبت واحد 2 به 1    مصرفی",
+   "type": "Decimal"
+  },
+  {
+   "field": "Nesbat31",
+   "label": "نسبت واحد 3 به 1    مصرفی",
+   "type": "Decimal"
+  },
+  {
+   "field": "SelectedVID",
+   "label": "واحد منتخب    مصرفی",
+   "type": "Int32"
+  }
+ ]
+}

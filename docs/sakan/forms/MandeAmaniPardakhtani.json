@@ -1,0 +1,424 @@
+{
+ "source": "MandeAmaniPardakhtani",
+ "reports": [
+  "Kazamani p.mrt",
+  "Kazmandi amani P.mrt"
+ ],
+ "fields": [
+  {
+   "field": "action",
+   "label": "اکشن",
+   "type": "Int64"
+  },
+  {
+   "field": "fid",
+   "label": "شماره فاکتور",
+   "type": "Int64"
+  },
+  {
+   "field": "residnum",
+   "label": "شماره رسید انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "dtep",
+   "label": "تاریخ پیگرد",
+   "type": "DateTime"
+  },
+  {
+   "field": "sharhp",
+   "label": "شرح پیگرد",
+   "type": "String"
+  },
+  {
+   "field": "docnum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "sharh",
+   "label": "شرح سند",
+   "type": "String"
+  },
+  {
+   "field": "tarafhesabbid",
+   "label": "شناسه طرف حساب",
+   "type": "Int64"
+  },
+  {
+   "field": "tarafhesabname",
+   "label": "نام طرف حساب",
+   "type": "String"
+  },
+  {
+   "field": "bid",
+   "label": "شناسه کالا",
+   "type": "Int64"
+  },
+  {
+   "field": "fanyno",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "properties",
+   "label": "مشخصه کالا",
+   "type": "String"
+  },
+  {
+   "field": "frasiname",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "englishname",
+   "label": "نام لاتین کالا",
+   "type": "String"
+  },
+  {
+   "field": "storeid",
+   "label": "شناسه انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "storename",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "tedad",
+   "label": "تعداد1",
+   "type": "Double"
+  },
+  {
+   "field": "tedad2",
+   "label": "تعداد2",
+   "type": "Double"
+  },
+  {
+   "field": "tedad3",
+   "label": "تعداد3",
+   "type": "Double"
+  },
+  {
+   "field": "remaintedad",
+   "label": "مانده1",
+   "type": "Double"
+  },
+  {
+   "field": "remaintedad2",
+   "label": "مانده2",
+   "type": "Decimal"
+  },
+  {
+   "field": "remaintedad3",
+   "label": "مانده3",
+   "type": "Decimal"
+  },
+  {
+   "field": "docmabnanum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "fi",
+   "label": "فی",
+   "type": "String"
+  },
+  {
+   "field": "jamkol",
+   "label": "جمع کل",
+   "type": "Double"
+  },
+  {
+   "field": "sefareshid",
+   "label": "شماره سفارش",
+   "type": "Int64"
+  },
+  {
+   "field": "tasvietedadstore",
+   "label": "تسویه 1 انبار",
+   "type": "Double"
+  },
+  {
+   "field": "tasvietedadstore2",
+   "label": "تسویه2انبار",
+   "type": "Decimal"
+  },
+  {
+   "field": "tasvietedadstore3",
+   "label": "تسویه3 انبار",
+   "type": "Decimal"
+  },
+  {
+   "field": "tasviealltedad",
+   "label": "تسویه 1 کل",
+   "type": "Double"
+  },
+  {
+   "field": "tasviealltedad2",
+   "label": "تسویه 2 کل",
+   "type": "Decimal"
+  },
+  {
+   "field": "tasviealltedad3",
+   "label": "تسویه 3 کل",
+   "type": "Decimal"
+  },
+  {
+   "field": "markazid",
+   "label": "شناسه مرکز",
+   "type": "Int64"
+  },
+  {
+   "field": "markazname",
+   "label": "مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "vahed1",
+   "label": "واحد1",
+   "type": "String"
+  },
+  {
+   "field": "engvahed1",
+   "label": "لاتین واحد1",
+   "type": "String"
+  },
+  {
+   "field": "vahed2",
+   "label": "واحد2",
+   "type": "String"
+  },
+  {
+   "field": "engvahed2",
+   "label": "لاتین واحد2",
+   "type": "String"
+  },
+  {
+   "field": "vahed3",
+   "label": "واحد 3",
+   "type": "String"
+  },
+  {
+   "field": "engvahed3",
+   "label": "لاتین واحد3",
+   "type": "String"
+  },
+  {
+   "field": "dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "dtep_x0020_Shamsi",
+   "label": "تاریخ پیگرد شمسی",
+   "type": "String"
+  },
+  {
+   "field": "Action",
+   "label": "اکشن",
+   "type": "Int64"
+  },
+  {
+   "field": "Fid",
+   "label": "شماره فاکتور",
+   "type": "Int64"
+  },
+  {
+   "field": "ResidNum",
+   "label": "شماره رسید انبار",
+   "type": "Int64"
+  },
+  {
+   "field": "Dte",
+   "label": "تاریخ سند",
+   "type": "DateTime"
+  },
+  {
+   "field": "DteP",
+   "label": "تاریخ پیگرد",
+   "type": "DateTime"
+  },
+  {
+   "field": "SharhP",
+   "label": "شرح پیگرد",
+   "type": "String"
+  },
+  {
+   "field": "DocNum",
+   "label": "شماره سند",
+   "type": "Decimal"
+  },
+  {
+   "field": "tarafHesabBid",
+   "label": "شناسه طرف حساب",
+   "type": "Int64"
+  },
+  {
+   "field": "TarafHesabName",
+   "label": "نام طرف حساب",
+   "type": "String"
+  },
+  {
+   "field": "FanyNo",
+   "label": "شماره فنی",
+   "type": "String"
+  },
+  {
+   "field": "Barcode",
+   "label": "بارکد",
+   "type": "String"
+  },
+  {
+   "field": "Properties",
+   "label": "مشخصه کالا",
+   "type": "String"
+  },
+  {
+   "field": "FrasiName",
+   "label": "نام کالا",
+   "type": "String"
+  },
+  {
+   "field": "EnglishName",
+   "label": "نام لاتین کالا",
+   "type": "String"
+  },
+  {
+   "field": "StoreName",
+   "label": "نام انبار",
+   "type": "String"
+  },
+  {
+   "field": "RemainTedad",
+   "label": "مانده1",
+   "type": "Double"
+  },
+  {
+   "field": "RemainTedad2",
+   "label": "مانده2",
+   "type": "Double"
+  },
+  {
+   "field": "RemainTedad3",
+   "label": "مانده3",
+   "type": "Double"
+  },
+  {
+   "field": "DocMabnaNum",
+   "label": "شماره مبنا",
+   "type": "Int64"
+  },
+  {
+   "field": "Fi",
+   "label": "فی",
+   "type": "String"
+  },
+  {
+   "field": "JamKol",
+   "label": "جمع کل",
+   "type": "Decimal"
+  },
+  {
+   "field": "SefareshId",
+   "label": "شماره سفارش",
+   "type": "Int64"
+  },
+  {
+   "field": "TasvieTedadStore",
+   "label": "تسویه 1 انبار",
+   "type": "Double"
+  },
+  {
+   "field": "TasvieTedadStore2",
+   "label": "تسویه2انبار",
+   "type": "Double"
+  },
+  {
+   "field": "TasvieTedadStore3",
+   "label": "تسویه3 انبار",
+   "type": "Double"
+  },
+  {
+   "field": "TasvieAllTedad",
+   "label": "تسویه 1 کل",
+   "type": "Double"
+  },
+  {
+   "field": "TasvieAllTedad2",
+   "label": "تسویه 2 کل",
+   "type": "Double"
+  },
+  {
+   "field": "TasvieAllTedad3",
+   "label": "تسویه 3 کل",
+   "type": "Double"
+  },
+  {
+   "field": "MarkazId",
+   "label": "شناسه مرکز",
+   "type": "Int64"
+  },
+  {
+   "field": "MarkazName",
+   "label": "مرکز اسناد",
+   "type": "String"
+  },
+  {
+   "field": "Vahed1",
+   "label": "واحد1",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed1",
+   "label": "لاتین واحد1",
+   "type": "String"
+  },
+  {
+   "field": "Vahed2",
+   "label": "واحد2",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed2",
+   "label": "لاتین واحد2",
+   "type": "String"
+  },
+  {
+   "field": "Vahed3",
+   "label": "واحد3",
+   "type": "String"
+  },
+  {
+   "field": "EngVahed3",
+   "label": "لاتین واحد3",
+   "type": "String"
+  },
+  {
+   "field": "Dte_x0020_Shamsi",
+   "label": "تاریخ سند شمسی",
+   "type": "String"
+  },
+  {
+   "field": "DteP_x0020_Shamsi",
+   "label": "تاریخ پیگرد شمسی",
+   "type": "String"
+  },
+  {
+   "field": "Column",
+   "label": "جمع",
+   "type": "MandeAmaniPardakhtani.remaintedad_x002A_double.Parse_x0028_MandeAmaniPardakhtani.fi_x0029_"
+  }
+ ]
+}
