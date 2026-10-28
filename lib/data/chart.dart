@@ -97,6 +97,8 @@ const mInsuranceExpense = '5013'; // هزینه بیمه سهم کارفرما (
 const mInsurancePayable = '2041'; // بیمه پرداختنی (تراز)
 const mSalaryTaxPayable = '2042'; // مالیات حقوق پرداختنی (تراز)
 const mStaff = '1135'; // پرسنل
+const mVatPayable = '2043'; // مالیات و عوارض ارزش افزوده فروش (تراز)
+const mVatReceivable = '1166'; // مالیات و عوارض ارزش افزوده خرید (تراز)
 
 const List<Kol> chart = [
   Kol('10', 'دارایی های جاری نقدی', Side.asset, [
@@ -121,6 +123,7 @@ const List<Kol> chart = [
     Moeen(mStockConsign, 'موجودی کالای امانی'),
     Moeen('1160', 'سفارشات', TafsiliKind.none, '110600'),
     Moeen(mPrepayments, 'پیش پرداختها', TafsiliKind.none, '110650'),
+    Moeen(mVatReceivable, 'مالیات و عوارض ارزش افزوده خرید'),
     Moeen('1170', 'سربار واقعی سربار جذبی', TafsiliKind.none, '110700'),
     Moeen('1175', 'پیمان در دست اجرا', TafsiliKind.none, '110750'),
     Moeen('5090', 'اسناد ارزی وصولی نزد بانکهای ارزی', TafsiliKind.none, '500900'),
@@ -140,6 +143,7 @@ const List<Kol> chart = [
     Moeen('2040', 'ذخیره مالیات', TafsiliKind.none, '200400'),
     Moeen(mInsurancePayable, 'بیمه پرداختنی'),
     Moeen(mSalaryTaxPayable, 'مالیات حقوق پرداختنی'),
+    Moeen(mVatPayable, 'مالیات و عوارض ارزش افزوده فروش'),
     Moeen('2045', 'تعهدات پرداختنی', TafsiliKind.none, '200450'),
     Moeen('2050', 'سربار جذبی', TafsiliKind.none, '200500'),
     Moeen('2055', 'کنترل تخفیف از خرید', TafsiliKind.none, '200550'),

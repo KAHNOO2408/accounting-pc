@@ -173,6 +173,9 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   List<MarketerShare> _marketers = [];
   String? _distributor;
 
+  /// «عوارض و مالیات بر اقلام اعمال شود».
+  bool _vat = false;
+
   bool get _isEdit => widget.edit != null;
   bool get _legacy => (widget.edit?.paid ?? 0) > 0;
   bool get _buy => _kind.buySide;
@@ -216,6 +219,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       _buyerName.text = e.info['buyerName'] ?? '';
       _receiver = e.info['receiver'] ?? '';
       _saleDate = DateTime.tryParse(e.info['saleDate'] ?? '') ?? e.date;
+      _vat = e.lines.any((l) => l.taxPct != 0 || l.dutyPct != 0);
       for (final l in e.lines) {
         (l.productId == null ? _services : _lines).add(_Line.from(l));
       }
@@ -225,6 +229,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       _saleDate = _date;
       _number.text = '${store.nextInvoiceNumber(_kind, proforma: _proforma)}';
       _warehouseNo.text = '${_nextWarehouseNo(store)}';
+      _vat = store.settings.vatDefault && !_proforma;
     }
     if (_lines.isEmpty) _lines.add(_Line());
     if (_services.isEmpty) _services.add(_Line());
@@ -265,7 +270,35 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   int get _servicesTotal => _services.fold(0, (s, l) => s + l.total);
   int get _lineDiscounts => [..._lines, ..._services].fold(0, (s, l) => s + l.d);
   int get _subtotal => _goodsTotal + _servicesTotal;
-  int get _total => _subtotal - _discount + _extra;
+  /// Tax and duty percents of a row from its product («درصد مالیات / عوارض») or the defaults.
+  (double, double) _vatPct(AppStore s, _Line l) {
+    if (!_vat) return (0, 0);
+    final p = s.product(l.productId);
+    final t = double.tryParse(p?.info['taxPct'] ?? '');
+    final d = double.tryParse(p?.info['dutyPct'] ?? '');
+    if (p != null && (t != null || d != null)) return (t ?? 0, d ?? 0);
+    return (s.settings.vatTaxPct, s.settings.vatDutyPct);
+  }
+
+  /// (مالیات، عوارض) of the invoice.
+  (int, int) _vatAmounts(AppStore s) {
+    if (!_vat) return (0, 0);
+    final rows = [..._lines, ..._services].where((l) => !l.isEmpty);
+    final sub = _subtotal;
+    var tax = 0, duty = 0;
+    for (final l in rows) {
+      final net = l.total - (sub == 0 ? 0 : (_discount * l.total / sub).round());
+      final (t, d) = _vatPct(s, l);
+      tax += (net * t / 100).round();
+      duty += (net * d / 100).round();
+    }
+    return (tax, duty);
+  }
+
+  int get _total {
+    final v = _vatAmounts(StoreScope.read(context));
+    return _subtotal - _discount + _extra + v.$1 + v.$2;
+  }
   int get _itemCount => [..._lines, ..._services].where((l) => !l.isEmpty).length;
 
   double _weight(AppStore s) => _lines.fold(0.0, (a, l) => a + l.baseQty * (s.product(l.productId)?.weight ?? 0));
@@ -630,7 +663,12 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       ..date = _date
       ..dueDate = _due
       ..personId = _person
-      ..lines = lines.map((l) => l.toLine()).toList()
+      ..lines = [
+        for (final l in lines)
+          l.toLine()
+            ..taxPct = _vatPct(store, l).$1
+            ..dutyPct = _vatPct(store, l).$2,
+      ]
       ..marketers = _kind == InvoiceKind.sale || _kind == InvoiceKind.saleReturn ? _marketers : []
       ..discount = _discount
       ..extra = _extra
@@ -1090,8 +1128,9 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                         onPressed: () => _applyDiscount(percent: true),
                         icon: const Icon(Icons.percent_rounded, size: 18),
                       )),
-                  _sum('جمع عوارض', '0', width: 100),
-                  _sum('جمع مالیات', '0', width: 100),
+                  _orangeCheck('عوارض و مالیات بر اقلام', _vat, (v) => setState(() => _vat = v)),
+                  _sum('جمع عوارض', groupDigits(_vatAmounts(store).$2), width: 100),
+                  _sum('جمع مالیات', groupDigits(_vatAmounts(store).$1), width: 100),
                   _sum('جمع وزن اقلام', fmtQty(_weight(store)), width: 90),
                   const SizedBox(width: 10),
                   _btn('حذف ردیف', _removeRow, icon: Icons.close_rounded, color: const Color(0xFFFFE5E5)),

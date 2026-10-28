@@ -181,7 +181,13 @@ List<Posting> buildJournal(AppStore s) {
             pair(inv.date, label, inv.note, v, drM: pM, drT: p, crM: m, crT: l.productId, no: inv.number, order: o);
           }
         }
-        final rest = inv.total - lineSum;
+        final vat = inv.vatTotal;
+        if (buy) {
+          pair(inv.date, label, 'مالیات و عوارض ارزش افزوده', vat, drM: mVatReceivable, crM: pM, crT: p, no: inv.number, order: o);
+        } else {
+          pair(inv.date, label, 'مالیات و عوارض ارزش افزوده', vat, drM: pM, drT: p, crM: mVatReceivable, no: inv.number, order: o);
+        }
+        final rest = inv.total - lineSum - vat;
         if (buy) {
           pair(inv.date, label, 'هزینه‌های جانبی', rest, drM: mOtherExpense, crM: pM, crT: p, no: inv.number, order: o);
         } else {
@@ -208,7 +214,13 @@ List<Posting> buildJournal(AppStore s) {
             }
           }
         }
-        final rest = inv.total - lineSum; // extra charges and rounding
+        final vat = inv.vatTotal;
+        if (sale) {
+          pair(inv.date, label, 'مالیات و عوارض ارزش افزوده', vat, drM: pM, drT: p, crM: mVatPayable, no: inv.number, order: o);
+        } else {
+          pair(inv.date, label, 'مالیات و عوارض ارزش افزوده', vat, drM: mVatPayable, crM: pM, crT: p, no: inv.number, order: o);
+        }
+        final rest = inv.total - lineSum - vat; // extra charges and rounding
         if (sale) {
           pair(inv.date, label, 'هزینه‌های جانبی', rest, drM: pM, drT: p, crM: mOtherIncome, no: inv.number, order: o);
         } else {

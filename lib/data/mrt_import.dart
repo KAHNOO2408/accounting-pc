@@ -187,6 +187,15 @@ const _invoiceMap = {
   'MPakhshName': 'مسئول پخش',
   'MPakhshBName': 'مسئول پخش',
   'MPakhshMob': 'شماره همراه مسئول پخش',
+  'JamMaliatF_sys': 'جمع مالیات',
+  'JamMaliat_sys': 'جمع مالیات',
+  'JamMaliataghlam_sys': 'جمع مالیات',
+  'JamArzeshF_sys': 'جمع عوارض',
+  'JamArzesh_sys': 'جمع عوارض',
+  'Jamavaezaghlam_sys': 'جمع عوارض',
+  'MablaghArzeshSystem': 'جمع مالیات و عوارض',
+  'SahemArzeshSystem': 'جمع مالیات و عوارض',
+  'AvarezMaliatFull': 'جمع مالیات و عوارض',
 };
 
 /// Columns of the item rows.
@@ -275,6 +284,12 @@ const _rowMap = {
   'Bazaryabi_system': 'سهم بازاریابی',
   'Bazaryabi': 'سهم بازاریابی',
   'sahmebazaryabi': 'سهم بازاریابی',
+  'SMaliat': 'درصد مالیات',
+  'DarsadArzesh': 'درصد عوارض',
+  'JamMaliat': 'مالیات ردیف',
+  'SahemArzesh': 'عوارض ردیف',
+  'JamArzesh': 'عوارض ردیف',
+  'JamKol_sys': 'جمع ردیف با مالیات',
 };
 
 /// Ledger reports (دفتر کل / معین / تفصیلی).

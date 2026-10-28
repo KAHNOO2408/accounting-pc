@@ -124,6 +124,10 @@ ReportData invoiceReportData(AppStore s, Invoice inv, {PrintDocType type = Print
     'بازاریابان': [for (final m in inv.marketers) s.person(m.personId)?.name ?? ''].join('، '),
     'شماره همراه بازاریاب': inv.marketers.isEmpty ? '' : (s.person(inv.marketers.first.personId)?.phone ?? ''),
     'هزینه پورسانت': _money(s.commissionTotal(inv)),
+    'جمع مالیات': _money(inv.taxTotal),
+    'جمع عوارض': _money(inv.dutyTotal),
+    'جمع مالیات و عوارض': _money(inv.vatTotal),
+    'جمع کل قبل از مالیات': _money(inv.total - inv.vatTotal),
     'مسئول پخش': s.person(inv.distributorId)?.name ?? '',
     'شماره همراه مسئول پخش': s.person(inv.distributorId)?.phone ?? '',
   };
@@ -171,6 +175,11 @@ ReportData invoiceReportData(AppStore s, Invoice inv, {PrintDocType type = Print
       'موجودی': pr == null ? '' : fmtQty(s.stock(pr.id)),
       'درصد بازاریابی': fmtQty(productMarketingPct(pr)),
       'سهم بازاریابی': _money(s.rowCommission(l)),
+      'درصد مالیات': fmtQty(l.taxPct),
+      'درصد عوارض': fmtQty(l.dutyPct),
+      'مالیات ردیف': _money(inv.taxOf(l)),
+      'عوارض ردیف': _money(inv.dutyOf(l)),
+      'جمع ردیف با مالیات': _money(inv.netOf(l) + inv.taxOf(l) + inv.dutyOf(l)),
     });
   }
   return ReportData(fields: fields, rows: rows, title: '$title ${inv.number}');

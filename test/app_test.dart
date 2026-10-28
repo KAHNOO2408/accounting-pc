@@ -1983,4 +1983,25 @@ void main() {
       expect(tester.takeException(), isNull, reason: t);
     }
   });
+
+  test('عوارض و مالیات بر اقلام: VAT in totals, journal and profit', () {
+    final s = _tempStore();
+    final buyer = Person(id: newId(), name: 'Buyer');
+    s.upsertPerson(buyer);
+    final pr = Product(id: newId(), name: 'Speaker', info: {'taxPct': '9', 'dutyPct': '1'});
+    s.upsertProduct(pr);
+    final inv = Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: DateTime(2026, 10, 1), personId: buyer.id, discount: 1000,
+        lines: [InvoiceLine(productId: pr.id, qty: 1, unitPrice: 11000, taxPct: 9, dutyPct: 1)]);
+    s.saveInvoice(inv);
+    expect(inv.netOf(inv.lines.first), 10000);
+    expect(inv.taxTotal, 900);
+    expect(inv.dutyTotal, 100);
+    expect(inv.total, 11000);
+    expect(s.personBalance(buyer.id), 11000);
+    final j = buildJournal(s);
+    expect(j.fold<int>(0, (a, p) => a + p.debit), j.fold<int>(0, (a, p) => a + p.credit));
+    expect(j.where((p) => p.moeen == mVatPayable).fold<int>(0, (a, p) => a + p.credit - p.debit), 1000);
+    expect(s.profit(DateTime(2026), DateTime(2027)).sales, 10000);
+    expect(InvoiceLine.fromJson(inv.lines.first.toJson()).taxPct, 9);
+  });
 }

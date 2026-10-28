@@ -123,6 +123,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       const SizedBox(height: 16),
                       const _MarginPanel(),
                       const SizedBox(height: 16),
+                      const _VatPanel(),
+                      const SizedBox(height: 16),
                       Panel(
                         title: 'ظاهر',
                         child: Column(
@@ -703,6 +705,81 @@ class _MarginPanelState extends State<_MarginPanel> {
               style: th.textTheme.bodySmall?.copyWith(color: th.hintColor)),
         ],
       ),
+    );
+  }
+}
+
+/// «عوارض و مالیات بر ارزش افزوده» defaults.
+class _VatPanel extends StatefulWidget {
+  const _VatPanel();
+
+  @override
+  State<_VatPanel> createState() => _VatPanelState();
+}
+
+class _VatPanelState extends State<_VatPanel> {
+  TextEditingController? _tax, _duty;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_tax != null) return;
+    final s = StoreScope.read(context).settings;
+    _tax = TextEditingController(text: fmtQty(s.vatTaxPct));
+    _duty = TextEditingController(text: fmtQty(s.vatDutyPct));
+  }
+
+  @override
+  void dispose() {
+    _tax?.dispose();
+    _duty?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final store = StoreScope.of(context);
+    final th = Theme.of(context);
+    return Panel(
+      title: 'مالیات و عوارض ارزش افزوده',
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          value: store.settings.vatDefault,
+          title: const Text('در فاکتورهای جدید «عوارض و مالیات بر اقلام» روشن باشد'),
+          onChanged: (v) => store.updateSettings((s) => s.vatDefault = v),
+        ),
+        Row(children: [
+          Expanded(
+            child: TextField(
+              controller: _tax,
+              textDirection: TextDirection.ltr,
+              decoration: const InputDecoration(labelText: 'درصد مالیات پیش فرض', suffixText: '٪', isDense: true),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: _duty,
+              textDirection: TextDirection.ltr,
+              decoration: const InputDecoration(labelText: 'درصد عوارض پیش فرض', suffixText: '٪', isDense: true),
+            ),
+          ),
+          const SizedBox(width: 8),
+          FilledButton.tonal(
+            onPressed: () {
+              store.updateSettings((s) => s
+                ..vatTaxPct = parseQty(_tax!.text)
+                ..vatDutyPct = parseQty(_duty!.text));
+              toast(context, 'نرخ مالیات و عوارض ذخیره شد');
+            },
+            child: const Text('ذخیره'),
+          ),
+        ]),
+        const SizedBox(height: 6),
+        Text('درصد هر کالا در فرم کالا («درصد مالیات / عوارض») بر این پیش‌فرض مقدم است. نرخ قانونی سال جاری را وارد کنید.',
+            style: th.textTheme.bodySmall?.copyWith(color: th.hintColor)),
+      ]),
     );
   }
 }

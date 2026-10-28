@@ -733,8 +733,14 @@ class InvoiceLine {
   /// «تسویه امانی»: id of the consignment row this invoice row settles.
   String? consignRef;
 
+  /// «عوارض و مالیات بر اقلام» — percents of the row (after discounts).
+  double taxPct;
+  double dutyPct;
+
   InvoiceLine({
     this.consignRef,
+    this.taxPct = 0,
+    this.dutyPct = 0,
     this.productId,
     this.title = '',
     this.qty = 1,
@@ -791,10 +797,14 @@ class InvoiceLine {
         if (warehouseId != null) 'warehouseId': warehouseId,
         if (inOtherUnit) ...{'unitNo': unitNo, 'unitQty': unitQty, 'unitFi': unitFi},
         if (consignRef != null) 'consignRef': consignRef,
+        if (taxPct != 0) 'taxPct': taxPct,
+        if (dutyPct != 0) 'dutyPct': dutyPct,
       };
 
   factory InvoiceLine.fromJson(Map<String, dynamic> j) => InvoiceLine(
         consignRef: _sn(j['consignRef']),
+        taxPct: _dbl(j['taxPct']),
+        dutyPct: _dbl(j['dutyPct']),
         unitNo: _i(j['unitNo'], 1),
         unitQty: _dbl(j['unitQty']),
         unitFi: _i(j['unitFi']),
@@ -866,7 +876,22 @@ class Invoice {
   String get sakanTypeName => sakanInvoiceTypes[sakanType] ?? '';
 
   int get subtotal => lines.fold(0, (s, l) => s + l.total);
-  int get total => subtotal - discount + extra;
+
+  /// Row amount after its share of the invoice discount (base of VAT).
+  int netOf(InvoiceLine l) {
+    final sub = subtotal;
+    return l.total - (sub == 0 ? 0 : (discount * l.total / sub).round());
+  }
+
+  int taxOf(InvoiceLine l) => l.taxPct == 0 ? 0 : (netOf(l) * l.taxPct / 100).round();
+  int dutyOf(InvoiceLine l) => l.dutyPct == 0 ? 0 : (netOf(l) * l.dutyPct / 100).round();
+
+  /// «جمع مالیات» / «جمع عوارض» (ارزش افزوده).
+  int get taxTotal => lines.fold(0, (s, l) => s + taxOf(l));
+  int get dutyTotal => lines.fold(0, (s, l) => s + dutyOf(l));
+  int get vatTotal => taxTotal + dutyTotal;
+
+  int get total => subtotal - discount + extra + vatTotal;
   int get remaining => total - paid;
 
   Map<String, dynamic> toJson() => {
@@ -1158,6 +1183,13 @@ class AppSettings {
   bool commissionExpense;
   String commissionAccount;
 
+  /// Default «درصد مالیات» / «درصد عوارض» of rows when a product has none.
+  double vatTaxPct;
+  double vatDutyPct;
+
+  /// New sale/purchase invoices start with «عوارض و مالیات بر اقلام» on.
+  bool vatDefault;
+
   AppSettings({
     this.themeMode = 'light',
     this.currency = 'تومان',
@@ -1180,6 +1212,9 @@ class AppSettings {
     this.minMarginPct = 0,
     this.commissionExpense = true,
     this.commissionAccount = '5010',
+    this.vatTaxPct = 10,
+    this.vatDutyPct = 0,
+    this.vatDefault = false,
   })  : openingOther = openingOther ?? {},
         sms = sms ?? SmsConfig();
 
@@ -1207,6 +1242,9 @@ class AppSettings {
         'minMarginPct': minMarginPct,
         'commissionExpense': commissionExpense,
         'commissionAccount': commissionAccount,
+        'vatTaxPct': vatTaxPct,
+        'vatDutyPct': vatDutyPct,
+        'vatDefault': vatDefault,
       };
 
   factory AppSettings.fromJson(Map<String, dynamic> j) => AppSettings(
@@ -1233,6 +1271,9 @@ class AppSettings {
         minMarginPct: _dbl(j['minMarginPct']),
         commissionExpense: j['commissionExpense'] != false,
         commissionAccount: _s(j['commissionAccount']).isEmpty ? '5010' : _s(j['commissionAccount']),
+        vatTaxPct: _dbl(j['vatTaxPct'], 10),
+        vatDutyPct: _dbl(j['vatDutyPct']),
+        vatDefault: j['vatDefault'] == true,
       );
 }
 

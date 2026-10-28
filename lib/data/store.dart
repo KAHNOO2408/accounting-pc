@@ -2613,13 +2613,13 @@ class AppStore extends ChangeNotifier {
         _ => 0,
       };
       if (inv.kind == InvoiceKind.purchase) {
-        r.purchases += inv.total;
+        r.purchases += inv.total - inv.vatTotal; // VAT is not a cost
         r.purchaseExtra += inv.extra;
         r.purchaseInvoiceDiscounts += inv.discount;
       }
-      if (inv.kind == InvoiceKind.purchaseReturn) r.purchaseReturns += inv.total;
+      if (inv.kind == InvoiceKind.purchaseReturn) r.purchaseReturns += inv.total - inv.vatTotal;
       if (sign == 0) continue;
-      final net = inv.total - inv.extra; // extra charges on sales count as revenue below
+      final net = inv.total - inv.extra - inv.vatTotal; // extra charges count as revenue below; VAT is owed to the state
       if (sign > 0) {
         r.sales += net;
         r.saleExtra += inv.extra;
