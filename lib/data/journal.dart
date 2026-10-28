@@ -223,6 +223,32 @@ List<Posting> buildJournal(AppStore s) {
     pair(a.date, a.reason.label, a.note, v, drM: mStock, drT: a.productId, crM: mStockLoss, crT: a.productId, order: a.createdAt);
   }
 
+  // ---------------------------------------------------------- امانی (memo)
+  // Sakan's «حسابهای انتظامی» (1250) / «طرف حسابهای انتظامی» (1260) carry
+  // the value of open consignments; settlements reverse their share.
+  for (final c in s.consignments) {
+    key = 'cons:${c.id}';
+    final who = s.person(c.personId)?.name ?? 'متفرقه';
+    final label = '${c.dir.label} ${c.number}';
+    final desc = c.dir == ConsignDir.received ? 'دریافت امانی از $who' : 'پرداخت امانی به $who';
+    pair(c.date, label, desc, c.total, drM: '1250', crM: '1260', no: c.number, order: c.createdAt);
+    for (final r in c.returns) {
+      final l = c.lines.where((x) => x.id == r.lineId).firstOrNull;
+      if (l == null || l.qty == 0) continue;
+      pair(r.date, 'تسویه انبار $label', desc, (l.total * r.qty / l.qty).round(), drM: '1260', crM: '1250', no: c.number, order: c.createdAt);
+    }
+  }
+  for (final inv in s.realInvoices) {
+    for (final il in inv.lines) {
+      final r = s.consignLine(il.consignRef);
+      if (r == null || r.$2.qty == 0) continue;
+      key = 'cons:${r.$1.id}';
+      pair(inv.date, 'تسویه ${r.$1.dir.label} ${r.$1.number}', '${inv.kind.label} ${inv.number}', (r.$2.total * il.qty / r.$2.qty).round(),
+          drM: '1260', crM: '1250', no: r.$1.number, order: inv.createdAt);
+    }
+  }
+  key = null;
+
   // ---------------------------------------------------------- manual vouchers
   for (final v in s.vouchers) {
     for (final l in v.lines) {

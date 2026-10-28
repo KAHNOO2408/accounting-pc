@@ -57,6 +57,9 @@ class AppStore extends ChangeNotifier {
   /// «واحدهای شمارش».
   List<CountUnit> units = [];
 
+  /// «امانی» documents.
+  List<Consignment> consignments = [];
+
   /// Set when loading converted the data to a newer format.
   bool _needsSave = false;
   List<Loan> loans = [];
@@ -204,6 +207,7 @@ class AppStore extends ChangeNotifier {
     reportFiles = list('reportFiles').map(ReportFile.fromJson).toList();
     smsLog = list('smsLog').map(SmsLogEntry.fromJson).toList();
     units = list('units').map(CountUnit.fromJson).toList();
+    consignments = list('consignments').map(Consignment.fromJson).toList();
     _ensureUnits();
     final cm = j['customMoeens'];
     customMoeens = cm is Map ? {for (final e in cm.entries) '${e.key}': '${e.value}'} : {};
@@ -404,6 +408,7 @@ class AppStore extends ChangeNotifier {
         'reportFiles': reportFiles.map((e) => e.toJson()).toList(),
         'smsLog': smsLog.map((e) => e.toJson()).toList(),
         'units': units.map((e) => e.toJson()).toList(),
+        'consignments': consignments.map((e) => e.toJson()).toList(),
         'hiddenMoeens': hiddenMoeens.toList(),
         'customMoeens': customMoeens,
         'notebooks': notebooks,
@@ -1050,6 +1055,108 @@ class AppStore extends ChangeNotifier {
     final t = transfers.where((x) => x.id == id).firstOrNull;
     if (t != null) _log('حذف', 'انتقال بین انبارها ${t.number}', docDate: t.date, docNo: t.number);
     transfers.removeWhere((t) => t.id == id);
+    _commit();
+  }
+
+  // ---------------------------------------------------------------- امانی
+
+  int nextConsignNumber(ConsignDir d) =>
+      consignments.where((c) => c.dir == d).fold<int>(1, (n, c) => c.number >= n ? c.number + 1 : n);
+
+  Consignment? consignment(String? id) => consignments.where((c) => c.id == id).firstOrNull;
+
+  /// The consignment and row a [lineId] belongs to.
+  (Consignment, ConsignLine)? consignLine(String? lineId) {
+    if (lineId == null) return null;
+    for (final c in consignments) {
+      for (final l in c.lines) {
+        if (l.id == lineId) return (c, l);
+      }
+    }
+    return null;
+  }
+
+  /// Quantity (unit 1) of a consignment row settled by invoices («تسویه کل»).
+  double consignInvoiced(String lineId, {String? excludeInvoiceId}) {
+    var q = 0.0;
+    for (final inv in realInvoices) {
+      if (inv.id == excludeInvoiceId) continue;
+      for (final l in inv.lines) {
+        if (l.consignRef == lineId) q += l.qty;
+      }
+    }
+    return q;
+  }
+
+  /// «مانده» (unit 1) of a consignment row.
+  double consignRemaining(Consignment c, ConsignLine l, {String? excludeInvoiceId}) =>
+      l.qty - c.returnedQty(l.id) - consignInvoiced(l.id, excludeInvoiceId: excludeInvoiceId);
+
+  /// Goods of others held by us («موجودی امانی») or ours held by others.
+  double consignOpen(String productId, ConsignDir dir, {String? warehouseId}) {
+    var q = 0.0;
+    for (final c in consignments.where((c) => c.dir == dir)) {
+      for (final l in c.lines) {
+        if (l.productId != productId) continue;
+        if (warehouseId != null && whId(l.warehouseId) != warehouseId) continue;
+        q += consignRemaining(c, l);
+      }
+    }
+    return q;
+  }
+
+  String? saveConsignment(Consignment c) {
+    if (c.lines.isEmpty) return 'حداقل یک ردیف کالا وارد کنید';
+    if (c.lines.any((l) => l.qty <= 0)) return 'تعداد هر ردیف باید بیشتر از صفر باشد';
+    final old = consignment(c.id);
+    if (old != null) {
+      for (final l in old.lines) {
+        final settled = old.returnedQty(l.id) + consignInvoiced(l.id);
+        if (settled == 0) continue;
+        final n = c.lines.where((x) => x.id == l.id).firstOrNull;
+        if (n == null) return 'ردیفی که تسویه شده قابل حذف نیست';
+        if (n.qty < settled - 1e-9) return 'تعداد ردیف ${product(n.productId)?.name ?? ''} از مقدار تسویه شده کمتر است';
+        if (n.productId != l.productId) return 'کالای ردیف تسویه شده قابل تغییر نیست';
+      }
+      c.returns = old.returns;
+    }
+    final i = consignments.indexWhere((x) => x.id == c.id);
+    _log(i >= 0 ? 'ویرایش' : 'ثبت', '${c.dir.label} ${c.number}', docDate: c.date, docNo: c.number);
+    if (i >= 0) {
+      consignments[i] = c;
+    } else {
+      consignments.add(c);
+    }
+    _commit();
+    return null;
+  }
+
+  String? removeConsignment(String id) {
+    final c = consignment(id);
+    if (c == null) return null;
+    if (c.returns.isNotEmpty || c.lines.any((l) => consignInvoiced(l.id) > 0)) {
+      return 'این سند امانی تسویه شده است؛ ابتدا تسویه‌ها را حذف کنید';
+    }
+    _log('حذف', '${c.dir.label} ${c.number}', docDate: c.date, docNo: c.number);
+    consignments.removeWhere((x) => x.id == id);
+    _commit();
+    return null;
+  }
+
+  /// «تسویه انبار» — returns [qty] (unit 1) of a consignment row.
+  String? addConsignReturn(String lineId, double qty, DateTime date, {String note = ''}) {
+    final r = consignLine(lineId);
+    if (r == null) return 'ردیف امانی پیدا نشد';
+    if (qty <= 0) return 'تعداد را وارد کنید';
+    if (qty > consignRemaining(r.$1, r.$2) + 1e-9) return 'تعداد از مانده امانی بیشتر است';
+    r.$1.returns.add(ConsignReturn(id: newId(), lineId: lineId, date: date, qty: qty, note: note));
+    _log('ثبت', 'تسویه انبار ${r.$1.dir.label} ${r.$1.number}', docDate: date, docNo: r.$1.number);
+    _commit();
+    return null;
+  }
+
+  void removeConsignReturn(String consignId, String returnId) {
+    consignment(consignId)?.returns.removeWhere((r) => r.id == returnId);
     _commit();
   }
 

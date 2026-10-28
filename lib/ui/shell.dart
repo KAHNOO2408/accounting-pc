@@ -6,6 +6,7 @@ import '../data/journal.dart' show TbLevel;
 import '../data/models.dart';
 import '../data/store.dart';
 import 'auth/auth_screens.dart';
+import 'dialogs/consign_dialogs.dart';
 import 'dialogs/units_dialog.dart';
 import 'dialogs/cheque_dialogs.dart';
 import 'dialogs/chequebook_dialogs.dart';
@@ -238,6 +239,13 @@ final List<_Tab> _tabs = [
           shortcut: 'F7', activator: _k(LogicalKeyboardKey.f7), run: (c, _) => showInvoiceEditor(c, proforma: true)),
       _Item('لیست پیش فاکتور', Icons.library_books_outlined, _cyan,
           shortcut: 'Ctrl+F7', activator: _k(LogicalKeyboardKey.f7, ctrl: true), run: _page(AppPage.proformas)),
+    ]),
+    _Group('امانی', [
+      _Item('دریافت امانی', Icons.move_to_inbox_outlined, _violet, run: (c, _) => showConsignEditor(c, ConsignDir.received)),
+      _Item('پرداخت امانی', Icons.outbox_outlined, _violet, run: (c, _) => showConsignEditor(c, ConsignDir.given)),
+      _Item('امانی دریافتنی', Icons.inventory_outlined, _violet, run: (c, _) => showConsignList(c, dir: ConsignDir.received)),
+      _Item('امانی پرداختنی', Icons.local_shipping_outlined, _violet, run: (c, _) => showConsignList(c, dir: ConsignDir.given)),
+      _Item('مانده امانی', Icons.pending_actions_outlined, _violet, run: (c, _) => showConsignList(c, openOnly: true)),
     ]),
   ]),
   _Tab('مالی', [

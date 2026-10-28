@@ -15,6 +15,7 @@ import '../print_designer.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import 'composite_dialogs.dart';
+import 'consign_dialogs.dart';
 import 'misc_dialogs.dart';
 import 'price_dialog.dart';
 import 'simple_dialogs.dart';
@@ -60,6 +61,9 @@ class _Line {
   /// «واحد منتخب» of the row and how many of unit 1 it is.
   int unit = 1;
   double factor = 1;
+
+  /// Consignment row settled by this row («تسویه امانی»).
+  String? consignRef;
   final title = TextEditingController();
   final qty = TextEditingController(text: '1');
   final price = TextEditingController();
@@ -73,6 +77,7 @@ class _Line {
     x.productId = l.productId;
     x.warehouseId = l.warehouseId;
     x.title.text = l.title;
+    x.consignRef = l.consignRef;
     if (l.inOtherUnit) {
       x.unit = l.unitNo;
       x.factor = l.qty / l.unitQty;
@@ -93,7 +98,8 @@ class _Line {
   double get baseQty => q * factor;
 
   InvoiceLine toLine() => InvoiceLine.inUnit(
-      productId: productId, title: title.text.trim(), unit: unit, factor: factor, qty: q, fi: p, discount: d, warehouseId: warehouseId);
+      productId: productId, title: title.text.trim(), unit: unit, factor: factor, qty: q, fi: p, discount: d, warehouseId: warehouseId)
+    ..consignRef = consignRef;
 
   /// Switches the row to [n] of [pr], converting quantity and price.
   void setUnit(Product pr, int n) {
@@ -344,18 +350,39 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   }
 
   Future<void> _pickPerson() async {
-    final s = StoreScope.read(context);
-    final id = await showDialog<String>(
-      context: context,
-      builder: (ctx) => _PersonPicker(people: s.peopleSorted, title: 'انتخاب $_partyLabel'),
-    );
-    if (id == null || !mounted) return;
-    if (id == '+') {
-      final n = await showPersonDialog(context);
-      if (n != null) setState(() => _person = n);
+    final id = await pickPersonId(context, title: 'انتخاب $_partyLabel');
+    if (id != null && mounted) setState(() => _person = id);
+  }
+
+  /// «تسویه امانی» — brings open consignment rows of this person into the invoice.
+  Future<void> _settleConsign() async {
+    if (_proforma || (_kind != InvoiceKind.sale && _kind != InvoiceKind.purchase)) {
+      toast(context, 'تسویه امانی فقط در فاکتور خرید (امانی دریافتنی) و فاکتور فروش (امانی پرداختنی) انجام می‌شود', error: true);
       return;
     }
-    setState(() => _person = id);
+    final dir = _kind == InvoiceKind.purchase ? ConsignDir.received : ConsignDir.given;
+    final picks = await pickConsignRows(context, dir,
+        personId: _person, excludeInvoiceId: (_saved ?? widget.edit)?.id, taken: {for (final l in _lines) if (l.consignRef != null) l.consignRef!});
+    if (picks == null || picks.isEmpty || !mounted) return;
+    final s = StoreScope.read(context);
+    setState(() {
+      _person ??= picks.first.doc.personId;
+      _tab = 0;
+      if (_lines.isNotEmpty && _lines.last.isEmpty) _lines.removeLast().dispose();
+      for (final k in picks) {
+        final pr = s.product(k.line.productId);
+        final l = _Line()
+          ..productId = k.line.productId
+          ..warehouseId = k.line.warehouseId
+          ..consignRef = k.line.id;
+        l.title.text = pr?.name ?? '';
+        l.qty.text = fmtQty(k.qty);
+        l.price.text = groupDigits(k.line.fi);
+        _listen(l);
+        _lines.add(l);
+      }
+      _addLine();
+    });
   }
 
   Future<void> _priceIncrease() async {
@@ -527,6 +554,18 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       err = 'مبلغ نهایی منفی است؛ تخفیف را بررسی کنید';
     } else if (!_proforma && !_legacy && !settle && !draft && _person == null) {
       err = 'فاکتور متفرقه بدون تسویه ثبت نمی‌شود؛ $_partyLabel را انتخاب کنید یا «تایید F9» را بزنید';
+    }
+    if (err == null && !_proforma) {
+      for (final l in lines.where((l) => l.consignRef != null)) {
+        final r = store.consignLine(l.consignRef);
+        if (r == null) continue;
+        final rem = store.consignRemaining(r.$1, r.$2, excludeInvoiceId: (_saved ?? widget.edit)?.id);
+        final used = lines.where((x) => x.consignRef == l.consignRef).fold<double>(0, (a, x) => a + x.baseQty);
+        if (used > rem + 1e-9) {
+          err = 'تعداد ${l.title.text} از مانده ${r.$1.dir.label} ${r.$1.number} (${fmtQty(rem)}) بیشتر است';
+          break;
+        }
+      }
     }
     if (err != null) {
       setState(() => _err = err);
@@ -1008,7 +1047,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                     if (inv != null && mounted) await showInvoiceSms(context, inv);
                   }, icon: Icons.sms_outlined),
                   const SizedBox(width: 6),
-                  _btn('تسویه امانی', () => showComingSoon(context, 'تسویه امانی')),
+                  _btn('تسویه امانی', _settleConsign, icon: Icons.assignment_turned_in_outlined),
                   const SizedBox(width: 6),
                   PopupMenuButton<bool>(
                     tooltip: 'اعمال تخفیف',
@@ -1507,7 +1546,8 @@ class _QtyDialogState extends State<_QtyDialog> {
           ]),
           row('موجودی واحد ${p.unit}:', fmtQty(stock), fmtQty(stock - pfQty)),
           row('موجودی واحد:', '0', '0'),
-          row('موجودی امانی:', '0', '0'),
+          row('موجودی امانی:', fmtQty(s.consignOpen(p.id, ConsignDir.received, warehouseId: multi ? s.whId(widget.warehouseId) : null)),
+              fmtQty(s.consignOpen(p.id, ConsignDir.received, warehouseId: multi ? s.whId(widget.warehouseId) : null))),
           const SizedBox(height: 8),
           Row(children: [
             const SizedBox(width: 150, child: Text('تعداد:', style: TextStyle(fontWeight: FontWeight.w800))),
@@ -1714,4 +1754,12 @@ class _ShippingDialogState extends State<_ShippingDialog> {
       ),
     );
   }
+}
+
+/// Picks a person (or creates one with «شخص جدید»); null when cancelled.
+Future<String?> pickPersonId(BuildContext context, {required String title}) async {
+  final s = StoreScope.read(context);
+  final id = await showDialog<String>(context: context, builder: (ctx) => _PersonPicker(people: s.peopleSorted, title: title));
+  if (id == '+' && context.mounted) return showPersonDialog(context);
+  return id;
 }

@@ -1833,4 +1833,48 @@ void main() {
     expect(s.removeUnit(s.units.firstWhere((u) => u.name == 'جعبه')), isNotNull);
     expect(s.saveUnit(CountUnit(id: newId(), name: 'عدد')), isNotNull);
   });
+
+  test('امانی: receive on consignment, return part, settle the rest by purchase', () {
+    final s = _tempStore();
+    final sup = Person(id: newId(), name: 'Supplier');
+    s.upsertPerson(sup);
+    final pr = Product(id: newId(), name: 'Headset');
+    s.upsertProduct(pr);
+    final line = ConsignLine(id: newId(), productId: pr.id, qty: 10, fi: 100);
+    final c = Consignment(id: newId(), dir: ConsignDir.received, number: s.nextConsignNumber(ConsignDir.received), date: DateTime(2026, 9, 1), personId: sup.id, lines: [line]);
+    expect(s.saveConsignment(c), isNull);
+    // ownership does not change
+    expect(s.stock(pr.id), 0);
+    expect(s.consignOpen(pr.id, ConsignDir.received), 10);
+
+    // «تسویه انبار»: 3 returned
+    expect(s.addConsignReturn(line.id, 20, DateTime(2026, 9, 5)), isNotNull);
+    expect(s.addConsignReturn(line.id, 3, DateTime(2026, 9, 5)), isNull);
+    expect(s.consignRemaining(c, line), 7);
+
+    // «تسویه کل»: 5 bought through a purchase invoice
+    final inv = Invoice(id: newId(), kind: InvoiceKind.purchase, number: 1, date: DateTime(2026, 9, 10), personId: sup.id,
+        lines: [InvoiceLine(productId: pr.id, qty: 5, unitPrice: 100, consignRef: line.id)]);
+    s.saveInvoice(inv);
+    expect(s.stock(pr.id), 5);
+    expect(s.consignRemaining(c, line), 2);
+    expect(InvoiceLine.fromJson(inv.lines.first.toJson()).consignRef, line.id);
+
+    // memo accounts hold the open value (2 × 100) and the journal balances
+    final j = buildJournal(s);
+    int bal(String m) => j.where((p) => p.moeen == m).fold<int>(0, (a, p) => a + p.debit - p.credit);
+    expect(bal('1250'), 200);
+    expect(bal('1260'), -200);
+    expect(j.fold<int>(0, (a, p) => a + p.debit), j.fold<int>(0, (a, p) => a + p.credit));
+
+    // settled documents are protected; deleting the invoice re-opens them
+    expect(s.removeConsignment(c.id), isNotNull);
+    expect(s.saveConsignment(Consignment(id: c.id, dir: c.dir, number: c.number, date: c.date, personId: sup.id,
+        lines: [ConsignLine(id: line.id, productId: pr.id, qty: 6, fi: 100)])), isNotNull);
+    s.removeInvoice(inv.id);
+    expect(s.consignRemaining(c, line), 7);
+
+    final again = AppStore.open(s.storage);
+    expect(again.consignments.single.returns.single.qty, 3);
+  });
 }

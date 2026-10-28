@@ -13,6 +13,7 @@ import '../report/report_designer.dart';
 import '../report/report_render.dart';
 import '../shell.dart';
 import '../widgets/common.dart';
+import 'consign_dialogs.dart';
 import 'bank_dialogs.dart';
 import 'misc_dialogs.dart';
 import 'product_dialog.dart';
@@ -784,7 +785,7 @@ class _AccountSelectorState extends State<_AccountSelector> {
             final c = byKey(k);
             if (c != null) _select(c);
           },
-        const SingleActivator(LogicalKeyboardKey.f2): () => showComingSoon(context, 'رویت امانی های دریافتی'),
+        const SingleActivator(LogicalKeyboardKey.f2): () => showConsignList(context, dir: ConsignDir.received, personId: cur?.person?.id),
         const SingleActivator(LogicalKeyboardKey.f3): () => _view(cur),
         const SingleActivator(LogicalKeyboardKey.f9): () => _ok(rows),
         const SingleActivator(LogicalKeyboardKey.f10): () => Navigator.pop(context),
@@ -863,7 +864,7 @@ class _AccountSelectorState extends State<_AccountSelector> {
               // buttons pinned to the left edge, all the same size
               Column(mainAxisSize: MainAxisSize.min, children: [
                 Row(mainAxisSize: MainAxisSize.min, children: [
-                  _fixed(_kb('رویت امانی های پرداختی', () => showComingSoon(context, 'رویت امانی های پرداختی'), height: _bh)),
+                  _fixed(_kb('رویت امانی های پرداختی', () => showConsignList(context, dir: ConsignDir.given, personId: cur?.person?.id), height: _bh)),
                   const SizedBox(width: _gap),
                   _fixed(_kb('اطلاعات دفتر', () => _info(cur), height: _bh)),
                   const SizedBox(width: _gap),
@@ -871,7 +872,7 @@ class _AccountSelectorState extends State<_AccountSelector> {
                 ]),
                 const SizedBox(height: _gap),
                 Row(mainAxisSize: MainAxisSize.min, children: [
-                  _fixed(_kb('رویت امانی های دریافتی', () => showComingSoon(context, 'رویت امانی های دریافتی'), key: 'F2', height: _bh)),
+                  _fixed(_kb('رویت امانی های دریافتی', () => showConsignList(context, dir: ConsignDir.received, personId: cur?.person?.id), key: 'F2', height: _bh)),
                   const SizedBox(width: _gap),
                   _fixed(_kb('رویت حساب', () => _view(cur), key: 'F3', color: const Color(0xFFFFE0B2), height: _bh)),
                   const SizedBox(width: _gap),
@@ -995,7 +996,7 @@ class _AccountSelectorState extends State<_AccountSelector> {
             const SizedBox(height: 6),
             Row(children: [
               for (final (i, b) in [
-                _kb('رویت امانی های دریافتی پرداختی', () => showComingSoon(context, 'رویت امانی های دریافتی پرداختی'), height: _bh),
+                _kb('رویت امانی های دریافتی پرداختی', () => showConsignList(context, personId: cur?.person?.id), height: _bh),
                 _kb('یادداشت کالا', () => _notebook(s, cur), height: _bh),
                 _kb('رویت مراکز هزینه(رکورد)', () => showCostCenterPicker(context), height: _bh),
                 _kb('رویت مراکز دفاتر مربوطه', () => _centers(s, cur), height: _bh),
@@ -1627,7 +1628,7 @@ class _LedgerState extends State<_Ledger> {
                     ]),
                   ),
                   _group('صورت مغایرت', tall('صورت مغایرت', 'Ctrl+F2', () => _reconcile(s, all))),
-                  _group('امانی', tall('صورت امانی های طرف حساب', '', () => showComingSoon(context, 'صورت امانی های طرف حساب'), color: const Color(0xFFFFD970))),
+                  _group('امانی', tall('صورت امانی های طرف حساب', '', () => showConsignList(context, personId: widget.acc.person?.id), color: const Color(0xFFFFD970))),
                 ]),
               ),
               const SizedBox(height: 6),

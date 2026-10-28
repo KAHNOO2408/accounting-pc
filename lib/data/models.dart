@@ -691,7 +691,11 @@ class InvoiceLine {
   double unitQty;
   int unitFi;
 
+  /// «تسویه امانی»: id of the consignment row this invoice row settles.
+  String? consignRef;
+
   InvoiceLine({
+    this.consignRef,
     this.productId,
     this.title = '',
     this.qty = 1,
@@ -747,9 +751,11 @@ class InvoiceLine {
         'discount': discount,
         if (warehouseId != null) 'warehouseId': warehouseId,
         if (inOtherUnit) ...{'unitNo': unitNo, 'unitQty': unitQty, 'unitFi': unitFi},
+        if (consignRef != null) 'consignRef': consignRef,
       };
 
   factory InvoiceLine.fromJson(Map<String, dynamic> j) => InvoiceLine(
+        consignRef: _sn(j['consignRef']),
         unitNo: _i(j['unitNo'], 1),
         unitQty: _dbl(j['unitQty']),
         unitFi: _i(j['unitFi']),
@@ -1874,4 +1880,144 @@ class CountUnit {
   Map<String, dynamic> toJson() => {'id': id, 'name': name, if (latin.isNotEmpty) 'latin': latin};
 
   factory CountUnit.fromJson(Map<String, dynamic> j) => CountUnit(id: _s(j['id']), name: _s(j['name']), latin: _s(j['latin']));
+}
+
+// ============================================================== امانی
+
+/// «دریافت امانی» (goods of a supplier held by us) or «پرداخت امانی» (our
+/// goods given to a customer). Ownership — and so the stock — does not change.
+enum ConsignDir { received, given }
+
+extension ConsignDirX on ConsignDir {
+  String get label => this == ConsignDir.received ? 'دریافت امانی' : 'پرداخت امانی';
+  String get listLabel => this == ConsignDir.received ? 'امانی دریافتنی' : 'امانی پرداختنی';
+  String get personLabel => this == ConsignDir.received ? 'تحویل دهنده' : 'تحویل گیرنده';
+
+  /// The invoice kind that settles it in full («تسویه کل»).
+  InvoiceKind get invoiceKind => this == ConsignDir.received ? InvoiceKind.purchase : InvoiceKind.sale;
+}
+
+class ConsignLine {
+  String id;
+  String productId;
+  String? warehouseId;
+
+  /// Quantity and price in unit 1; [unitNo]/[unitQty]/[unitFi] as entered.
+  double qty;
+  int fi;
+  int unitNo;
+  double unitQty;
+  int unitFi;
+
+  ConsignLine({
+    required this.id,
+    required this.productId,
+    this.warehouseId,
+    this.qty = 0,
+    this.fi = 0,
+    this.unitNo = 1,
+    this.unitQty = 0,
+    this.unitFi = 0,
+  });
+
+  int get total => unitNo != 1 && unitQty != 0 ? (unitQty * unitFi).round() : (qty * fi).round();
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'productId': productId,
+        if (warehouseId != null) 'warehouseId': warehouseId,
+        'qty': qty,
+        'fi': fi,
+        if (unitNo != 1) ...{'unitNo': unitNo, 'unitQty': unitQty, 'unitFi': unitFi},
+      };
+
+  factory ConsignLine.fromJson(Map<String, dynamic> j) => ConsignLine(
+        id: _s(j['id']),
+        productId: _s(j['productId']),
+        warehouseId: _sn(j['warehouseId']),
+        qty: _dbl(j['qty']),
+        fi: _i(j['fi']),
+        unitNo: _i(j['unitNo'], 1),
+        unitQty: _dbl(j['unitQty']),
+        unitFi: _i(j['unitFi']),
+      );
+}
+
+/// «تسویه انبار» — goods of a consignment row returned (unit 1).
+class ConsignReturn {
+  String id;
+  String lineId;
+  DateTime date;
+  double qty;
+  String note;
+  ConsignReturn({required this.id, required this.lineId, required this.date, required this.qty, this.note = ''});
+
+  Map<String, dynamic> toJson() => {'id': id, 'lineId': lineId, 'date': _d(date), 'qty': qty, if (note.isNotEmpty) 'note': note};
+
+  factory ConsignReturn.fromJson(Map<String, dynamic> j) =>
+      ConsignReturn(id: _s(j['id']), lineId: _s(j['lineId']), date: _p(j['date']), qty: _dbl(j['qty']), note: _s(j['note']));
+}
+
+class Consignment {
+  String id;
+  ConsignDir dir;
+  int number;
+  DateTime date;
+  String? personId;
+
+  /// «تاریخ پیگرد» and «شرح پیگرد».
+  DateTime? followDate;
+  String followNote;
+  String note;
+  List<ConsignLine> lines;
+  List<ConsignReturn> returns;
+  int createdAt;
+
+  Consignment({
+    required this.id,
+    required this.dir,
+    required this.number,
+    required this.date,
+    this.personId,
+    this.followDate,
+    this.followNote = '',
+    this.note = '',
+    List<ConsignLine>? lines,
+    List<ConsignReturn>? returns,
+    int? createdAt,
+  })  : lines = lines ?? [],
+        returns = returns ?? [],
+        createdAt = createdAt ?? DateTime.now().millisecondsSinceEpoch;
+
+  int get total => lines.fold(0, (s, l) => s + l.total);
+
+  double returnedQty(String lineId) => returns.where((r) => r.lineId == lineId).fold(0.0, (s, r) => s + r.qty);
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'dir': dir.name,
+        'number': number,
+        'date': _d(date),
+        'personId': personId,
+        if (followDate != null) 'followDate': _d(followDate!),
+        if (followNote.isNotEmpty) 'followNote': followNote,
+        'note': note,
+        'lines': lines.map((l) => l.toJson()).toList(),
+        'returns': returns.map((r) => r.toJson()).toList(),
+        'createdAt': createdAt,
+      };
+
+  factory Consignment.fromJson(Map<String, dynamic> j) => Consignment(
+        id: _s(j['id']),
+        dir: ConsignDir.values.firstWhere((d) => d.name == j['dir'], orElse: () => ConsignDir.received),
+        number: _i(j['number']),
+        date: _p(j['date']),
+        personId: _sn(j['personId']),
+        followDate: _pn(j['followDate']),
+        followNote: _s(j['followNote']),
+        note: _s(j['note']),
+        lines: (j['lines'] is List) ? (j['lines'] as List).whereType<Map<String, dynamic>>().map(ConsignLine.fromJson).toList() : null,
+        returns: (j['returns'] is List) ? (j['returns'] as List).whereType<Map<String, dynamic>>().map(ConsignReturn.fromJson).toList() : null,
+        createdAt: _i(j['createdAt']),
+      );
 }
