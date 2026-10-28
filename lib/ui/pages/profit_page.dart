@@ -259,8 +259,10 @@ void showLowMarginReport(BuildContext context, List<LowMarginRow> rows) {
                   constraints: const BoxConstraints(maxHeight: 460),
                   child: ListView(shrinkWrap: true, children: [
                     for (final r in rows)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
+                      Container(
+                        // Sakan's «ریز فروش و سود» report paints loss rows red on pink
+                        color: r.check.level == MarginLevel.loss ? const Color(0xFFFFC7CE) : null,
+                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
                         child: Row(children: [
                           SizedBox(width: 95, child: Text(jFormat(r.invoice.date))),
                           SizedBox(width: 60, child: Text('${r.invoice.number}')),
