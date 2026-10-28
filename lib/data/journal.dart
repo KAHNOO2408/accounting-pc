@@ -1,5 +1,6 @@
 import '../core/jalali.dart';
 import 'chart.dart';
+import 'marketing.dart';
 import 'models.dart';
 import 'store.dart';
 
@@ -212,6 +213,18 @@ List<Posting> buildJournal(AppStore s) {
           pair(inv.date, label, 'هزینه‌های جانبی', rest, drM: pM, drT: p, crM: mOtherIncome, no: inv.number, order: o);
         } else {
           pair(inv.date, label, 'هزینه‌های جانبی', rest, drM: mOtherIncome, crM: pM, crT: p, no: inv.number, order: o);
+        }
+        // «پورسانت فاکتور فروش» — the seller's expense, credited to each marketer
+        if (s.settings.commissionExpense) {
+          final acc = findMoeen(s.settings.commissionAccount) == null ? '5010' : s.settings.commissionAccount;
+          for (final (m, _, amount) in s.commissions(inv)) {
+            final desc = 'پورسانت ${inv.kind.label} ${inv.number} به ${s.person(inv.personId)?.name ?? 'متفرقه'}';
+            if (sale) {
+              pair(inv.date, label, desc, amount, drM: acc, crM: mDebtorsTrade, crT: m.personId, no: inv.number, order: o);
+            } else {
+              pair(inv.date, label, desc, amount, drM: mDebtorsTrade, drT: m.personId, crM: acc, no: inv.number, order: o);
+            }
+          }
         }
     }
   }

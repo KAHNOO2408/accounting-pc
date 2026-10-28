@@ -10,6 +10,7 @@ import '../core/xlsx.dart';
 import '../core/zip_backup.dart';
 import 'books.dart';
 import 'chart.dart';
+import 'marketing.dart';
 import 'models.dart';
 import 'report_layout.dart';
 import 'storage.dart';
@@ -558,6 +559,15 @@ class AppStore extends ChangeNotifier {
     for (final v in vouchers) {
       for (final l in v.lines) {
         if (l.tafsiliId == personId) b += l.debit - l.credit;
+      }
+    }
+    // «پورسانت»: the marketer is owed his share of each sale
+    if (settings.commissionExpense) {
+      for (final inv in realInvoices) {
+        if (inv.id == excludeInvoiceId || !inv.marketers.any((m) => m.personId == personId)) continue;
+        for (final (m, _, amount) in commissions(inv)) {
+          if (m.personId == personId) b += inv.kind == InvoiceKind.saleReturn ? amount : -amount;
+        }
       }
     }
     return b;

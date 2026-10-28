@@ -179,6 +179,14 @@ const _invoiceMap = {
   'BalancKharidarName': 'نام خریدار',
   'ForoshandeBName': 'نام خریدار',
   'PardakhtKonande': 'نام خریدار',
+  'BazaryabName': 'بازاریابان',
+  'BazaryabBName': 'بازاریابان',
+  'BazaryabMob': 'شماره همراه بازاریاب',
+  'HazineBazaryabanSystem': 'هزینه پورسانت',
+  'HazineBazaryaban2ArzKaridar': 'هزینه پورسانت',
+  'MPakhshName': 'مسئول پخش',
+  'MPakhshBName': 'مسئول پخش',
+  'MPakhshMob': 'شماره همراه مسئول پخش',
 };
 
 /// Columns of the item rows.
@@ -259,6 +267,14 @@ const _rowMap = {
   'NesbatV3BV1': 'نسبت واحد 3 به واحد 1',
   'Each1Equal3': 'نسبت واحد 3 به واحد 1',
   'Nesbat31': 'نسبت واحد 3 به واحد 1',
+  'DarsadBazarYaban': 'درصد بازاریابی',
+  'darsadebazaryabi': 'درصد بازاریابی',
+  'BazaryabPercent': 'درصد بازاریابی',
+  'SBazaryabSystem': 'سهم بازاریابی',
+  'SahemBazaryab': 'سهم بازاریابی',
+  'Bazaryabi_system': 'سهم بازاریابی',
+  'Bazaryabi': 'سهم بازاریابی',
+  'sahmebazaryabi': 'سهم بازاریابی',
 };
 
 /// Ledger reports (دفتر کل / معین / تفصیلی).

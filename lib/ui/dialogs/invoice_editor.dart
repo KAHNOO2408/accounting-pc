@@ -16,6 +16,7 @@ import '../theme.dart';
 import '../widgets/common.dart';
 import 'composite_dialogs.dart';
 import 'consign_dialogs.dart';
+import 'marketing_dialogs.dart';
 import 'misc_dialogs.dart';
 import 'price_dialog.dart';
 import 'simple_dialogs.dart';
@@ -168,6 +169,10 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   bool _inited = false;
   Invoice? _saved;
 
+  /// «تیم بازاریابی» and «مسئول پخش».
+  List<MarketerShare> _marketers = [];
+  String? _distributor;
+
   bool get _isEdit => widget.edit != null;
   bool get _legacy => (widget.edit?.paid ?? 0) > 0;
   bool get _buy => _kind.buySide;
@@ -195,6 +200,8 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       _date = e.date;
       _due = e.dueDate;
       _person = e.personId;
+      _marketers = [for (final m in e.marketers) MarketerShare(personId: m.personId, pct: m.pct, amount: m.amount)];
+      _distributor = e.distributorId;
       _number.text = '${e.number}';
       _discount = e.discount;
       _extra = e.extra;
@@ -352,6 +359,22 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   Future<void> _pickPerson() async {
     final id = await pickPersonId(context, title: 'انتخاب $_partyLabel');
     if (id != null && mounted) setState(() => _person = id);
+  }
+
+  Future<void> _team() async {
+    if (_buy) {
+      toast(context, 'تیم بازاریابی برای فاکتور فروش و برگشت از فروش است', error: true);
+      return;
+    }
+    final lines = [..._lines, ..._services].where((l) => !l.isEmpty);
+    final net = lines.fold<int>(0, (a, l) => a + l.total) - _discount;
+    final r = await showMarketingTeamDialog(context, current: _marketers, distributorId: _distributor, invoiceNet: net);
+    if (r != null && mounted) {
+      setState(() {
+        _marketers = r.marketers;
+        _distributor = r.distributorId;
+      });
+    }
   }
 
   /// «تسویه امانی» — brings open consignment rows of this person into the invoice.
@@ -608,6 +631,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       ..dueDate = _due
       ..personId = _person
       ..lines = lines.map((l) => l.toLine()).toList()
+      ..marketers = _kind == InvoiceKind.sale || _kind == InvoiceKind.saleReturn ? _marketers : []
       ..discount = _discount
       ..extra = _extra
       ..note = _note
@@ -623,6 +647,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
         'saleDate': _saleDate.toIso8601String(),
         'shipSeller': _shipSeller == 0 ? '' : '$_shipSeller',
         'shipAcc': _shipSeller == 0 || _buy ? '' : (_shipAcc ?? ''),
+        'distributor': _distributor ?? '',
       }..removeWhere((_, v) => v.isEmpty));
     if (!_legacy) {
       inv
@@ -855,7 +880,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     final bindings = <ShortcutActivator, VoidCallback>{
       const SingleActivator(LogicalKeyboardKey.f1): _docDetails,
       const SingleActivator(LogicalKeyboardKey.f2): _pickPerson,
-      const SingleActivator(LogicalKeyboardKey.f3): () => showComingSoon(context, 'انتخاب تیم بازاریابی'),
+      const SingleActivator(LogicalKeyboardKey.f3): _team,
       const SingleActivator(LogicalKeyboardKey.f7): () => setState(() => _person = null),
       const SingleActivator(LogicalKeyboardKey.f5): () => _saveAndPrint([PrintDocType.invoice]),
       const SingleActivator(LogicalKeyboardKey.f8): () => _saveAndPrint([PrintDocType.invoice, PrintDocType.warehouse]),
@@ -983,7 +1008,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                   const SizedBox(width: 8),
                   _btn('اعمال مدل های تخفیفات و جوایز', () => showComingSoon(context, 'اعمال مدل های تخفیفات و جوایز')),
                   const SizedBox(width: 6),
-                  _btn('انتخاب تیم بازاریابی', () => showComingSoon(context, 'انتخاب تیم بازاریابی'), key: 'F3'),
+                  _btn(_marketers.isEmpty ? 'انتخاب تیم بازاریابی' : 'تیم بازاریابی (${_marketers.length})', _team, key: 'F3'),
                   if (person != null) ...[
                     const Spacer(),
                     Text('مانده: ', style: th.textTheme.bodySmall),

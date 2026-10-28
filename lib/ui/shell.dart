@@ -7,6 +7,7 @@ import '../data/models.dart';
 import '../data/store.dart';
 import 'auth/auth_screens.dart';
 import 'dialogs/consign_dialogs.dart';
+import 'dialogs/marketing_dialogs.dart';
 import 'dialogs/units_dialog.dart';
 import 'dialogs/cheque_dialogs.dart';
 import 'dialogs/chequebook_dialogs.dart';
@@ -382,7 +383,7 @@ final List<_Tab> _tabs = [
       _Item('معرفی دفاتر مالی', Icons.library_add_outlined, _green, run: (c, _) => showBooksManager(c)),
       _Item('مرکز اسناد', Icons.home_work_outlined, _amber, run: (c, _) => showDocCentersDialog(c)),
       const _Item('مرکز دفاتر', Icons.domain_outlined, _slate),
-      const _Item('بازاریابان', Icons.campaign_outlined, _slate),
+      _Item('بازاریابان', Icons.campaign_outlined, _green, run: (c, _) => showMarketersWindow(c)),
       const _Item('گروه‌های یارانه', Icons.group_work_outlined, _slate),
       const _Item('تخفیف عمومی', Icons.percent_rounded, _slate),
       _Item('واحدهای شمارش', Icons.straighten_rounded, _amber, run: (c, _) => showUnitsWindow(c)),

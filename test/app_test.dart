@@ -13,6 +13,7 @@ import 'package:taraz/data/mrt_import.dart';
 import 'package:taraz/data/chart.dart';
 import 'package:taraz/data/journal.dart';
 import 'package:taraz/data/kardex.dart';
+import 'package:taraz/data/marketing.dart';
 import 'package:taraz/data/models.dart';
 import 'package:taraz/data/report_layout.dart';
 import 'package:taraz/data/storage.dart';
@@ -1876,5 +1877,38 @@ void main() {
 
     final again = AppStore.open(s.storage);
     expect(again.consignments.single.returns.single.qty, 3);
+  });
+
+  test('بازاریابان: commission by percent, amount and product percent', () {
+    final s = _tempStore();
+    final buyer = Person(id: newId(), name: 'Buyer');
+    final m1 = Person(id: newId(), name: 'Reza', marketer: true, marketerPct: 5);
+    final m2 = Person(id: newId(), name: 'Sara', marketer: true);
+    for (final p in [buyer, m1, m2]) {
+      s.upsertPerson(p);
+    }
+    final pr = Product(id: newId(), name: 'Phone', info: {'marketingPct': '2'});
+    s.upsertProduct(pr);
+    final inv = Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: DateTime(2026, 10, 1), personId: buyer.id,
+        lines: [InvoiceLine(productId: pr.id, qty: 2, unitPrice: 50000)],
+        marketers: [MarketerShare(personId: m1.id, pct: 5), MarketerShare(personId: m2.id)]);
+    s.saveInvoice(inv);
+    final c = s.commissions(inv);
+    expect(c[0].$3, 5000); // 5% of 100,000
+    expect(c[1].$3, 2000); // product «درصد بازاریابی» 2%
+    expect(s.commissionTotal(inv), 7000);
+    expect(s.marketers.length, 2);
+    // the marketers are owed their shares; the journal agrees and balances
+    expect(s.personBalance(m1.id), -5000);
+    final j = buildJournal(s);
+    expect(j.fold<int>(0, (a, p) => a + p.debit), j.fold<int>(0, (a, p) => a + p.credit));
+    expect(j.where((p) => p.moeen == mDebtorsTrade && p.tafsiliId == m1.id).fold<int>(0, (a, p) => a + p.debit - p.credit), -5000);
+    expect(j.where((p) => p.moeen == '5010').fold<int>(0, (a, p) => a + p.debit), 7000);
+    expect(s.commissionReport(DateTime(2026), DateTime(2027)).length, 2);
+    expect(s.salesByMarketer(DateTime(2026), DateTime(2027), monthly: true).first.net, 100000);
+    expect(Invoice.fromJson(inv.toJson()).marketers.length, 2);
+    // without «پورسانت بعنوان هزینه» nothing is posted
+    s.updateSettings((x) => x.commissionExpense = false);
+    expect(s.personBalance(m1.id), 0);
   });
 }

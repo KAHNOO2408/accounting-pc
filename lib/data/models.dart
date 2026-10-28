@@ -163,9 +163,31 @@ class Person {
   /// کد حساب تفصیلی (shared numbering with products, like Sakan).
   int code;
 
-  Person({required this.id, required this.name, this.phone = '', this.note = '', this.opening = 0, this.code = 0});
+  /// «بازاریابان»: this person is a marketer, with a default commission percent.
+  bool marketer;
+  double marketerPct;
 
-  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'phone': phone, 'note': note, 'opening': opening, 'code': code};
+  Person({
+    required this.id,
+    required this.name,
+    this.phone = '',
+    this.note = '',
+    this.opening = 0,
+    this.code = 0,
+    this.marketer = false,
+    this.marketerPct = 0,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'phone': phone,
+        'note': note,
+        'opening': opening,
+        'code': code,
+        if (marketer) 'marketer': true,
+        if (marketerPct != 0) 'marketerPct': marketerPct,
+      };
 
   factory Person.fromJson(Map<String, dynamic> j) => Person(
         id: _s(j['id']),
@@ -174,7 +196,22 @@ class Person {
         note: _s(j['note']),
         opening: _i(j['opening']),
         code: _i(j['code']),
+        marketer: j['marketer'] == true,
+        marketerPct: _dbl(j['marketerPct']),
       );
+}
+
+/// One marketer of an invoice («تیم بازاریابی»): a percent of the invoice
+/// (0 = the products' «درصد بازاریابی») or a fixed amount.
+class MarketerShare {
+  String personId;
+  double pct;
+  int amount;
+  MarketerShare({required this.personId, this.pct = 0, this.amount = 0});
+
+  Map<String, dynamic> toJson() => {'personId': personId, if (pct != 0) 'pct': pct, if (amount != 0) 'amount': amount};
+
+  factory MarketerShare.fromJson(Map<String, dynamic> j) => MarketerShare(personId: _s(j['personId']), pct: _dbl(j['pct']), amount: _i(j['amount']));
 }
 
 // ---------------------------------------------------------------------------
@@ -787,6 +824,12 @@ class Invoice {
   /// Extra header fields (تحویل گیرنده، منطقه، آدرس، بابت، شماره حواله انبار…).
   Map<String, String> info;
 
+  /// «تیم بازاریابی» of a sale (or its return).
+  List<MarketerShare> marketers;
+
+  /// «مسئول پخش».
+  String? get distributorId => info['distributor'];
+
   /// شماره حواله انبار
   int get warehouseNo => int.tryParse(info['warehouseNo'] ?? '') ?? 0;
 
@@ -796,6 +839,7 @@ class Invoice {
 
   Invoice({
     Map<String, String>? info,
+    List<MarketerShare>? marketers,
     required this.id,
     required this.kind,
     required this.number,
@@ -811,6 +855,7 @@ class Invoice {
     this.proforma = false,
     int? createdAt,
   })  : lines = lines ?? [],
+        marketers = marketers ?? [],
         info = info ?? {},
         createdAt = createdAt ?? DateTime.now().millisecondsSinceEpoch;
 
@@ -838,10 +883,12 @@ class Invoice {
         'proforma': proforma,
         'createdAt': createdAt,
         if (info.isNotEmpty) 'info': info,
+        if (marketers.isNotEmpty) 'marketers': marketers.map((m) => m.toJson()).toList(),
       };
 
   factory Invoice.fromJson(Map<String, dynamic> j) => Invoice(
         info: j['info'] is Map ? {for (final e in (j['info'] as Map).entries) '${e.key}': '${e.value}'} : null,
+        marketers: j['marketers'] is List ? (j['marketers'] as List).whereType<Map<String, dynamic>>().map(MarketerShare.fromJson).toList() : null,
         id: _s(j['id']),
         kind: _enum(InvoiceKind.values, j['kind'], InvoiceKind.sale),
         number: _i(j['number']),
@@ -1105,6 +1152,10 @@ class AppSettings {
   bool marginCheck;
   double minMarginPct;
 
+  /// «پورسانت بعنوان هزینه بر عهده فروشنده محسوب گردد» and «حساب هزینه بازاریابان».
+  bool commissionExpense;
+  String commissionAccount;
+
   AppSettings({
     this.themeMode = 'light',
     this.currency = 'تومان',
@@ -1125,6 +1176,8 @@ class AppSettings {
     this.backupPassword = '',
     this.marginCheck = true,
     this.minMarginPct = 0,
+    this.commissionExpense = true,
+    this.commissionAccount = '5010',
   })  : openingOther = openingOther ?? {},
         sms = sms ?? SmsConfig();
 
@@ -1150,6 +1203,8 @@ class AppSettings {
         if (backupPassword.isNotEmpty) 'backupPassword': backupPassword,
         'marginCheck': marginCheck,
         'minMarginPct': minMarginPct,
+        'commissionExpense': commissionExpense,
+        'commissionAccount': commissionAccount,
       };
 
   factory AppSettings.fromJson(Map<String, dynamic> j) => AppSettings(
@@ -1174,6 +1229,8 @@ class AppSettings {
         backupPassword: _s(j['backupPassword']),
         marginCheck: j['marginCheck'] != false,
         minMarginPct: _dbl(j['minMarginPct']),
+        commissionExpense: j['commissionExpense'] != false,
+        commissionAccount: _s(j['commissionAccount']).isEmpty ? '5010' : _s(j['commissionAccount']),
       );
 }
 

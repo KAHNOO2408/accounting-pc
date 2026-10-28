@@ -7,6 +7,7 @@ import '../../core/format.dart';
 import '../../core/jalali.dart';
 import '../../core/qr.dart';
 import '../../data/chart.dart';
+import '../../data/marketing.dart';
 import '../../data/models.dart';
 import '../../data/report_layout.dart';
 import '../../data/storage.dart';
@@ -120,6 +121,11 @@ ReportData invoiceReportData(AppStore s, Invoice inv, {PrintDocType type = Print
     'درصد سود و زیان ناخالص': pct(gross, netSales),
     'وزن فاکتور': fmtQty(weight),
     'ارز سیستم': st.currency,
+    'بازاریابان': [for (final m in inv.marketers) s.person(m.personId)?.name ?? ''].join('، '),
+    'شماره همراه بازاریاب': inv.marketers.isEmpty ? '' : (s.person(inv.marketers.first.personId)?.phone ?? ''),
+    'هزینه پورسانت': _money(s.commissionTotal(inv)),
+    'مسئول پخش': s.person(inv.distributorId)?.name ?? '',
+    'شماره همراه مسئول پخش': s.person(inv.distributorId)?.phone ?? '',
   };
   final rows = <Map<String, String>>[];
   var i = 0;
@@ -163,6 +169,8 @@ ReportData invoiceReportData(AppStore s, Invoice inv, {PrintDocType type = Print
       'بهای فروش 2': pr == null ? '' : _money(pr.sellPrice2),
       'بهای فروش 3': pr == null ? '' : _money(pr.sellPrice3),
       'موجودی': pr == null ? '' : fmtQty(s.stock(pr.id)),
+      'درصد بازاریابی': fmtQty(productMarketingPct(pr)),
+      'سهم بازاریابی': _money(s.rowCommission(l)),
     });
   }
   return ReportData(fields: fields, rows: rows, title: '$title ${inv.number}');
