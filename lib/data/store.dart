@@ -12,6 +12,7 @@ import 'books.dart';
 import 'chart.dart';
 import 'marketing.dart';
 import 'models.dart';
+import 'payroll.dart';
 import 'report_layout.dart';
 import 'storage.dart';
 
@@ -60,6 +61,16 @@ class AppStore extends ChangeNotifier {
 
   /// «امانی» documents.
   List<Consignment> consignments = [];
+
+  /// «حقوق و دستمزد».
+  List<Employee> employees = [];
+  List<PayPeriod> payPeriods = [];
+  List<Payslip> payslips = [];
+  List<Leave> leaves = [];
+  List<Mission> missions = [];
+  List<StaffLoan> staffLoans = [];
+  PayrollRules payrollRules = PayrollRules();
+  Workshop workshop = Workshop();
 
   /// Set when loading converted the data to a newer format.
   bool _needsSave = false;
@@ -209,6 +220,14 @@ class AppStore extends ChangeNotifier {
     smsLog = list('smsLog').map(SmsLogEntry.fromJson).toList();
     units = list('units').map(CountUnit.fromJson).toList();
     consignments = list('consignments').map(Consignment.fromJson).toList();
+    employees = list('employees').map(Employee.fromJson).toList();
+    payPeriods = list('payPeriods').map(PayPeriod.fromJson).toList();
+    payslips = list('payslips').map(Payslip.fromJson).toList();
+    leaves = list('leaves').map(Leave.fromJson).toList();
+    missions = list('missions').map(Mission.fromJson).toList();
+    staffLoans = list('staffLoans').map(StaffLoan.fromJson).toList();
+    payrollRules = j['payrollRules'] is Map<String, dynamic> ? PayrollRules.fromJson(j['payrollRules'] as Map<String, dynamic>) : PayrollRules();
+    workshop = j['workshop'] is Map<String, dynamic> ? Workshop.fromJson(j['workshop'] as Map<String, dynamic>) : Workshop();
     _ensureUnits();
     final cm = j['customMoeens'];
     customMoeens = cm is Map ? {for (final e in cm.entries) '${e.key}': '${e.value}'} : {};
@@ -410,6 +429,14 @@ class AppStore extends ChangeNotifier {
         'smsLog': smsLog.map((e) => e.toJson()).toList(),
         'units': units.map((e) => e.toJson()).toList(),
         'consignments': consignments.map((e) => e.toJson()).toList(),
+        'employees': employees.map((e) => e.toJson()).toList(),
+        'payPeriods': payPeriods.map((e) => e.toJson()).toList(),
+        'payslips': payslips.map((e) => e.toJson()).toList(),
+        'leaves': leaves.map((e) => e.toJson()).toList(),
+        'missions': missions.map((e) => e.toJson()).toList(),
+        'staffLoans': staffLoans.map((e) => e.toJson()).toList(),
+        'payrollRules': payrollRules.toJson(),
+        'workshop': workshop.toJson(),
         'hiddenMoeens': hiddenMoeens.toList(),
         'customMoeens': customMoeens,
         'notebooks': notebooks,
@@ -1167,6 +1194,292 @@ class AppStore extends ChangeNotifier {
 
   void removeConsignReturn(String consignId, String returnId) {
     consignment(consignId)?.returns.removeWhere((r) => r.id == returnId);
+    _commit();
+  }
+
+  // ---------------------------------------------------------------- حقوق و دستمزد
+
+  Employee? employee(String? id) => employees.where((e) => e.id == id).firstOrNull;
+  PayPeriod? payPeriod(String? id) => payPeriods.where((p) => p.id == id).firstOrNull;
+  List<Employee> get activeEmployees => employees.where((e) => e.active).toList()..sort((a, b) => a.fullName.compareTo(b.fullName));
+  List<PayPeriod> get periodsSorted => [...payPeriods]..sort((a, b) => b.start.compareTo(a.start));
+
+  String nextPersonnelCode() {
+    var n = 1000;
+    for (final e in employees) {
+      final v = int.tryParse(e.personnelCode) ?? 0;
+      if (v > n) n = v;
+    }
+    return '${n + 1}';
+  }
+
+  /// Saves an employee; creates the person account (حساب تفصیلی) when needed.
+  String? saveEmployee(Employee e) {
+    if (e.fullName.isEmpty) return 'نام و نام خانوادگی را وارد کنید';
+    if (e.personnelCode.isNotEmpty && employees.any((x) => x.id != e.id && x.personnelCode == e.personnelCode)) {
+      return 'کد پرسنلی ${e.personnelCode} تکراری است';
+    }
+    var p = person(e.personId);
+    if (p == null) {
+      p = Person(id: newId(), name: e.fullName, phone: e.phone);
+      e.personId = p.id;
+    } else {
+      p
+        ..name = e.fullName
+        ..phone = e.phone.isEmpty ? p.phone : e.phone;
+    }
+    upsertPerson(p);
+    final i = employees.indexWhere((x) => x.id == e.id);
+    if (i >= 0) {
+      employees[i] = e;
+    } else {
+      employees.add(e);
+    }
+    _commit();
+    return null;
+  }
+
+  String? removeEmployee(String id) {
+    if (payslips.any((p) => p.employeeId == id)) return 'برای این پرسنل فیش حقوقی ثبت شده؛ به جای حذف، غیرفعالش کنید';
+    employees.removeWhere((e) => e.id == id);
+    leaves.removeWhere((l) => l.employeeId == id);
+    missions.removeWhere((m) => m.employeeId == id);
+    _commit();
+    return null;
+  }
+
+  /// Adds the period of Jalali [year]/[month] (or returns the existing one).
+  PayPeriod addPayPeriod(int year, int month) {
+    final ex = payPeriods.where((p) => p.year == year && p.month == month).firstOrNull;
+    if (ex != null) return ex;
+    final start = Jalali(year, month, 1).toDateTime();
+    final days = month <= 6 ? 31 : (month <= 11 ? 30 : (Jalali.isLeapYear(year) ? 30 : 29));
+    final p = PayPeriod(id: newId(), year: year, month: month, days: days, start: start, end: start.add(Duration(days: days - 1)));
+    payPeriods.add(p);
+    // every active employee gets a payslip with a full month of work
+    for (final e in activeEmployees) {
+      payslips.add(Payslip(id: newId(), periodId: p.id, employeeId: e.id, workDays: p.days.toDouble()));
+    }
+    _commit();
+    return p;
+  }
+
+  String? removePayPeriod(String id) {
+    final p = payPeriod(id);
+    if (p == null) return null;
+    if (p.voucherId != null && vouchers.any((v) => v.id == p.voucherId)) return 'سند حقوق این دوره صادر شده؛ ابتدا سند را حذف کنید';
+    payPeriods.removeWhere((x) => x.id == id);
+    payslips.removeWhere((x) => x.periodId == id);
+    _commit();
+    return null;
+  }
+
+  /// «افزودن پرسنل به دوره» — a payslip for every active employee.
+  int addEmployeesToPeriod(PayPeriod p) {
+    var n = 0;
+    for (final e in activeEmployees) {
+      if (payslips.any((x) => x.periodId == p.id && x.employeeId == e.id)) continue;
+      payslips.add(Payslip(id: newId(), periodId: p.id, employeeId: e.id, workDays: p.days.toDouble()));
+      n++;
+    }
+    _commit();
+    return n;
+  }
+
+  Payslip payslipOf(PayPeriod p, Employee e) {
+    var s = payslips.where((x) => x.periodId == p.id && x.employeeId == e.id).firstOrNull;
+    if (s == null) {
+      s = Payslip(id: newId(), periodId: p.id, employeeId: e.id, workDays: p.days.toDouble());
+      payslips.add(s);
+    }
+    return s;
+  }
+
+  void savePayslip(Payslip p) {
+    final i = payslips.indexWhere((x) => x.id == p.id);
+    if (i >= 0) {
+      payslips[i] = p;
+    } else {
+      payslips.add(p);
+    }
+    _commit();
+  }
+
+  bool _inPeriod(DateTime d, PayPeriod p) => !d.isBefore(p.start) && !d.isAfter(p.end);
+
+  List<Leave> leavesIn(Employee e, PayPeriod p) => leaves.where((l) => l.employeeId == e.id && _inPeriod(l.start, p)).toList();
+  List<Mission> missionsIn(Employee e, PayPeriod p) => missions.where((m) => m.employeeId == e.id && _inPeriod(m.start, p)).toList();
+
+  /// Loan balance of an employee before [period] (all earlier payslips' installments repaid).
+  int loanRemaining(Employee e, {PayPeriod? before}) {
+    var given = staffLoans.where((l) => l.employeeId == e.id && (before == null || !l.date.isAfter(before.end))).fold<int>(0, (a, l) => a + l.amount);
+    for (final s in payslips.where((s) => s.employeeId == e.id)) {
+      final p = payPeriod(s.periodId);
+      if (p == null || (before != null && !p.start.isBefore(before.start))) continue;
+      given -= _installment(e, p, s);
+    }
+    return given < 0 ? 0 : given;
+  }
+
+  int _installment(Employee e, PayPeriod p, Payslip s) => s.loanInstallment != 0 ? s.loanInstallment : autoInstallment(e, p);
+
+  /// Installment of the open loans in [p], limited to the remaining balance.
+  int autoInstallment(Employee e, PayPeriod p) {
+    final open = staffLoans.where((l) => l.employeeId == e.id && !l.date.isAfter(p.end)).toList();
+    if (open.isEmpty) return 0;
+    final rem = loanRemaining(e, before: p);
+    final inst = open.fold<int>(0, (a, l) => a + l.installment);
+    return inst < rem ? inst : rem;
+  }
+
+  PayResult payResult(PayPeriod p, Employee e) {
+    final s = payslipOf(p, e);
+    return computePayslip(
+      e: e,
+      period: p,
+      p: s,
+      rules: payrollRules,
+      leaves: leavesIn(e, p),
+      missions: missionsIn(e, p),
+      loanInstallment: _installment(e, p, s),
+    );
+  }
+
+  /// Employees with a payslip in [p].
+  List<Employee> employeesIn(PayPeriod p) {
+    final ids = {for (final s in payslips.where((s) => s.periodId == p.id)) s.employeeId};
+    return employees.where((e) => ids.contains(e.id)).toList()..sort((a, b) => a.fullName.compareTo(b.fullName));
+  }
+
+  /// «صدور سند حقوق» — one voucher for the whole period (replaces the previous one).
+  Voucher postPayroll(PayPeriod p) {
+    final lines = <VoucherLine>[];
+    final desc = 'سند حقوق ${p.name}';
+    var gross = 0, employer = 0, insurance = 0, tax = 0;
+    for (final e in employeesIn(p)) {
+      final r = payResult(p, e);
+      gross += r.jamKol;
+      employer += r.bimeSahmKarfarma + r.bimeBikari + r.bimeMashagheleSakht;
+      insurance += r.bimeSahmBimeShode + r.bimeSahmKarfarma + r.bimeBikari + r.bimeMashagheleSakht;
+      tax += r.maliat;
+      if (r.vam != 0) lines.add(VoucherLine(moeen: mStaff, tafsiliId: e.personId, desc: 'قسط وام ${e.fullName}', credit: r.vam));
+      if (r.jarime != 0) lines.add(VoucherLine(moeen: mOtherIncome, desc: 'جریمه ${e.fullName}', credit: r.jarime));
+      if (r.kosoratSabet != 0) lines.add(VoucherLine(moeen: mOtherLiab, desc: 'کسورات ${e.fullName}', credit: r.kosoratSabet));
+      // the advance was already paid to the person account: it is not deducted twice
+      final net = r.khales + r.mosaede;
+      if (net != 0) lines.add(VoucherLine(moeen: mDebtorsTrade, tafsiliId: e.personId, desc: 'حقوق ${p.name} ${e.fullName}', credit: net));
+    }
+    lines.insertAll(0, [
+      if (gross != 0) VoucherLine(moeen: mSalaryExpense, desc: desc, debit: gross),
+      if (employer != 0) VoucherLine(moeen: mInsuranceExpense, desc: 'بیمه سهم کارفرما ${p.name}', debit: employer),
+      if (insurance != 0) VoucherLine(moeen: mInsurancePayable, desc: 'بیمه ${p.name}', credit: insurance),
+      if (tax != 0) VoucherLine(moeen: mSalaryTaxPayable, desc: 'مالیات حقوق ${p.name}', credit: tax),
+    ]);
+    final old = vouchers.where((v) => v.id == p.voucherId).firstOrNull;
+    final v = Voucher(
+      id: old?.id ?? newId(),
+      number: old?.number ?? nextVoucherNumber(),
+      fixedNumber: old?.fixedNumber ?? nextFixedNumber(),
+      date: p.end,
+      desc: desc,
+      lines: lines,
+      kind: 'payroll',
+      meta: {'period': p.id},
+      createdAt: old?.createdAt,
+    );
+    p.voucherId = v.id;
+    saveVoucher(v);
+    return v;
+  }
+
+  /// «پرداخت وام پرسنل» — pays the loan out of [accountId] (cash box or bank).
+  void saveStaffLoan(StaffLoan l) {
+    final e = employee(l.employeeId);
+    final i = staffLoans.indexWhere((x) => x.id == l.id);
+    if (i >= 0) {
+      staffLoans[i] = l;
+    } else {
+      staffLoans.add(l);
+    }
+    vouchers.removeWhere((v) => v.kind == 'staffLoan' && v.meta['loan'] == l.id);
+    final a = account(l.accountId);
+    if (e != null && a != null && l.amount > 0) {
+      saveVoucher(Voucher(
+        id: newId(),
+        number: nextVoucherNumber(),
+        fixedNumber: nextFixedNumber(),
+        date: l.date,
+        desc: 'پرداخت وام به ${e.fullName}',
+        kind: 'staffLoan',
+        meta: {'loan': l.id},
+        lines: [
+          VoucherLine(moeen: mStaff, tafsiliId: e.personId, desc: 'وام ${e.fullName}', debit: l.amount),
+          VoucherLine(moeen: a.type == AccountType.cash ? mCash : mBank, tafsiliId: a.id, desc: 'وام ${e.fullName}', credit: l.amount),
+        ],
+      ));
+    } else {
+      _commit();
+    }
+  }
+
+  void removeStaffLoan(String id) {
+    staffLoans.removeWhere((l) => l.id == id);
+    vouchers.removeWhere((v) => v.kind == 'staffLoan' && v.meta['loan'] == id);
+    _commit();
+  }
+
+  void saveLeave(Leave l) {
+    final i = leaves.indexWhere((x) => x.id == l.id);
+    if (i >= 0) {
+      leaves[i] = l;
+    } else {
+      leaves.add(l);
+    }
+    _commit();
+  }
+
+  void saveMission(Mission m) {
+    final i = missions.indexWhere((x) => x.id == m.id);
+    if (i >= 0) {
+      missions[i] = m;
+    } else {
+      missions.add(m);
+    }
+    _commit();
+  }
+
+  void removeLeave(String id) {
+    leaves.removeWhere((l) => l.id == id);
+    _commit();
+  }
+
+  void removeMission(String id) {
+    missions.removeWhere((m) => m.id == id);
+    _commit();
+  }
+
+  /// «مانده مرخصی» of the Jalali [year]: allowed, used and remaining days.
+  (double allowed, double used, double remaining) leaveBalance(Employee e, int year) {
+    final from = Jalali(year, 1, 1).toDateTime();
+    final to = Jalali(year + 1, 1, 1).toDateTime();
+    final used = leaves
+        .where((l) => l.employeeId == e.id && l.kind == LeaveKind.paid && !l.start.isBefore(from) && l.start.isBefore(to))
+        .fold<double>(0, (a, l) => a + l.days + l.hours / 8);
+    final bought = payslips.where((s) {
+      final p = payPeriod(s.periodId);
+      return s.employeeId == e.id && p != null && p.year == year;
+    }).fold<double>(0, (a, s) => a + s.leaveBuybackDays);
+    final allowed = e.annualLeaveDays.toDouble();
+    return (allowed, used + bought, allowed - used - bought);
+  }
+
+  void updatePayrollRules(PayrollRules r) {
+    payrollRules = r;
+    _commit();
+  }
+
+  void updateWorkshop(Workshop w) {
+    workshop = w;
     _commit();
   }
 

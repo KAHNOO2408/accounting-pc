@@ -14,6 +14,8 @@ import 'package:taraz/data/chart.dart';
 import 'package:taraz/data/journal.dart';
 import 'package:taraz/data/kardex.dart';
 import 'package:taraz/data/marketing.dart';
+import 'package:taraz/data/payroll.dart';
+import 'package:taraz/ui/dialogs/payroll_dialogs.dart';
 import 'package:taraz/data/models.dart';
 import 'package:taraz/data/report_layout.dart';
 import 'package:taraz/data/storage.dart';
@@ -828,7 +830,7 @@ void main() {
       expect(tester.takeException(), isNull, reason: 'page: ${page.name}');
     }
 
-    for (final tab in ['خرید و فروش', 'عملیات کالا', 'مالی', 'مالی ویژه', 'هزینه و درآمد', 'گزارشات', 'متفرقه', 'کنترل اسناد', 'خروج و پشتیبان']) {
+    for (final tab in ['خرید و فروش', 'عملیات کالا', 'مالی', 'مالی ویژه', 'هزینه و درآمد', 'حقوق و دستمزد', 'گزارشات', 'متفرقه', 'کنترل اسناد', 'خروج و پشتیبان']) {
       await tester.tap(find.text(tab).first);
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull, reason: tab);
@@ -1910,5 +1912,75 @@ void main() {
     // without «پورسانت بعنوان هزینه» nothing is posted
     s.updateSettings((x) => x.commissionExpense = false);
     expect(s.personBalance(m1.id), 0);
+  });
+
+  test('حقوق و دستمزد: payslip, insurance, tax, loan and the payroll voucher', () {
+    final rules = PayrollRules();
+    expect(rules.tax(24000000), 0);
+    expect(rules.tax(30000000), 600000); // 6M × 10%
+    expect(rules.tax(40000000), 600000 + 1200000 + 400000); // 10% of 6M, 15% of 8M, 20% of 2M
+
+    final s = _tempStore();
+    final cash = s.accounts.first;
+    final e = Employee(id: newId(), personId: '', firstName: 'Ali', lastName: 'Rezaei', personnelCode: '1001', monthlyWage: 30000000,
+        benefits: [PayItem2(name: 'حق مسکن', amount: 3000000), PayItem2(name: 'بن', amount: 2000000, insured: false)]);
+    expect(s.saveEmployee(e), isNull);
+    expect(s.person(e.personId)?.name, 'Ali Rezaei');
+    final p = s.addPayPeriod(1405, 7); // مهر — 30 days
+    expect(p.days, 30);
+    expect(s.employeesIn(p).length, 1);
+
+    s.saveStaffLoan(StaffLoan(id: newId(), employeeId: e.id, date: p.start.subtract(const Duration(days: 5)), amount: 3000000, installments: 3, accountId: cash.id));
+    final slip = s.payslipOf(p, e)
+      ..overtimeHours = 10
+      ..advance = 1000000;
+    s.savePayslip(slip);
+    s.saveLeave(Leave(id: newId(), employeeId: e.id, kind: LeaveKind.unpaid, start: p.start.add(const Duration(days: 3)), end: p.start.add(const Duration(days: 3)), days: 2));
+
+    final r = s.payResult(p, e);
+    expect(r.workDays, 28);
+    expect(r.hoghoghMahiane, 28000000);
+    expect(r.ezafeKari, (10 * 30000000 / 220 * 1.4).round());
+    expect(r.dastmozdMashmoolBime, 28000000 + 2800000 + r.ezafeKari); // بن is not insured
+    expect(r.bimeSahmBimeShode, (r.dastmozdMashmoolBime * 0.07).round());
+    expect(r.vam, 1000000);
+    expect(r.mosaede, 1000000);
+    expect(r.khales, r.jamKol - r.bimeSahmBimeShode - r.maliat - r.vam - r.mosaede);
+
+    final v = s.postPayroll(p);
+    expect(v.totalDebit, v.totalCredit);
+    expect(s.postPayroll(p).id, v.id); // re-posting replaces
+    expect(s.vouchers.where((x) => x.kind == 'payroll').length, 1);
+    final j = buildJournal(s);
+    expect(j.fold<int>(0, (a, x) => a + x.debit), j.fold<int>(0, (a, x) => a + x.credit));
+    // employee: loan 3M owed, then salary credited (net + advance) and 1M installment repaid
+    expect(s.personBalance(e.personId), 3000000 - (r.khales + r.mosaede) - r.vam);
+    expect(s.loanRemaining(e), 2000000);
+    expect(s.leaveBalance(e, 1405).$1, 26);
+    expect(s.removePayPeriod(p.id), isNotNull);
+
+    final again = AppStore.open(s.storage);
+    expect(again.employees.single.benefits.length, 2);
+    expect(again.payResult(again.payPeriods.single, again.employees.single).khales, r.khales);
+  });
+
+  testWidgets('payroll window tabs render', (tester) async {
+    tester.view.physicalSize = const Size(1600, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final s = _tempStore();
+    s.completeSetup(ownerName: 'Ali');
+    s.saveEmployee(Employee(id: newId(), personId: '', firstName: 'Sara', lastName: 'K', monthlyWage: 20000000));
+    s.addPayPeriod(1405, 8);
+    await tester.pumpWidget(TarazApp(store: s));
+    await tester.pumpAndSettle();
+    final ctx = tester.element(find.text('خرید و فروش').first);
+    showPayrollWindow(ctx);
+    await tester.pumpAndSettle();
+    for (final t in ['کارکرد و فیش حقوقی', 'مرخصی', 'ماموریت', 'وام پرسنل', 'گزارشات', 'تنظیمات', 'پرسنل']) {
+      await tester.tap(find.widgetWithText(ChoiceChip, t));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: t);
+    }
   });
 }

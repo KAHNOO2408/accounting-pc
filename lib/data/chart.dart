@@ -92,6 +92,11 @@ const mDeposits = '1245'; // سپرده ها (تراز)
 const mAdvances = '2035'; // پیش دریافتها
 const mOtherControl = '2057'; // سایر حسابهای کنترلی (تراز)
 const mOtherIncomeExpense = mOtherExpense;
+const mSalaryExpense = '5012'; // هزینه حقوق و دستمزد (تراز)
+const mInsuranceExpense = '5013'; // هزینه بیمه سهم کارفرما (تراز)
+const mInsurancePayable = '2041'; // بیمه پرداختنی (تراز)
+const mSalaryTaxPayable = '2042'; // مالیات حقوق پرداختنی (تراز)
+const mStaff = '1135'; // پرسنل
 
 const List<Kol> chart = [
   Kol('10', 'دارایی های جاری نقدی', Side.asset, [
@@ -107,7 +112,7 @@ const List<Kol> chart = [
     Moeen(mChequesAtCash, 'اسناد وصولی نزد صندوق', TafsiliKind.none, '110200'),
     Moeen(mDebtorsTrade, 'اشخاص', TafsiliKind.person, '110250'),
     Moeen(mDebtorsFx, 'اشخاص ارزی', TafsiliKind.none, '110300'),
-    Moeen('1135', 'پرسنل', TafsiliKind.none, '110350'),
+    Moeen(mStaff, 'پرسنل', TafsiliKind.none, '110350'),
     Moeen(mPartners, 'صاحبان سهام', TafsiliKind.person, '110400'),
     Moeen(mDebtorsOther, 'سایر اشخاص', TafsiliKind.none, '110450'),
     Moeen(mOtherPersonsDr, 'سایر حسابهای اشخاص'),
@@ -133,6 +138,8 @@ const List<Kol> chart = [
     Moeen(mChequesPayable, 'اسناد پرداختنی بانکها', TafsiliKind.none, '200300'),
     Moeen(mAdvances, 'پیش دریافتها', TafsiliKind.none, '200350'),
     Moeen('2040', 'ذخیره مالیات', TafsiliKind.none, '200400'),
+    Moeen(mInsurancePayable, 'بیمه پرداختنی'),
+    Moeen(mSalaryTaxPayable, 'مالیات حقوق پرداختنی'),
     Moeen('2045', 'تعهدات پرداختنی', TafsiliKind.none, '200450'),
     Moeen('2050', 'سربار جذبی', TafsiliKind.none, '200500'),
     Moeen('2055', 'کنترل تخفیف از خرید', TafsiliKind.none, '200550'),
@@ -175,6 +182,8 @@ const List<Kol> chart = [
     Moeen(mExpense, 'هزینه ها', TafsiliKind.expenseCat, '500050'),
     Moeen(mOtherExpense, 'سایر هزینه ها'),
     Moeen('5010', 'هزینه های توزیع و فروش', TafsiliKind.none, '500100'),
+    Moeen(mSalaryExpense, 'هزینه حقوق و دستمزد'),
+    Moeen(mInsuranceExpense, 'هزینه بیمه سهم کارفرما'),
     Moeen('5025', 'قیمت تمام شده درآمد پیمان در دست اجرا', TafsiliKind.none, '500250'),
     Moeen('5030', 'انحراف جذب سربار در قیمت تمام شده', TafsiliKind.none, '500300'),
     Moeen('5035', 'قیمت تمام شده فروش موجودی کالای متفرقه', TafsiliKind.none, '500350'),

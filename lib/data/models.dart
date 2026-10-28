@@ -275,6 +275,8 @@ class Voucher {
         'bankDeposit' => 'واریز به بانک',
         'bankWithdraw' => 'برداشت بانکی',
         'bankTransfer' => 'دریافت پرداخت بین حسابها',
+        'payroll' => 'سند حقوق',
+        'staffLoan' => 'پرداخت وام پرسنل',
         _ => 'سند دستی',
       };
 

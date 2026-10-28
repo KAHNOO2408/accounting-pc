@@ -8,6 +8,7 @@ import '../data/store.dart';
 import 'auth/auth_screens.dart';
 import 'dialogs/consign_dialogs.dart';
 import 'dialogs/marketing_dialogs.dart';
+import 'dialogs/payroll_dialogs.dart';
 import 'dialogs/units_dialog.dart';
 import 'dialogs/cheque_dialogs.dart';
 import 'dialogs/chequebook_dialogs.dart';
@@ -346,6 +347,22 @@ final List<_Tab> _tabs = [
           shortcut: 'Alt+F10',
           activator: _k(LogicalKeyboardKey.f10, alt: true),
           run: (c, _) => showTxnDialog(c, type: TxnType.expense, title: 'پرداخت هزینه')),
+    ]),
+  ]),
+  _Tab('حقوق و دستمزد', [
+    _Group('پرسنل', [
+      _Item('پرسنل', Icons.badge_outlined, _blue, run: (c, _) => showPayrollWindow(c, tab: 0)),
+      _Item('پرسنل جدید', Icons.person_add_alt_1_outlined, _blue, run: (c, _) => showEmployeeDialog(c)),
+    ]),
+    _Group('حقوق', [
+      _Item('کارکرد و فیش حقوقی', Icons.request_quote_outlined, _green, run: (c, _) => showPayrollWindow(c, tab: 1)),
+      _Item('مرخصی', Icons.beach_access_outlined, _cyan, run: (c, _) => showPayrollWindow(c, tab: 2)),
+      _Item('ماموریت', Icons.flight_takeoff_rounded, _cyan, run: (c, _) => showPayrollWindow(c, tab: 3)),
+      _Item('وام پرسنل', Icons.account_balance_wallet_outlined, _amber, run: (c, _) => showPayrollWindow(c, tab: 4)),
+    ]),
+    _Group('گزارش و تنظیم', [
+      _Item('گزارشات حقوق، بیمه و مالیات', Icons.summarize_outlined, _violet, run: (c, _) => showPayrollWindow(c, tab: 5)),
+      _Item('تنظیمات بیمه و مالیات', Icons.tune_rounded, _slate, run: (c, _) => showPayrollWindow(c, tab: 6)),
     ]),
   ]),
   _Tab('گزارشات', [
