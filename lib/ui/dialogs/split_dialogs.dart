@@ -196,7 +196,7 @@ class _SplitDialogState extends State<_SplitDialog> {
     final sumPct = _rows.fold<double>(0, (a, r) => a + (_byPercent ? _pctOf(r) : (_totalV == 0 ? 0 : _amountOf(r) * 100 / _totalV)));
     final sumAmt = _rows.fold<int>(0, (a, r) => a + _amountOf(r));
     final size = MediaQuery.of(context).size;
-    final partnerMoeens = chart.firstWhere((k) => k.code == '301').ledgers.where((m) => m.kind == TafsiliKind.person).toList();
+    final partnerMoeens = [findMoeen(mPartners)!];
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.f9): _save,

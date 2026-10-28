@@ -67,6 +67,14 @@ ReportData invoiceReportData(AppStore s, Invoice inv, {PrintDocType type = Print
   final received = p == null ? (cash + bank + cheque + discount + advance + other) : -settled + inv.paid;
   final after = p == null ? 0 : s.personBalance(p.id);
   final lineDisc = inv.lines.fold<int>(0, (a, l) => a + l.discount);
+  // Sakan: «قیمت تمام شده فاکتور» from the kardex cost, and the gross profit
+  final unitCost = <String, int>{};
+  int costOf(InvoiceLine l) => l.productId == null ? 0 : (l.qty * unitCost.putIfAbsent(l.productId!, () => s.avgCost(l.productId!))).round();
+  final invCost = inv.lines.fold<int>(0, (a, l) => a + costOf(l));
+  final netSales = inv.subtotal - inv.discount;
+  final gross = netSales - invCost;
+  final weight = inv.lines.fold<double>(0, (a, l) => a + l.qty * (s.product(l.productId)?.weight ?? 0));
+  String pct(int part, int whole) => whole == 0 ? '' : (part * 100 / whole).toStringAsFixed(1);
 
   final fields = <String, String>{
     'شماره حواله': inv.warehouseNo == 0 ? '${inv.number}' : '${inv.warehouseNo}',
@@ -103,6 +111,15 @@ ReportData invoiceReportData(AppStore s, Invoice inv, {PrintDocType type = Print
     'هزینه حمل بعهده خریدار': _money(inv.extra),
     'هزینه حمل بعهده فروشنده': dot(inv.shipBySeller),
     'توضیحات': inv.note,
+    'کد نوع فاکتور': '${inv.sakanType}',
+    'نوع فاکتور': inv.sakanTypeName,
+    'تاریخ فروش': jFormat(DateTime.tryParse(inv.info['saleDate'] ?? '') ?? inv.date),
+    'کد خریدار': p == null ? '' : '${p.code}',
+    'قیمت تمام شده فاکتور': _money(invCost),
+    'سود و زیان ناخالص': _money(gross),
+    'درصد سود و زیان ناخالص': pct(gross, netSales),
+    'وزن فاکتور': fmtQty(weight),
+    'ارز سیستم': st.currency,
   };
   final rows = <Map<String, String>>[];
   var i = 0;
@@ -120,6 +137,19 @@ ReportData invoiceReportData(AppStore s, Invoice inv, {PrintDocType type = Print
       'جمع': _money(l.total),
       'جمع بدون تخفیف': _money((l.qty * l.unitPrice).round()),
       'نام انبار': s.warehouse(l.warehouseId)?.name ?? '',
+      'بارکد': pr?.info['barcode'] ?? '',
+      'شماره فنی': pr?.info['techNo'] ?? '',
+      'مشخصات کالا': pr?.note ?? '',
+      'وزن واحد': pr == null ? '' : fmtQty(pr.weight),
+      'جمع وزن کالا': pr == null ? '' : fmtQty(pr.weight * l.qty),
+      'قیمت تمام شده': _money(costOf(l)),
+      'سود و زیان ناخالص ردیف': _money(l.total - costOf(l)),
+      'درصد سود ردیف': pct(l.total - costOf(l), l.total),
+      'درصد تخفیف': pct(l.discount, (l.qty * l.unitPrice).round()),
+      'بهای فروش 1': pr == null ? '' : _money(pr.sellPrice),
+      'بهای فروش 2': pr == null ? '' : _money(pr.sellPrice2),
+      'بهای فروش 3': pr == null ? '' : _money(pr.sellPrice3),
+      'موجودی': pr == null ? '' : fmtQty(s.stock(pr.id)),
     });
   }
   return ReportData(fields: fields, rows: rows, title: '$title ${inv.number}');

@@ -656,9 +656,9 @@ class _ChartCodingState extends State<_ChartCoding> {
   bool _showBalance = true, _showCode = true, _big = false;
   String? _sel;
 
-  int get _level => _moeen != null ? 3 : (_kol != null ? 2 : 1);
+  int get _level => _moeen != null ? 2 : 1;
 
-  String get _path => [if (_kol != null) _kol!, if (_moeen != null) _moeen!].map((c) => '$c\\').join();
+  String get _path => _moeen == null ? '' : (findMoeen(_moeen)?.sakanPath ?? '$_moeen\\');
 
   @override
   void dispose() {
@@ -680,7 +680,6 @@ class _ChartCodingState extends State<_ChartCoding> {
         _sel = null;
         if (_moeen != null) {
           _moeen = null;
-        } else if (_kol != null) {
           _kol = null;
         } else {
           Navigator.pop(context);
@@ -699,28 +698,26 @@ class _ChartCodingState extends State<_ChartCoding> {
     bool ok(String name, String code) => q.isEmpty || name.toLowerCase().contains(q) || code.contains(q);
     final out = <String, List<_Tile>>{};
     if (_level == 1) {
+      // Sakan's level 1 is the ledgers themselves (صندوق 1010, بانکها 1020…)
+      out['Default'] = [];
       for (final k in chart) {
-        if (!ok(k.name, k.code)) continue;
-        (out[_sideTitle(k.side)] ??= []).add(_Tile(k.name, k.code, '${k.code}\\', nat(k.side, dr[k.code] ?? 0), _kindOf(k.side), () => setState(() {
-              _kol = k.code;
-              _sel = null;
-            })));
+        for (final m in k.ledgers) {
+          if (s.hiddenMoeens.contains(m.code) || !ok(m.name, m.code)) continue;
+          (out[k.code == '80' ? 'Default' : _sideTitle(k.side)] ??= []).add(_Tile(m.name, m.code, m.sakanPath, nat(k.side, dr[m.code] ?? 0),
+              k.code == '80' ? 'ts' : _kindOf(k.side), () {
+            if (m.hasEntity) {
+              setState(() {
+                _kol = k.code;
+                _moeen = m.code;
+                _sel = null;
+              });
+            } else {
+              showAccountLedger(context, AccRow(key: m.code, code: m.code, kol: k.name, moeen: m.name, name: m.name, balance: dr[m.code] ?? 0, moeens: {m.code}));
+            }
+          }, custom: s.customMoeens.containsKey(m.code)));
+        }
       }
-    } else if (_level == 2) {
-      final k = chart.firstWhere((k) => k.code == _kol);
-      for (final m in k.ledgers) {
-        if (s.hiddenMoeens.contains(m.code) || !ok(m.name, m.code)) continue;
-        (out['${k.name} (${_kindOf(k.side)})'] ??= []).add(_Tile(m.name, m.code, '${k.code}\\${m.code}\\', nat(k.side, dr[m.code] ?? 0), _kindOf(k.side), () {
-          if (m.hasEntity) {
-            setState(() {
-              _moeen = m.code;
-              _sel = null;
-            });
-          } else {
-            showAccountLedger(context, AccRow(key: m.code, code: m.code, kol: k.name, moeen: m.name, name: m.name, balance: dr[m.code] ?? 0, moeens: {m.code}));
-          }
-        }, custom: s.customMoeens.containsKey(m.code)));
-      }
+      if (out['Default']!.isEmpty) out.remove('Default');
     } else {
       final m = findMoeen(_moeen)!;
       final bal = <String, int>{};
@@ -732,7 +729,7 @@ class _ChartCodingState extends State<_ChartCoding> {
       for (final r in accountRows(s, AccCat(m.name, [m.code]), bal)) {
         if (!ok(r.name, r.code)) continue;
         (out['${m.name} (${_kindOf(m.side)})'] ??= [])
-            .add(_Tile(r.name, r.code, '${m.kolCode}\\${m.code}\\${r.code}', nat(m.side, r.balance), 'تفصیلی', () => showAccountLedger(context, r)));
+            .add(_Tile(r.name, r.code, '${m.sakanPath}${r.code}', nat(m.side, r.balance), 'تفصیلی', () => showAccountLedger(context, r)));
       }
     }
     return out;
@@ -926,7 +923,7 @@ class _ChartCodingState extends State<_ChartCoding> {
                       for (final m in all)
                         InkWell(
                           onTap: () => setState(() {
-                            _kol = m.kolCode;
+                            _kol = null;
                             _moeen = null;
                             _sel = m.code;
                           }),

@@ -39,8 +39,19 @@ class _Grp {
   const _Grp(this.title, this.moeens);
 }
 
+/// Sakan keeps every person in «اشخاص» (1125); the opening screen shows the
+/// creditor balances as their own row on the liabilities side.
+const _mPersonsCr = '$mDebtorsTrade:cr';
+
+Moeen _ledger(String code) =>
+    code == _mPersonsCr ? const Moeen(_mPersonsCr, 'اشخاص (بستانکار)', TafsiliKind.person) : findMoeen(code)!;
+
 List<_Grp> _groupsOf(Side side) => [
-      for (final k in chart.where((k) => k.side == side)) _Grp(k.name, [for (final m in k.ledgers) m.code]),
+      for (final k in chart.where((k) => k.side == side))
+        _Grp(k.name, [
+          if (side == Side.liability && k == chart.firstWhere((x) => x.side == Side.liability)) _mPersonsCr,
+          for (final m in k.ledgers) m.code,
+        ]),
     ];
 
 class OpeningDialog extends StatefulWidget {
@@ -95,7 +106,7 @@ class OpeningState extends State<OpeningDialog> {
         return store.products.fold(0, (s, p) => s + ((qty[p.id] ?? 0) * (cost[p.id] ?? 0)).round());
       case mDebtorsTrade:
         return per.values.where((v) => v > 0).fold(0, (s, v) => s + v);
-      case mCreditorsTrade:
+      case _mPersonsCr:
         return per.values.where((v) => v < 0).fold(0, (s, v) => s - v);
       default:
         return other[code] ?? 0;
@@ -174,10 +185,10 @@ class OpeningState extends State<OpeningDialog> {
     final out = <(String, String, int, int)>[];
     void add(String code, String detail, int v, bool debitSide) {
       if (v == 0) return;
-      final m = findMoeen(code)!;
+      final m = _ledger(code);
       final onDebit = debitSide == (v > 0);
       final abs = v.abs();
-      out.add(('${m.kol.name} / ${m.name}', detail, onDebit ? abs : 0, onDebit ? 0 : abs));
+      out.add(('${m.kol.name} / ${findMoeen(code)?.name ?? m.name}', detail, onDebit ? abs : 0, onDebit ? 0 : abs));
     }
 
     for (final a in s.accounts) {
@@ -189,7 +200,7 @@ class OpeningState extends State<OpeningDialog> {
     for (final p in s.people) {
       final v = per[p.id] ?? 0;
       if (v > 0) add(mDebtorsTrade, p.name, v, true);
-      if (v < 0) add(mCreditorsTrade, p.name, -v, false);
+      if (v < 0) add(mDebtorsTrade, p.name, -v, false);
     }
     other.forEach((code, v) {
       final m = findMoeen(code);
@@ -460,7 +471,7 @@ class _GroupDialogState extends State<_GroupDialog> {
 
   OpeningState get o => widget.owner;
 
-  bool _isEntity(String code) => code == mCash || code == mBank || code == mStock || code == mDebtorsTrade || code == mCreditorsTrade;
+  bool _isEntity(String code) => code == mCash || code == mBank || code == mStock || code == mDebtorsTrade || code == _mPersonsCr;
 
   @override
   void initState() {
@@ -520,7 +531,7 @@ class _GroupDialogState extends State<_GroupDialog> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: _OpeningRow(
-                  label: findMoeen(c)!.name,
+                  label: _ledger(c).name,
                   value: o.moeenValue(c),
                   color: color,
                   drill: _isEntity(c),
@@ -630,7 +641,7 @@ class _EntityDialogState extends State<_EntityDialog> {
   Widget build(BuildContext context) {
     final s = StoreScope.of(context);
     final th = Theme.of(context);
-    final m = findMoeen(widget.moeen)!;
+    final m = _ledger(widget.moeen);
     final q = normalizeDigits(_q.trim()).toLowerCase();
     final rows = _rows(s).where((r) => q.isEmpty || r.$2.toLowerCase().contains(q) || r.$3.toLowerCase().contains(q)).toList();
     final total = o.moeenValue(widget.moeen);
@@ -738,11 +749,11 @@ class _EntityDialogState extends State<_EntityDialog> {
               const Spacer(),
               Money(total, showUnit: true, style: const TextStyle(fontWeight: FontWeight.w800)),
             ]),
-            if (widget.moeen == mDebtorsTrade || widget.moeen == mCreditorsTrade)
+            if (widget.moeen == mDebtorsTrade || widget.moeen == _mPersonsCr)
               Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: Text(
-                  'هر شخص فقط یکی از «بدهکاران تجاری» یا «بستانکاران تجاری» را دارد؛ وارد کردن مبلغ در یکی، دیگری را صفر می‌کند.',
+                  'هر شخص فقط یکی از مانده بدهکار یا بستانکار را در «اشخاص» دارد؛ وارد کردن مبلغ در یکی، دیگری را صفر می‌کند.',
                   style: th.textTheme.bodySmall?.copyWith(color: th.hintColor),
                 ),
               ),

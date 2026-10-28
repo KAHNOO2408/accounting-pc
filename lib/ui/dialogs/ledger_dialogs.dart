@@ -340,7 +340,7 @@ class AccCat {
   const AccCat(this.label, this.moeens, {this.shortcut = '', this.people = false});
 }
 
-const _personMoeens = [mDebtorsTrade, mCreditorsTrade];
+const _personMoeens = [mDebtorsTrade];
 
 /// The category buttons of «انتخاب دفتر تفصیلی», in Sakan's order (3 rows).
 const List<List<AccCat>> accCategories = [
@@ -351,29 +351,29 @@ const List<List<AccCat>> accCategories = [
     AccCat('اسناد پرداختنی بانک', [mChequesPayable]),
     AccCat('اسناد دریافتنی نزد بانک', [mChequesAtBank], shortcut: 'F6'),
     AccCat('اشخاص', _personMoeens, people: true),
-    AccCat('سایر اشخاص', [mDebtorsOther, mOtherPersonsDr, mCreditorsOther, mOtherPersonsCr], shortcut: 'F7'),
+    AccCat('سایر اشخاص', [mDebtorsOther, mOtherPersonsDr], shortcut: 'F7'),
     AccCat('سایر کل ها', [], shortcut: 'F8'),
-    AccCat('پیش دریافت ها', ['20501'], shortcut: 'F11'),
-    AccCat('پیش پرداخت ها', ['10701']),
+    AccCat('پیش دریافت ها', [mAdvances], shortcut: 'F11'),
+    AccCat('پیش پرداخت ها', [mPrepayments]),
   ],
   [
     AccCat('صاحبان سهام', [mCapital, mPartners]),
     AccCat('تنخواه گردان', [mPettyCash]),
     AccCat('صندوق ارزی', [mCashFx]),
-    AccCat('اسناد دریافتنی نزد صندوق ارزی', []),
+    AccCat('اسناد دریافتنی نزد صندوق ارزی', ['6060']),
     AccCat('بانک ارزی', [mBankFx]),
-    AccCat('اسناد پرداختنی بانکی ارزی', []),
-    AccCat('اسناد دریافتنی نزد بانک ارزی', []),
-    AccCat('اشخاص ارزی', [mDebtorsFx, mCreditorsFx]),
-    AccCat('پیش پرداخت های ارزی', []),
-    AccCat('پیش دریافت های ارزی', []),
+    AccCat('اسناد پرداختنی بانکی ارزی', ['6050']),
+    AccCat('اسناد دریافتنی نزد بانک ارزی', ['5090']),
+    AccCat('اشخاص ارزی', [mDebtorsFx]),
+    AccCat('پیش پرداخت های ارزی', ['7070']),
+    AccCat('پیش دریافت های ارزی', ['7060']),
   ],
   [
-    AccCat('حساب های انتظامی', []),
-    AccCat('طرف حساب های انتظامی', []),
+    AccCat('حساب های انتظامی', ['1250']),
+    AccCat('طرف حساب های انتظامی', ['1260']),
     AccCat('مجموعه اشخاص', [..._personMoeens, mPartners], people: true),
-    AccCat('پرسنل', []),
-    AccCat('سایر حقوق صاحبان سهام', ['30102', mRetained]),
+    AccCat('پرسنل', ['1135']),
+    AccCat('سایر حقوق صاحبان سهام', [mDrawings, mRetained, '3080']),
   ],
 ];
 

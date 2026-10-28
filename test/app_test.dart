@@ -344,14 +344,14 @@ void main() {
       personOpenings: {ali.id: 300},
       productQty: {pr.id: 10},
       productCost: {pr.id: 50},
-      other: {'10501': 2000, '20601': 500},
+      other: {'1220': 2000, '2110': 500},
     );
     expect(s.balance(cash), 1000);
     expect(s.personBalance(ali.id), 300);
     expect(s.stock(pr.id), 10);
     expect(s.avgCost(pr.id), 50);
-    expect(s.ledgerBalance('10501'), 2000);
-    expect(s.ledgerBalance('20601'), 500);
+    expect(s.ledgerBalance('1220'), 2000);
+    expect(s.ledgerBalance('2110'), 500);
 
     // cash 200 to Ali (he now owes more) and a manual expense
     s.saveVoucher(Voucher(id: newId(), number: s.nextVoucherNumber(), fixedNumber: 1, date: DateTime(2026, 10, 1), lines: [
@@ -361,17 +361,17 @@ void main() {
     expect(s.balance(cash), 800);
     expect(s.personBalance(ali.id), 500);
     s.saveVoucher(Voucher(id: newId(), number: s.nextVoucherNumber(), fixedNumber: 2, date: DateTime(2026, 10, 1), lines: [
-      VoucherLine(moeen: '50102', debit: 120),
-      VoucherLine(moeen: '20601', credit: 120),
+      VoucherLine(moeen: '5007', debit: 120),
+      VoucherLine(moeen: '2110', credit: 120),
     ]));
     expect(s.nextVoucherNumber(), 3);
-    expect(s.ledgerBalance('20601'), 620);
+    expect(s.ledgerBalance('2110'), 620);
     expect(s.profit(DateTime(2026, 10, 1), DateTime(2026, 10, 1)).expenses, 120);
 
     final again = AppStore.open(s.storage);
     expect(again.vouchers.length, 2);
     expect(again.personBalance(ali.id), 500);
-    expect(again.settings.openingOther['10501'], 2000);
+    expect(again.settings.openingOther['1220'], 2000);
   });
 
   test('journal is balanced and trial balance matches balances', () {
@@ -387,7 +387,7 @@ void main() {
       personOpenings: {ali.id: -800},
       productQty: {pr.id: 4},
       productCost: {pr.id: 100},
-      other: {'10501': 1000},
+      other: {'1220': 1000},
     );
     final d = DateTime(2026, 9, 1);
     s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.purchase, number: 1, date: d, personId: ali.id,
@@ -414,7 +414,7 @@ void main() {
     expect(tb.fold<int>(0, (a, r) => a + r.balDr), tb.fold<int>(0, (a, r) => a + r.balCr));
 
     final kolTb = trialBalance(s, j, ReportFilter(), TbOptions());
-    expect(kolTb.any((r) => r.code == '101'), isTrue);
+    expect(kolTb.any((r) => r.code == '10'), isTrue);
 
     final led = generalLedger(s, j, ReportFilter()..level = TbLevel.tafsili ..pathMoeen = mCash ..linkTafsili = cash);
     expect(led.length, 1);
@@ -1350,8 +1350,8 @@ void main() {
     s.clearRecycle();
     expect(s.recycle, isEmpty);
     // user ledgers
-    final code = s.addMoeen('107', 'وام کارکنان');
-    expect(code, '10704');
+    final code = s.addMoeen('11', 'وام کارکنان');
+    expect(code, '1101');
     expect(findMoeen(code)?.name, 'وام کارکنان');
     expect(s.editMoeen(mCash, name: 'x'), isNotNull);
     expect(s.editMoeen(code, remove: true), isNull);
@@ -1747,5 +1747,54 @@ void main() {
     expect(() => importMrt('<html/>', type: PrintDocType.invoice), throwsFormatException);
     // round trip through JSON
     expect(ReportLayout.fromJson(l.toJson()).items.length, l.items.length);
+  });
+
+  test('old 5-digit ledger codes are converted to Sakan codes on load', () {
+    final dir = Directory.systemTemp.createTempSync('taraz_mig');
+    final st = Storage(dir);
+    st.save({
+      'app': 'taraz',
+      'version': 1,
+      'accounts': [],
+      'txns': [],
+      'customMoeens': {'10704': 'وام کارکنان'},
+      'hiddenMoeens': ['50107'],
+      'vouchers': [
+        {
+          'id': 'v1',
+          'number': 1,
+          'date': '2026-10-01',
+          'lines': [
+            {'moeen': '10102', 'debit': 100, 'credit': 0},
+            {'moeen': '20201', 'debit': 0, 'credit': 60},
+            {'moeen': '10704', 'debit': 0, 'credit': 40},
+          ],
+        },
+      ],
+      'settings': {
+        'openingOther': {'20601': 500, '40104': 30},
+      },
+    });
+    final s = AppStore.open(st);
+    final codes = s.vouchers.single.lines.map((l) => l.moeen).toList();
+    expect(codes.take(2), [mCash, mDebtorsTrade]);
+    expect(findMoeen(codes[2])?.name, 'وام کارکنان');
+    expect(codes[2], '1101');
+    expect(s.hiddenMoeens, {mDepreciation});
+    expect(s.settings.openingOther[mLoans], 500);
+    // «برگشت از فروش» moved from the income side to Sakan's 5055 (debit nature)
+    expect(s.settings.openingOther[mSalesReturn], -30);
+    expect(File('${dir.path}${Storage.sep}backups${Storage.sep}before-sakan-codes.json').existsSync(), isTrue);
+    expect(AppStore.open(st).vouchers.single.lines.first.moeen, mCash);
+  });
+
+  test('Sakan invoice type codes', () {
+    expect(InvoiceKind.sale.sakanCode, 2);
+    expect(InvoiceKind.purchase.sakanCode, 4);
+    expect(InvoiceKind.purchaseReturn.sakanCode, 6);
+    expect(InvoiceKind.saleReturn.sakanCode, 8);
+    final pro = Invoice(id: 'x', kind: InvoiceKind.sale, number: 1, date: DateTime(2026), proforma: true);
+    expect(pro.sakanType, 7);
+    expect(pro.sakanTypeName, 'پیش فاکتور');
   });
 }

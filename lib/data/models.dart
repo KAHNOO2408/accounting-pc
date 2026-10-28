@@ -602,7 +602,40 @@ extension InvoiceKindX on InvoiceKind {
   bool get buySide => this == InvoiceKind.purchase || this == InvoiceKind.purchaseReturn;
 
   String get personLabel => buySide ? 'فروشنده / تامین‌کننده' : 'خریدار / مشتری';
+
+  /// «کد نوع فاکتور» (TypeFactor) as numbered in Sakan.
+  int get sakanCode => switch (this) {
+        InvoiceKind.sale => 2,
+        InvoiceKind.purchase => 4,
+        InvoiceKind.purchaseReturn => 6,
+        InvoiceKind.saleReturn => 8,
+      };
 }
+
+/// Sakan's invoice type codes (TypeFactor → «نوع فاکتور»), see docs/sakan/coding.json.
+const sakanInvoiceTypes = <int, String>{
+  2: 'فروش',
+  4: 'خرید',
+  6: 'برگشت از خرید',
+  7: 'پیش فاکتور',
+  8: 'برگشت از فروش دوره جاری',
+  11: 'برگشت از فروش دوره قبل',
+  21: 'فروش کالای متفرقه',
+  22: 'فروش اموال',
+  30: 'سرویس خدمات',
+  41: 'خرید کالای متفرقه',
+  42: 'خرید اموال',
+  43: 'خرید بالانس',
+  61: 'برگشت از خرید بالانس',
+  70: 'فروش سند دستی',
+  71: 'خرید سند دستی',
+  73: 'برگشت از خرید سند دستی',
+  74: 'برگشت از فروش دوره جاری سند دستی',
+  75: 'برگشت از فروش دوره قبل سند دستی',
+  76: 'فروش خدمات سند دستی',
+  79: 'فروش خدمات',
+  80: 'برگشت از فروش خدمات',
+};
 
 class InvoiceLine {
   String? productId;
@@ -682,6 +715,10 @@ class Invoice {
   })  : lines = lines ?? [],
         info = info ?? {},
         createdAt = createdAt ?? DateTime.now().millisecondsSinceEpoch;
+
+  /// Sakan «کد نوع فاکتور» of this invoice.
+  int get sakanType => proforma ? 7 : kind.sakanCode;
+  String get sakanTypeName => sakanInvoiceTypes[sakanType] ?? '';
 
   int get subtotal => lines.fold(0, (s, l) => s + l.total);
   int get total => subtotal - discount + extra;

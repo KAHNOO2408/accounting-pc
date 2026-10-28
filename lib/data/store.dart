@@ -53,6 +53,9 @@ class AppStore extends ChangeNotifier {
   List<Cheque> cheques = [];
   List<Product> products = [];
   List<Invoice> invoices = [];
+
+  /// Set when loading converted the data to a newer format.
+  bool _needsSave = false;
   List<Loan> loans = [];
   List<StockAdjust> adjusts = [];
   List<Voucher> vouchers = [];
@@ -123,6 +126,11 @@ class AppStore extends ChangeNotifier {
       store._persist();
     } else {
       store._fromJson(data);
+      if (store._needsSave) {
+        s.backupBefore('sakan-codes');
+        store._persist();
+        store._needsSave = false;
+      }
       s.dailyBackup();
     }
     return store;
@@ -202,6 +210,7 @@ class AppStore extends ChangeNotifier {
     defaultTemplates = dt is Map ? {for (final e in dt.entries) '${e.key}': '${e.value}'} : {};
     final st = j['settings'];
     settings = st is Map<String, dynamic> ? AppSettings.fromJson(st) : AppSettings();
+    if (_i0(j['version']) < 2) _migrateToSakanCodes();
     _sortTxns();
     _ensureDocNumbers();
     _ensureTafsiliCodes();
@@ -231,19 +240,58 @@ class AppStore extends ChangeNotifier {
     }
   }
 
+  static int _i0(Object? v) => v is int ? v : int.tryParse('$v') ?? 1;
+
+  /// Data version 2: ledger codes follow Sakan's coding (صندوق 1010, اشخاص
+  /// 1125…) instead of the former 5-digit codes. Converts every stored code.
+  void _migrateToSakanCodes() {
+    final map = <String, String>{...legacyCodeMap};
+    // ledgers the user made get the next free code of their new group
+    final oldCustom = Map.of(customMoeens);
+    customMoeens = {};
+    _applyCustomMoeens();
+    for (final e in oldCustom.entries) {
+      if (e.key.length != 5) {
+        customMoeens[e.key] = e.value;
+        _applyCustomMoeens();
+        continue;
+      }
+      final kol = legacyKolMap[e.key.substring(0, 3)] ?? '11';
+      final code = nextLedgerCode(kol) ?? e.key;
+      map[e.key] = code;
+      customMoeens[code] = e.value;
+      _applyCustomMoeens();
+    }
+    String conv(String c) => map[c] ?? c;
+    for (final v in vouchers) {
+      for (final l in v.lines) {
+        l.moeen = conv(l.moeen);
+      }
+    }
+    hiddenMoeens = {for (final c in hiddenMoeens) conv(c)};
+    // opening amounts are kept on the natural side: re-sign when the side changes
+    final other = <String, int>{};
+    settings.openingOther.forEach((c, v) {
+      final n = conv(c);
+      final oldDebit = c.startsWith('1') || c.startsWith('5');
+      final newDebit = findMoeen(n)?.debitNature ?? oldDebit;
+      final dr = oldDebit ? v : -v;
+      other[n] = (other[n] ?? 0) + (newDebit ? dr : -dr);
+    });
+    settings.openingOther
+      ..clear()
+      ..addAll(other);
+    _needsSave = true;
+  }
+
   void _applyCustomMoeens() {
     extraMoeens = [for (final e in customMoeens.entries) Moeen(e.key, e.value)];
   }
 
   /// ساخت دفتر — a new ledger (معین) under kol [kolCode]. Returns its code.
   String addMoeen(String kolCode, String name) {
-    final k = chart.firstWhere((k) => k.code == kolCode);
-    var n = 1;
-    for (final m in k.ledgers) {
-      final v = int.tryParse(m.code.substring(3)) ?? 0;
-      if (v >= n) n = v + 1;
-    }
-    final code = '$kolCode${n.toString().padLeft(2, '0')}';
+    final code = nextLedgerCode(kolCode);
+    if (code == null) throw StateError('کدهای این گروه پر شده است');
     customMoeens[code] = name.trim();
     _applyCustomMoeens();
     _commit();
@@ -287,7 +335,7 @@ class AppStore extends ChangeNotifier {
 
   Map<String, dynamic> toJson() => {
         'app': 'taraz',
-        'version': 1,
+        'version': 2,
         'savedAt': DateTime.now().toIso8601String(),
         'accounts': accounts.map((e) => e.toJson()).toList(),
         'categories': categories.map((e) => e.toJson()).toList(),

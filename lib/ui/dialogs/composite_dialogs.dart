@@ -156,9 +156,9 @@ List<VoucherLine> applyPayItems(AppStore s, String? personId, List<PayItem> item
         personCr(a);
       case PayMethod.fromPrepayment:
         personDr(a);
-        lines.add(VoucherLine(moeen: '10701', desc: desc, credit: a));
+        lines.add(VoucherLine(moeen: mPrepayments, desc: desc, credit: a));
       case PayMethod.fromAdvance:
-        lines.add(VoucherLine(moeen: '20501', desc: desc, debit: a));
+        lines.add(VoucherLine(moeen: mAdvances, desc: desc, debit: a));
         personCr(a);
       case PayMethod.chequeIssue:
       case PayMethod.chequeReceive:

@@ -35,7 +35,7 @@ class Posting {
     this.order = 0,
   });
 
-  String get kol => moeen.substring(0, 3);
+  String get kol => kolOf(moeen).code;
 }
 
 /// Builds the full journal (دفتر روزنامه) from every document in the store.
@@ -182,9 +182,9 @@ List<Posting> buildJournal(AppStore s) {
         }
         final rest = inv.total - lineSum;
         if (buy) {
-          pair(inv.date, label, 'هزینه‌های جانبی', rest, drM: '50102', crM: pM, crT: p, no: inv.number, order: o);
+          pair(inv.date, label, 'هزینه‌های جانبی', rest, drM: mOtherExpense, crM: pM, crT: p, no: inv.number, order: o);
         } else {
-          pair(inv.date, label, 'هزینه‌های جانبی', rest, drM: pM, drT: p, crM: '50102', no: inv.number, order: o);
+          pair(inv.date, label, 'هزینه‌های جانبی', rest, drM: pM, drT: p, crM: mOtherExpense, no: inv.number, order: o);
         }
       case InvoiceKind.sale:
       case InvoiceKind.saleReturn:
@@ -194,7 +194,7 @@ List<Posting> buildJournal(AppStore s) {
           final rev = l.total - share(l);
           lineSum += rev;
           if (sale) {
-            pair(inv.date, label, inv.note, rev, drM: pM, drT: p, crM: mSales, crT: l.productId, no: inv.number, order: o);
+            pair(inv.date, label, inv.note, rev, drM: pM, drT: p, crM: l.productId == null ? mServiceSales : mSales, crT: l.productId, no: inv.number, order: o);
           } else {
             pair(inv.date, label, inv.note, rev, drM: mSalesReturn, drT: l.productId, crM: pM, crT: p, no: inv.number, order: o);
           }
@@ -209,9 +209,9 @@ List<Posting> buildJournal(AppStore s) {
         }
         final rest = inv.total - lineSum; // extra charges and rounding
         if (sale) {
-          pair(inv.date, label, 'هزینه‌های جانبی', rest, drM: pM, drT: p, crM: '40102', no: inv.number, order: o);
+          pair(inv.date, label, 'هزینه‌های جانبی', rest, drM: pM, drT: p, crM: mOtherIncome, no: inv.number, order: o);
         } else {
-          pair(inv.date, label, 'هزینه‌های جانبی', rest, drM: '40102', crM: pM, crT: p, no: inv.number, order: o);
+          pair(inv.date, label, 'هزینه‌های جانبی', rest, drM: mOtherIncome, crM: pM, crT: p, no: inv.number, order: o);
         }
     }
   }
@@ -298,7 +298,7 @@ class ReportFilter {
 }
 
 String accountName(AppStore s, String key) {
-  if (key.length == 3) return kolOf('${key}00').name;
+  if (isKolCode(key)) return kolOf(key).name;
   final parts = key.split('|');
   final m = findMoeen(parts[0]);
   if (m == null) return key;
@@ -323,7 +323,7 @@ class TbRow {
 
   /// Income and expense ledgers («دفاتر سود و زیانی»).
   bool get isPl {
-    final side = kolOf('${code.substring(0, 3)}00').side;
+    final side = kolOf(code).side;
     return side == Side.income || side == Side.expense;
   }
 

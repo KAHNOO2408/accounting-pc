@@ -67,6 +67,16 @@ class Storage {
     }
   }
 
+  /// A one-off copy of the data file before a format change (never deleted).
+  void backupBefore(String tag) {
+    try {
+      if (!dataFile.existsSync()) return;
+      if (!backupDir.existsSync()) backupDir.createSync(recursive: true);
+      final target = File('${backupDir.path}${sep}before-$tag.json');
+      if (!target.existsSync()) dataFile.copySync(target.path);
+    } catch (_) {}
+  }
+
   /// Keeps one automatic backup per day, last [keep] days.
   void dailyBackup({int keep = 20}) {
     try {
