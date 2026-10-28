@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/jalali.dart';
+import '../../data/margin.dart';
 import '../../data/store.dart';
 import '../dialogs/invoice_editor.dart' show fmtQty;
 import '../theme.dart';
@@ -33,6 +35,7 @@ class _ProfitPageState extends State<ProfitPage> {
     }
     final p = store.profit(from, to);
     final products = p.byProduct.values.toList()..sort((a, b) => b.profit.compareTo(a.profit));
+    final lowRows = store.lowMarginSales(from, to);
     final margin = p.netSales == 0 ? null : (p.grossProfit * 100 / p.netSales).round();
 
     Widget line(String label, int v, {Color? color, bool bold = false, bool minus = false, String? hint}) => Padding(
@@ -150,8 +153,18 @@ class _ProfitPageState extends State<ProfitPage> {
                       children: [
                         Padding(
                           padding: const EdgeInsets.all(18),
-                          child: Text('سود به تفکیک کالا',
-                              style: th.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                          child: Row(children: [
+                            Expanded(
+                              child: Text('سود به تفکیک کالا',
+                                  style: th.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                            ),
+                            OutlinedButton.icon(
+                              style: lowRows.isEmpty ? null : OutlinedButton.styleFrom(foregroundColor: th.colorScheme.error),
+                              onPressed: () => showLowMarginReport(context, lowRows),
+                              icon: const Icon(Icons.trending_down_rounded, size: 18),
+                              label: Text('فروش با ضرر یا سود کم (${lowRows.length})'),
+                            ),
+                          ]),
                         ),
                         Container(
                           color: th.colorScheme.surfaceContainerLow,
@@ -209,4 +222,75 @@ class _ProfitPageState extends State<ProfitPage> {
       ],
     );
   }
+}
+
+/// «کالاهایی که با ضرر یا سود کم فروخته شده‌اند» (Sakan-style report).
+void showLowMarginReport(BuildContext context, List<LowMarginRow> rows) {
+  final s = StoreScope.read(context);
+  final minPct = s.settings.minMarginPct;
+  showDialog<void>(
+    context: context,
+    builder: (ctx) {
+      final th = Theme.of(ctx);
+      final total = rows.fold<int>(0, (a, r) => a + r.profit);
+      return FormDialog(
+        title: minPct > 0 ? 'فروش با ضرر یا سود کمتر از ${fmtQty(minPct)}٪' : 'فروش زیر قیمت خرید',
+        width: 900,
+        actions: [FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('بستن'))],
+        child: rows.isEmpty
+            ? const Padding(padding: EdgeInsets.all(24), child: Center(child: Text('در این بازه فروشی با ضرر یا سود کم پیدا نشد')))
+            : Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
+                DefaultTextStyle(
+                  style: th.textTheme.labelMedium!.copyWith(fontWeight: FontWeight.w800, color: th.hintColor),
+                  child: const Row(children: [
+                    SizedBox(width: 95, child: Text('تاریخ')),
+                    SizedBox(width: 60, child: Text('فاکتور')),
+                    Expanded(child: Text('کالا')),
+                    SizedBox(width: 120, child: Text('خریدار')),
+                    SizedBox(width: 50, child: Text('تعداد', textAlign: TextAlign.center)),
+                    SizedBox(width: 105, child: Text('فی فروش', textAlign: TextAlign.left)),
+                    SizedBox(width: 105, child: Text('فی خرید', textAlign: TextAlign.left)),
+                    SizedBox(width: 60, child: Text('سود٪', textAlign: TextAlign.center)),
+                    SizedBox(width: 110, child: Text('سود ردیف', textAlign: TextAlign.left)),
+                  ]),
+                ),
+                const Divider(),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 460),
+                  child: ListView(shrinkWrap: true, children: [
+                    for (final r in rows)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(children: [
+                          SizedBox(width: 95, child: Text(jFormat(r.invoice.date))),
+                          SizedBox(width: 60, child: Text('${r.invoice.number}')),
+                          Expanded(child: Text(s.product(r.line.productId)?.name ?? r.line.title, overflow: TextOverflow.ellipsis)),
+                          SizedBox(width: 120, child: Text(s.person(r.invoice.personId)?.name ?? 'متفرقه', overflow: TextOverflow.ellipsis)),
+                          SizedBox(width: 50, child: Text(fmtQty(r.line.qty), textAlign: TextAlign.center)),
+                          SizedBox(width: 105, child: Align(alignment: Alignment.centerLeft, child: Money(r.check.unitNet))),
+                          SizedBox(width: 105, child: Align(alignment: Alignment.centerLeft, child: Money(r.check.unitCost))),
+                          SizedBox(
+                            width: 60,
+                            child: Text('${r.check.pct!.toStringAsFixed(1)}',
+                                textAlign: TextAlign.center,
+                                textDirection: TextDirection.ltr,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    color: r.check.level == MarginLevel.loss ? th.colorScheme.error : AppColors.loan)),
+                          ),
+                          SizedBox(width: 110, child: Align(alignment: Alignment.centerLeft, child: Money(r.profit, colorBySign: true))),
+                        ]),
+                      ),
+                  ]),
+                ),
+                const Divider(),
+                Row(children: [
+                  Expanded(child: Text('${rows.length} ردیف', style: th.textTheme.labelLarge)),
+                  const Text('جمع سود/زیان این ردیف‌ها: '),
+                  Money(total, colorBySign: true, showUnit: true, style: const TextStyle(fontWeight: FontWeight.w800)),
+                ]),
+              ]),
+      );
+    },
+  );
 }

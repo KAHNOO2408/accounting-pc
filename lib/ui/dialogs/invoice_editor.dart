@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/format.dart';
 import '../../core/jalali.dart';
+import '../../data/margin.dart';
 import '../../data/models.dart';
 import '../../data/sms.dart' show autoInvoiceSms;
 import '../../data/storage.dart';
@@ -499,6 +500,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       setState(() => _err = err);
       return null;
     }
+    if (!draft && !await _marginOk(store, lines)) return null;
     List<PayItem> items = const [];
     if (!_proforma && !_legacy && settle) {
       final signed = _kind.txnType.personSign * _total;
@@ -575,6 +577,68 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   }
 
   /// تایید و چاپ — save, then show the printout.
+  /// کنترل سود فروش for one row of the grid (null = not applicable).
+  MarginCheck? _margin(AppStore store, _Line l) {
+    if (_kind != InvoiceKind.sale || !store.settings.marginCheck || l.productId == null) return null;
+    final c = checkMargin(
+      qty: l.q,
+      unitPrice: l.p,
+      discount: l.d,
+      unitCost: store.marginCost(l.productId),
+      minPct: store.settings.minMarginPct,
+    );
+    return c.level == MarginLevel.unknown ? null : c;
+  }
+
+  /// Sakan-style «هشدار فروش زیر قیمت خرید»: lists the rows sold at a loss
+  /// or below the minimum margin and asks before saving.
+  Future<bool> _marginOk(AppStore store, List<_Line> lines) async {
+    final bad = <(_Line, MarginCheck)>[];
+    for (final l in lines) {
+      final c = _margin(store, l);
+      if (c != null && c.bad) bad.add((l, c));
+    }
+    if (bad.isEmpty) return true;
+    final loss = bad.any((b) => b.$2.level == MarginLevel.loss);
+    final r = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final th = Theme.of(ctx);
+        return AlertDialog(
+          icon: Icon(Icons.warning_amber_rounded, color: loss ? th.colorScheme.error : AppColors.loan, size: 36),
+          title: Text(loss ? 'فروش زیر قیمت خرید' : 'سود این فروش کم است'),
+          content: SizedBox(
+            width: 520,
+            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Text(
+                store.settings.minMarginPct > 0
+                    ? 'ردیف‌های زیر با ضرر یا کمتر از ${fmtQty(store.settings.minMarginPct)}٪ سود فروخته می‌شوند:'
+                    : 'ردیف‌های زیر کمتر از بهای تمام‌شده (میانگین قیمت خرید) فروخته می‌شوند:',
+              ),
+              const SizedBox(height: 10),
+              for (final (l, c) in bad)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(children: [
+                    Expanded(child: Text(l.title.text, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700))),
+                    Text('فروش ${groupDigits(c.unitNet)} / خرید ${groupDigits(c.unitCost)}  '),
+                    Text('${c.pct!.toStringAsFixed(1)}٪',
+                        textDirection: TextDirection.ltr,
+                        style: TextStyle(fontWeight: FontWeight.w800, color: c.level == MarginLevel.loss ? th.colorScheme.error : AppColors.loan)),
+                  ]),
+                ),
+            ]),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('اصلاح فی')),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('ثبت با همین قیمت')),
+          ],
+        );
+      },
+    );
+    return r ?? false;
+  }
+
   Future<void> _saveAndPrint(List<PrintDocType> types) async {
     final nav = Navigator.of(context);
     // تایید و چاپ only saves and prints; the financial window opens only for
@@ -1107,6 +1171,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     final multiWh = store.warehouses.length > 1;
     String? stockInfo;
     var warn = false;
+    final margin = goods ? _margin(store, l) : null;
     if (p != null) {
       final st = store.stock(p.id, excludeInvoiceId: widget.edit?.id, warehouseId: multiWh ? store.whId(l.warehouseId) : null);
       stockInfo = 'موجودی ${fmtQty(st)}';
@@ -1143,8 +1208,27 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                 if (stockInfo != null)
                   Padding(
                     padding: const EdgeInsets.only(right: 8, bottom: 2),
-                    child: Text(warn ? '$stockInfo — بیشتر از موجودی' : stockInfo,
-                        style: th.textTheme.labelSmall?.copyWith(color: warn ? th.colorScheme.error : th.hintColor)),
+                    child: Text.rich(
+                      TextSpan(children: [
+                        TextSpan(
+                            text: warn ? '$stockInfo — بیشتر از موجودی' : stockInfo,
+                            style: TextStyle(color: warn ? th.colorScheme.error : th.hintColor)),
+                        if (margin != null)
+                          TextSpan(
+                            text: '   خرید ${groupDigits(margin.unitCost)} · '
+                                '${margin.level == MarginLevel.loss ? 'ضرر' : 'سود'} ${margin.pct!.abs().toStringAsFixed(1)}٪',
+                            style: TextStyle(
+                              fontWeight: margin.bad ? FontWeight.w800 : null,
+                              color: switch (margin.level) {
+                                MarginLevel.loss => th.colorScheme.error,
+                                MarginLevel.low => AppColors.loan,
+                                _ => AppColors.income,
+                              },
+                            ),
+                          ),
+                      ]),
+                      style: th.textTheme.labelSmall,
+                    ),
                   ),
               ]),
             ),

@@ -965,6 +965,11 @@ class AppSettings {
   /// Password of compressed backup files (empty = no password).
   String backupPassword;
 
+  /// کنترل سود فروش: warn when a sale row is below cost (and below
+  /// [minMarginPct] percent profit, when set).
+  bool marginCheck;
+  double minMarginPct;
+
   AppSettings({
     this.themeMode = 'light',
     this.currency = 'تومان',
@@ -983,6 +988,8 @@ class AppSettings {
     this.backgroundImage = '',
     SmsConfig? sms,
     this.backupPassword = '',
+    this.marginCheck = true,
+    this.minMarginPct = 0,
   })  : openingOther = openingOther ?? {},
         sms = sms ?? SmsConfig();
 
@@ -1006,6 +1013,8 @@ class AppSettings {
         'backgroundImage': backgroundImage,
         'sms': sms.toJson(),
         if (backupPassword.isNotEmpty) 'backupPassword': backupPassword,
+        'marginCheck': marginCheck,
+        'minMarginPct': minMarginPct,
       };
 
   factory AppSettings.fromJson(Map<String, dynamic> j) => AppSettings(
@@ -1028,6 +1037,8 @@ class AppSettings {
         backgroundImage: _s(j['backgroundImage']),
         sms: j['sms'] is Map<String, dynamic> ? SmsConfig.fromJson(j['sms'] as Map<String, dynamic>) : null,
         backupPassword: _s(j['backupPassword']),
+        marginCheck: j['marginCheck'] != false,
+        minMarginPct: _dbl(j['minMarginPct']),
       );
 }
 

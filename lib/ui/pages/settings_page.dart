@@ -7,6 +7,7 @@ import '../../core/jalali.dart';
 import '../../core/zip_backup.dart';
 import '../../data/storage.dart';
 import '../../data/store.dart';
+import '../dialogs/invoice_editor.dart' show fmtQty, parseQty;
 import '../widgets/common.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -119,6 +120,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       const _ProfilePanel(),
                       const SizedBox(height: 16),
                       const _BusinessPanel(),
+                      const SizedBox(height: 16),
+                      const _MarginPanel(),
                       const SizedBox(height: 16),
                       Panel(
                         title: 'ظاهر',
@@ -615,6 +618,89 @@ class _BusinessPanelState extends State<_BusinessPanel> {
               child: const Text('ذخیره'),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// کنترل سود فروش — Sakan's warning when selling below the purchase price.
+class _MarginPanel extends StatefulWidget {
+  const _MarginPanel();
+
+  @override
+  State<_MarginPanel> createState() => _MarginPanelState();
+}
+
+class _MarginPanelState extends State<_MarginPanel> {
+  TextEditingController? _pct;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_pct != null) return;
+    final v = StoreScope.read(context).settings.minMarginPct;
+    _pct = TextEditingController(text: v == 0 ? '' : fmtQty(v));
+  }
+
+  @override
+  void dispose() {
+    _pct?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final store = StoreScope.of(context);
+    final th = Theme.of(context);
+    final on = store.settings.marginCheck;
+    return Panel(
+      title: 'کنترل سود فروش',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            value: on,
+            title: const Text('هشدار فروش زیر قیمت خرید'),
+            subtitle: const Text('در فاکتور فروش، کنار هر ردیف قیمت خرید و درصد سود نمایش داده می‌شود و هنگام ثبت، ردیف‌های زیان‌ده هشدار می‌گیرند'),
+            onChanged: (v) => store.updateSettings((s) => s.marginCheck = v),
+          ),
+          const SizedBox(height: 8),
+          Row(children: [
+            Expanded(
+              child: TextField(
+                controller: _pct,
+                enabled: on,
+                textDirection: TextDirection.ltr,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: 'حداقل درصد سود قابل قبول (اختیاری)',
+                  helperText: 'مثلاً ۵ — فروش با سود کمتر از این درصدِ قیمت فروش هم هشدار می‌گیرد',
+                  suffixText: '٪',
+                  isDense: true,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            FilledButton.tonal(
+              onPressed: !on
+                  ? null
+                  : () {
+                      final v = parseQty(_pct!.text);
+                      if (v < 0 || v >= 100) {
+                        toast(context, 'درصد باید بین ۰ تا ۹۹ باشد', error: true);
+                        return;
+                      }
+                      store.updateSettings((s) => s.minMarginPct = v);
+                      toast(context, v == 0 ? 'فقط فروش زیر قیمت خرید هشدار می‌گیرد' : 'حداقل سود ${fmtQty(v)}٪ ذخیره شد');
+                    },
+              child: const Text('ذخیره'),
+            ),
+          ]),
+          const SizedBox(height: 6),
+          Text('مبنای مقایسه: میانگین موزون قیمت خرید کالا (اگر خریدی ثبت نشده باشد، قیمت خرید تعریف‌شده در کالا).',
+              style: th.textTheme.bodySmall?.copyWith(color: th.hintColor)),
         ],
       ),
     );
