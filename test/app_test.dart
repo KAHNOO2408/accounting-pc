@@ -512,7 +512,8 @@ void main() {
     expect(cashRow.turnCr, 200);
     expect(cashRow.balDr, 5800);
     expect(rows.fold<int>(0, (a, r) => a + r.balDr), rows.fold<int>(0, (a, r) => a + r.balCr));
-    expect(rows.firstWhere((r) => r.code == mSales).isPl, isTrue);
+    // a row without a product is a service: Sakan's «فروش خدمات» (4050)
+    expect(rows.firstWhere((r) => r.code == mServiceSales).isPl, isTrue);
     expect(cashRow.isPl, isFalse);
     expect(j.where((p) => p.docKey == 'inv:${inv.id}').fold<int>(0, (a, p) => a + p.debit),
         j.where((p) => p.docKey == 'inv:${inv.id}').fold<int>(0, (a, p) => a + p.credit));
@@ -840,9 +841,9 @@ void main() {
     await tester.tap(find.text('خیر'));
     await tester.pumpAndSettle();
     expect(find.text('جمع دارایی ها'), findsOneWidget);
-    await tester.tap(find.text('صندوق و تنخواه'));
+    await tester.tap(find.text('دارایی های جاری نقدی'));
     await tester.pumpAndSettle();
-    expect(find.text('لیست دفاتر موجود در گروه صندوق و تنخواه'), findsOneWidget);
+    expect(find.text('لیست دفاتر موجود در گروه دارایی های جاری نقدی'), findsOneWidget);
     await tester.tap(find.text('تایید (F9)').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('تایید (F9)').last);
