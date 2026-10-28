@@ -6,6 +6,7 @@ import '../data/journal.dart' show TbLevel;
 import '../data/models.dart';
 import '../data/store.dart';
 import 'auth/auth_screens.dart';
+import 'dialogs/units_dialog.dart';
 import 'dialogs/cheque_dialogs.dart';
 import 'dialogs/chequebook_dialogs.dart';
 import 'dialogs/closing_dialogs.dart';
@@ -376,7 +377,7 @@ final List<_Tab> _tabs = [
       const _Item('بازاریابان', Icons.campaign_outlined, _slate),
       const _Item('گروه‌های یارانه', Icons.group_work_outlined, _slate),
       const _Item('تخفیف عمومی', Icons.percent_rounded, _slate),
-      const _Item('واحدهای شمارش', Icons.straighten_rounded, _slate),
+      _Item('واحدهای شمارش', Icons.straighten_rounded, _amber, run: (c, _) => showUnitsWindow(c)),
       const _Item('لیست ارزها', Icons.attach_money_rounded, _slate),
       _Item('لیست انبارها', Icons.warehouse_outlined, _amber, run: (c, _) => showWarehousesWindow(c)),
       _Item('تصویر پس زمینه', Icons.wallpaper_rounded, _cyan, run: (c, _) => showBackgroundDialog(c)),

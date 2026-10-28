@@ -43,7 +43,7 @@ class LowMarginRow {
   const LowMarginRow(this.invoice, this.line, this.check);
 
   /// Total profit (negative = loss) of the row.
-  int get profit => (check.unitProfit * line.qty).round();
+  int get profit => (check.unitProfit * line.shownQty).round();
 }
 
 extension MarginStore on AppStore {
@@ -57,10 +57,10 @@ extension MarginStore on AppStore {
   }
 
   MarginCheck checkLine(InvoiceLine l) => checkMargin(
-        qty: l.qty,
-        unitPrice: l.unitPrice,
+        qty: l.shownQty,
+        unitPrice: l.shownFi,
         discount: l.discount,
-        unitCost: marginCost(l.productId),
+        unitCost: (marginCost(l.productId) * (l.inOtherUnit ? l.qty / l.unitQty : 1)).round(),
         minPct: settings.minMarginPct,
       );
 
@@ -76,10 +76,10 @@ extension MarginStore on AppStore {
         final id = l.productId;
         if (id == null) continue;
         final c = checkMargin(
-          qty: l.qty,
-          unitPrice: l.unitPrice,
+          qty: l.shownQty,
+          unitPrice: l.shownFi,
           discount: l.discount,
-          unitCost: cache.putIfAbsent(id, () => marginCost(id)),
+          unitCost: (cache.putIfAbsent(id, () => marginCost(id)) * (l.inOtherUnit ? l.qty / l.unitQty : 1)).round(),
           minPct: settings.minMarginPct,
         );
         if (c.bad) out.add(LowMarginRow(inv, l, c));

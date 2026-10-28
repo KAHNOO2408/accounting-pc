@@ -54,6 +54,9 @@ class AppStore extends ChangeNotifier {
   List<Product> products = [];
   List<Invoice> invoices = [];
 
+  /// «واحدهای شمارش».
+  List<CountUnit> units = [];
+
   /// Set when loading converted the data to a newer format.
   bool _needsSave = false;
   List<Loan> loans = [];
@@ -123,6 +126,7 @@ class AppStore extends ChangeNotifier {
     if (data == null) {
       extraMoeens = [];
       store._seed();
+      store._ensureUnits();
       store._persist();
     } else {
       store._fromJson(data);
@@ -199,6 +203,8 @@ class AppStore extends ChangeNotifier {
     recycle = list('recycle').map(RecycleItem.fromJson).toList();
     reportFiles = list('reportFiles').map(ReportFile.fromJson).toList();
     smsLog = list('smsLog').map(SmsLogEntry.fromJson).toList();
+    units = list('units').map(CountUnit.fromJson).toList();
+    _ensureUnits();
     final cm = j['customMoeens'];
     customMoeens = cm is Map ? {for (final e in cm.entries) '${e.key}': '${e.value}'} : {};
     _applyCustomMoeens();
@@ -238,6 +244,49 @@ class AppStore extends ChangeNotifier {
     for (final p in people) {
       if (p.code == 0) p.code = nextTafsiliCode();
     }
+  }
+
+  /// Sakan starts with «عدد / Number»; units already typed on products are added.
+  void _ensureUnits() {
+    if (units.isEmpty) units.add(CountUnit(id: newId(), name: 'عدد', latin: 'Number'));
+    for (final p in products) {
+      for (final n in [p.unit, p.unit2, p.unit3]) {
+        if (n.trim().isNotEmpty && !units.any((u) => u.name == n.trim())) units.add(CountUnit(id: newId(), name: n.trim()));
+      }
+    }
+  }
+
+  /// Adds or renames a unit; renaming also updates the products using it.
+  String? saveUnit(CountUnit u, {String? oldName}) {
+    final name = u.name.trim();
+    if (name.isEmpty) return 'نام واحد را وارد کنید';
+    if (units.any((x) => x.id != u.id && x.name == name)) return 'واحد «$name» قبلاً تعریف شده است';
+    u.name = name;
+    final i = units.indexWhere((x) => x.id == u.id);
+    if (i < 0) {
+      units.add(u);
+    } else {
+      units[i] = u;
+    }
+    if (oldName != null && oldName != name) {
+      for (final p in products) {
+        if (p.unit == oldName) p.unit = name;
+        if (p.unit2 == oldName) p.unit2 = name;
+        if (p.unit3 == oldName) p.unit3 = name;
+      }
+    }
+    _commit();
+    return null;
+  }
+
+  /// Removes an unused unit.
+  String? removeUnit(CountUnit u) {
+    if (products.any((p) => p.unit == u.name || p.unit2 == u.name || p.unit3 == u.name)) {
+      return 'واحد «${u.name}» در تعریف کالاها استفاده شده و حذف نمی‌شود';
+    }
+    units.removeWhere((x) => x.id == u.id);
+    _commit();
+    return null;
   }
 
   static int _i0(Object? v) => v is int ? v : int.tryParse('$v') ?? 1;
@@ -354,6 +403,7 @@ class AppStore extends ChangeNotifier {
         'recycle': recycle.map((e) => e.toJson()).toList(),
         'reportFiles': reportFiles.map((e) => e.toJson()).toList(),
         'smsLog': smsLog.map((e) => e.toJson()).toList(),
+        'units': units.map((e) => e.toJson()).toList(),
         'hiddenMoeens': hiddenMoeens.toList(),
         'customMoeens': customMoeens,
         'notebooks': notebooks,
@@ -901,6 +951,7 @@ class AppStore extends ChangeNotifier {
     } else {
       products.add(p);
     }
+    _ensureUnits();
     _commit();
   }
 

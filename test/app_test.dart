@@ -1797,4 +1797,39 @@ void main() {
     expect(pro.sakanType, 7);
     expect(pro.sakanTypeName, 'پیش فاکتور');
   });
+
+  test('Sakan counting units: rows in unit 2, stock in unit 1', () {
+    final s = _tempStore();
+    final pr = Product(id: newId(), name: 'Cable', unit: 'عدد', unit2: 'کارتن', ratio2: 24, unit3: 'متر', ratio3: 2, defaultUnit: 2);
+    s.upsertProduct(pr);
+    expect(pr.unitFactor(2), 24);
+    expect(pr.unitFactor(3), 0.5);
+    expect(s.units.map((u) => u.name), containsAll(['عدد', 'کارتن', 'متر']));
+
+    // 2 cartons at 240,000 per carton = 48 pieces at 10,000
+    final l = InvoiceLine.inUnit(productId: pr.id, unit: 2, factor: 24, qty: 2, fi: 240000);
+    expect(l.qty, 48);
+    expect(l.unitPrice, 10000);
+    expect(l.total, 480000);
+    expect(l.shownQty, 2);
+    expect(l.shownFi, 240000);
+    final back = InvoiceLine.fromJson(l.toJson());
+    expect(back.unitNo, 2);
+    expect(back.total, 480000);
+
+    // a price that does not divide evenly keeps the exact total
+    final odd = InvoiceLine.inUnit(productId: pr.id, unit: 2, factor: 24, qty: 1, fi: 1000000);
+    expect(odd.total, 1000000);
+
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.purchase, number: 1, date: DateTime(2026, 9, 1), lines: [l]));
+    expect(s.stock(pr.id), 48);
+    expect(fmtStock(pr, 48), '48 عدد (2 کارتن)');
+
+    // renaming a unit renames it on products; used units are not removed
+    final carton = s.units.firstWhere((u) => u.name == 'کارتن');
+    expect(s.saveUnit(CountUnit(id: carton.id, name: 'جعبه'), oldName: 'کارتن'), isNull);
+    expect(s.product(pr.id)!.unit2, 'جعبه');
+    expect(s.removeUnit(s.units.firstWhere((u) => u.name == 'جعبه')), isNotNull);
+    expect(s.saveUnit(CountUnit(id: newId(), name: 'عدد')), isNotNull);
+  });
 }

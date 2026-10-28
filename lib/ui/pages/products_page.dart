@@ -198,7 +198,7 @@ class _ProductsPageState extends State<ProductsPage> {
                                               child: Center(
                                                 child: FittedBox(
                                                   fit: BoxFit.scaleDown,
-                                                  child: Pill('${fmtQty(st)} ${p.unit}',
+                                                  child: Pill(fmtStock(p, st),
                                                       color: st <= 0
                                                           ? th.colorScheme.error
                                                           : (low ? AppColors.expense : AppColors.income)),
@@ -292,7 +292,7 @@ class _ProductsPageState extends State<ProductsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(p.name, style: th.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-                      Text('موجودی فعلی: ${fmtQty(store.stock(p.id))} ${p.unit}',
+                      Text('موجودی فعلی: ${fmtStock(p, store.stock(p.id))}',
                           style: th.textTheme.bodySmall?.copyWith(color: th.hintColor)),
                     ],
                   ),

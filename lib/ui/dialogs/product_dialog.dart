@@ -31,6 +31,7 @@ class _ProductDialog extends StatefulWidget {
 class _ProductDialogState extends State<_ProductDialog> {
   final _c = <String, TextEditingController>{};
   final _flags = <String, bool>{};
+  int _defUnit = 1;
   bool _en = false; // نام کالا: Fa / En
   String _image = '';
   String? _err;
@@ -52,6 +53,11 @@ class _ProductDialogState extends State<_ProductDialog> {
     c('code').text = e?.code ?? '${s.nextTafsiliCode()}';
     c('name').text = e?.name ?? '';
     c('unit').text = e?.unit ?? 'عدد';
+    c('unit2').text = e?.unit2 ?? '';
+    c('unit3').text = e?.unit3 ?? '';
+    c('ratio2').text = (e?.ratio2 ?? 0) == 0 ? '' : fmtQty(e!.ratio2);
+    c('ratio3').text = (e?.ratio3 ?? 0) == 0 ? '' : fmtQty(e!.ratio3);
+    _defUnit = e?.defaultUnit ?? 1;
     String money(int v) => v == 0 ? '0' : groupDigits(v);
     c('buy').text = money(e?.buyPrice ?? 0);
     c('sell').text = money(e?.sellPrice ?? 0);
@@ -90,6 +96,12 @@ class _ProductDialogState extends State<_ProductDialog> {
       setState(() => _err = 'کد حساب تفصیلی $code تکراری است');
       return;
     }
+    for (final (u, r, label) in [('unit2', 'ratio2', 'دوم'), ('unit3', 'ratio3', 'سوم')]) {
+      if (c(u).text.trim().isNotEmpty && parseQty(c(r).text) <= 0) {
+        setState(() => _err = 'نسبت واحد $label را وارد کنید');
+        return;
+      }
+    }
     final p = widget.edit ?? Product(id: newId(), name: '');
     p
       ..name = c('name').text.trim()
@@ -102,7 +114,12 @@ class _ProductDialogState extends State<_ProductDialog> {
       ..openingQty = parseQty(c('opening').text)
       ..minQty = parseQty(c('min').text)
       ..weight = parseQty(c('weight').text)
+      ..unit2 = c('unit2').text.trim()
+      ..unit3 = c('unit3').text.trim()
+      ..ratio2 = parseQty(c('ratio2').text)
+      ..ratio3 = parseQty(c('ratio3').text)
       ..note = c('note').text.trim();
+    p.defaultUnit = p.hasUnit(_defUnit) ? _defUnit : 1;
     final info = <String, String>{...p.info};
     for (final k in _infoText) {
       info[k] = c(k).text.trim();
@@ -412,6 +429,34 @@ class _ProductDialogState extends State<_ProductDialog> {
                         _chk('defOut', 'واحد پیش فرض در خروج'),
                         _chk('countable', 'کالای تعدادی'),
                       ]),
+                    ]),
+                    _gap,
+                    // واحد دوم و سوم (Sakan: «نسبت 1 به 2» و «نسبت 1 به 3»)
+                    Wrap(crossAxisAlignment: WrapCrossAlignment.center, runSpacing: 6, children: [
+                      _lbl('واحد دوم:', width: 120),
+                      _f('unit2', width: 130, hint: 'کارتن'),
+                      _lbl('هر واحد دوم ='),
+                      _n('ratio2', width: 90, decimal: true),
+                      _lbl(c('unit').text),
+                      const SizedBox(width: 14),
+                      _lbl('واحد سوم:', width: 80),
+                      _f('unit3', width: 130, hint: 'گرم'),
+                      _lbl('هر ${c('unit').text} ='),
+                      _n('ratio3', width: 90, decimal: true),
+                      _lbl('واحد سوم'),
+                    ]),
+                    _gap,
+                    Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
+                      _lbl('واحد پیش فرض:', width: 120),
+                      for (final n in [1, 2, 3])
+                        Padding(
+                          padding: const EdgeInsetsDirectional.only(end: 10),
+                          child: ChoiceChip(
+                            label: Text(switch (n) { 1 => 'اول', 2 => 'دوم', _ => 'سوم' }),
+                            selected: _defUnit == n,
+                            onSelected: (_) => setState(() => _defUnit = n),
+                          ),
+                        ),
                     ]),
                     _gap,
                     Row(children: [

@@ -30,6 +30,13 @@ String fmtQty(double q) {
   return s;
 }
 
+/// Stock in unit 1, with unit 2 when the product has one: «48 عدد (2 کارتن)».
+String fmtStock(Product p, double q) {
+  final base = '${fmtQty(q)} ${p.unit}';
+  if (!p.hasUnit(2)) return base;
+  return '$base (${fmtQty(q / p.unitFactor(2))} ${p.unit2})';
+}
+
 double parseQty(String s) {
   final t = normalizeDigits(s).replaceAll('٫', '.').replaceAll('/', '.').replaceAll(',', '').trim();
   return double.tryParse(t) ?? 0;
@@ -49,6 +56,10 @@ Future<void> showInvoiceEditor(BuildContext context, {Invoice? edit, InvoiceKind
 class _Line {
   String? productId;
   String? warehouseId;
+
+  /// «واحد منتخب» of the row and how many of unit 1 it is.
+  int unit = 1;
+  double factor = 1;
   final title = TextEditingController();
   final qty = TextEditingController(text: '1');
   final price = TextEditingController();
@@ -62,8 +73,12 @@ class _Line {
     x.productId = l.productId;
     x.warehouseId = l.warehouseId;
     x.title.text = l.title;
-    x.qty.text = fmtQty(l.qty);
-    x.price.text = l.unitPrice == 0 ? '' : groupDigits(l.unitPrice);
+    if (l.inOtherUnit) {
+      x.unit = l.unitNo;
+      x.factor = l.qty / l.unitQty;
+    }
+    x.qty.text = fmtQty(l.shownQty);
+    x.price.text = l.shownFi == 0 ? '' : groupDigits(l.shownFi);
     x.discount.text = l.discount == 0 ? '' : groupDigits(l.discount);
     return x;
   }
@@ -74,8 +89,23 @@ class _Line {
   int get total => (q * p).round() - d;
   bool get isEmpty => title.text.trim().isEmpty && productId == null && p == 0;
 
-  InvoiceLine toLine() =>
-      InvoiceLine(productId: productId, title: title.text.trim(), qty: q, unitPrice: p, discount: d, warehouseId: warehouseId);
+  /// Quantity in unit 1 (stock, cost).
+  double get baseQty => q * factor;
+
+  InvoiceLine toLine() => InvoiceLine.inUnit(
+      productId: productId, title: title.text.trim(), unit: unit, factor: factor, qty: q, fi: p, discount: d, warehouseId: warehouseId);
+
+  /// Switches the row to [n] of [pr], converting quantity and price.
+  void setUnit(Product pr, int n) {
+    final f = pr.unitFactor(n);
+    if (f == factor && n == unit) return;
+    final base = baseQty;
+    final basePrice = factor == 0 ? p.toDouble() : p / factor;
+    unit = n;
+    factor = f;
+    qty.text = fmtQty(base / f);
+    if (p != 0) price.text = groupDigits((basePrice * f).round());
+  }
 
   Map<String, dynamic> toJson() => toLine().toJson();
 
@@ -225,7 +255,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   int get _total => _subtotal - _discount + _extra;
   int get _itemCount => [..._lines, ..._services].where((l) => !l.isEmpty).length;
 
-  double _weight(AppStore s) => _lines.fold(0.0, (a, l) => a + l.q * (s.product(l.productId)?.weight ?? 0));
+  double _weight(AppStore s) => _lines.fold(0.0, (a, l) => a + l.baseQty * (s.product(l.productId)?.weight ?? 0));
 
   // ------------------------------------------------------------------ rows
 
@@ -257,27 +287,29 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     setState(() {
       l.productId = p.id;
       l.title.text = p.name;
-      final price = _buy ? p.buyPrice : p.sellPrice;
+      l.unit = p.hasUnit(p.defaultUnit) ? p.defaultUnit : 1;
+      l.factor = p.unitFactor(l.unit);
+      final price = ((_buy ? p.buyPrice : p.sellPrice) * l.factor).round();
       if (price > 0) l.price.text = groupDigits(price);
       _selRow = _lines.indexOf(l);
     });
     // Sakan asks for the quantity and the unit price right away
-    final q = await showQtyDialog(context, product: p, personId: _person, warehouseId: l.warehouseId, initial: l.q, buy: _buy);
-    if (q != null && mounted) setState(() => l.qty.text = fmtQty(q));
+    final q = await showQtyDialog(context, product: p, personId: _person, warehouseId: l.warehouseId, initial: l.baseQty, buy: _buy);
+    if (q != null && mounted) setState(() => l.qty.text = fmtQty(q / l.factor));
     if (!_buy && mounted) await _pickPrice(l, p);
     if (mounted && identical(l, _lines.last)) _addLine();
   }
 
   Future<void> _pickPrice(_Line l, Product p) async {
-    final v = await showUnitPriceDialog(context, product: p, personId: _person, current: l.p);
-    if (v != null && mounted) setState(() => l.price.text = groupDigits(v));
+    final v = await showUnitPriceDialog(context, product: p, personId: _person, current: (l.p / l.factor).round());
+    if (v != null && mounted) setState(() => l.price.text = groupDigits((v * l.factor).round()));
   }
 
   Future<void> _editQty(_Line l) async {
     final p = StoreScope.read(context).product(l.productId);
     if (p == null) return;
-    final q = await showQtyDialog(context, product: p, personId: _person, warehouseId: l.warehouseId, initial: l.q, buy: _buy);
-    if (q != null && mounted) setState(() => l.qty.text = fmtQty(q));
+    final q = await showQtyDialog(context, product: p, personId: _person, warehouseId: l.warehouseId, initial: l.baseQty, buy: _buy);
+    if (q != null && mounted) setState(() => l.qty.text = fmtQty(q / l.factor));
   }
 
   // ------------------------------------------------------------------ header actions
@@ -421,7 +453,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
               child: Row(children: [
                 SizedBox(width: 30, child: Text('${i + 1}')),
                 Expanded(child: Text(rows[i].title.text)),
-                SizedBox(width: 80, child: Text('${fmtQty(rows[i].q)} ${s.product(rows[i].productId)?.unit ?? ''}')),
+                SizedBox(width: 80, child: Text('${fmtQty(rows[i].q)} ${s.product(rows[i].productId)?.unitName(rows[i].unit) ?? ''}')),
                 SizedBox(width: 120, child: Align(alignment: Alignment.centerLeft, child: Money(rows[i].total))),
               ]),
             ),
@@ -584,7 +616,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       qty: l.q,
       unitPrice: l.p,
       discount: l.d,
-      unitCost: store.marginCost(l.productId),
+      unitCost: (store.marginCost(l.productId) * l.factor).round(),
       minPct: store.settings.minMarginPct,
     );
     return c.level == MarginLevel.unknown ? null : c;
@@ -1175,7 +1207,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     if (p != null) {
       final st = store.stock(p.id, excludeInvoiceId: widget.edit?.id, warehouseId: multiWh ? store.whId(l.warehouseId) : null);
       stockInfo = 'موجودی ${fmtQty(st)}';
-      if (_kind.stockSign < 0 && l.q > st) warn = true;
+      if (_kind.stockSign < 0 && l.baseQty > st) warn = true;
     }
     const dense = InputDecoration(isDense: true, border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 10));
     final cellBorder = BoxDecoration(border: Border(left: BorderSide(color: Colors.black.withValues(alpha: 0.08))));
@@ -1266,7 +1298,25 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
             ),
           ),
           if (goods)
-            Container(width: _wUnit, decoration: cellBorder, child: Text(p?.unit ?? '', textAlign: TextAlign.center)),
+            Container(
+              width: _wUnit,
+              decoration: cellBorder,
+              child: p != null && (p.hasUnit(2) || p.hasUnit(3))
+                  ? DropdownButtonHideUnderline(
+                      child: DropdownButton<int>(
+                        value: l.unit,
+                        isExpanded: true,
+                        isDense: true,
+                        alignment: Alignment.center,
+                        items: [
+                          for (final n in [1, 2, 3])
+                            if (p.hasUnit(n)) DropdownMenuItem(value: n, child: Text(p.unitName(n), overflow: TextOverflow.ellipsis)),
+                        ],
+                        onChanged: (n) => setState(() => l.setUnit(p, n ?? 1)),
+                      ),
+                    )
+                  : Text(p?.unit ?? '', textAlign: TextAlign.center),
+            ),
           Container(
             width: _wPrice,
             decoration: cellBorder,

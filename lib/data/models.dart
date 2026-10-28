@@ -503,6 +503,17 @@ class Product {
   /// وزن (کیلوگرم) هر واحد.
   double weight;
 
+  /// واحد دوم و سوم (Sakan's VahedName2/3). [ratio2] = «نسبت 1 به 2»: one
+  /// unit 2 is [ratio2] of unit 1 (کارتن = 24 عدد). [ratio3] = «نسبت 1 به 3»:
+  /// one unit 1 is [ratio3] of unit 3 (عدد = 1000 گرم).
+  String unit2;
+  String unit3;
+  double ratio2;
+  double ratio3;
+
+  /// «شماره واحد پیش فرض» (1..3) used for new invoice rows.
+  int defaultUnit;
+
   /// سایر مشخصات فرم «اطلاعات دفتر تفصیلی موجودی کالا» (بارکد، شماره فنی، …).
   Map<String, String> info;
 
@@ -521,8 +532,25 @@ class Product {
     this.archived = false,
     this.note = '',
     this.weight = 0,
+    this.unit2 = '',
+    this.unit3 = '',
+    this.ratio2 = 0,
+    this.ratio3 = 0,
+    this.defaultUnit = 1,
     Map<String, String>? info,
   }) : info = info ?? {};
+
+  /// Units in use: 1 always, 2 and 3 when named with a ratio.
+  bool hasUnit(int n) => n == 1 || (n == 2 && unit2.isNotEmpty && ratio2 > 0) || (n == 3 && unit3.isNotEmpty && ratio3 > 0);
+
+  String unitName(int n) => switch (n) { 2 => unit2, 3 => unit3, _ => unit };
+
+  /// How many of unit 1 one [n] unit is.
+  double unitFactor(int n) => switch (n) {
+        2 when ratio2 > 0 => ratio2,
+        3 when ratio3 > 0 => 1 / ratio3,
+        _ => 1,
+      };
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -530,6 +558,11 @@ class Product {
         'code': code,
         'unit': unit,
         'weight': weight,
+        if (unit2.isNotEmpty) 'unit2': unit2,
+        if (unit3.isNotEmpty) 'unit3': unit3,
+        if (ratio2 != 0) 'ratio2': ratio2,
+        if (ratio3 != 0) 'ratio3': ratio3,
+        if (defaultUnit != 1) 'defaultUnit': defaultUnit,
         'info': info,
         'buyPrice': buyPrice,
         'sellPrice': sellPrice,
@@ -557,6 +590,11 @@ class Product {
         archived: j['archived'] == true,
         note: _s(j['note']),
         weight: _dbl(j['weight']),
+        unit2: _s(j['unit2']),
+        unit3: _s(j['unit3']),
+        ratio2: _dbl(j['ratio2']),
+        ratio3: _dbl(j['ratio3']),
+        defaultUnit: _i(j['defaultUnit'], 1),
         info: (j['info'] is Map)
             ? (j['info'] as Map).map((k, v) => MapEntry('$k', '$v'))
             : null,
@@ -647,9 +685,59 @@ class InvoiceLine {
   /// Warehouse of the row (null = main warehouse).
   String? warehouseId;
 
-  InvoiceLine({this.productId, this.title = '', this.qty = 1, this.unitPrice = 0, this.discount = 0, this.warehouseId});
+  /// «واحد منتخب» (1..3). With unit 2 or 3 the row was entered as [unitQty]
+  /// at [unitFi] per that unit; [qty] and [unitPrice] are always in unit 1.
+  int unitNo;
+  double unitQty;
+  int unitFi;
 
-  int get total => (qty * unitPrice).round() - discount;
+  InvoiceLine({
+    this.productId,
+    this.title = '',
+    this.qty = 1,
+    this.unitPrice = 0,
+    this.discount = 0,
+    this.warehouseId,
+    this.unitNo = 1,
+    this.unitQty = 0,
+    this.unitFi = 0,
+  });
+
+  /// A row entered in unit [unit] ([factor] of unit 1 each).
+  factory InvoiceLine.inUnit({
+    String? productId,
+    String title = '',
+    required int unit,
+    required double factor,
+    required double qty,
+    required int fi,
+    int discount = 0,
+    String? warehouseId,
+  }) {
+    if (unit == 1 || factor == 1) {
+      return InvoiceLine(productId: productId, title: title, qty: qty, unitPrice: fi, discount: discount, warehouseId: warehouseId);
+    }
+    return InvoiceLine(
+      productId: productId,
+      title: title,
+      qty: qty * factor,
+      unitPrice: (fi / factor).round(),
+      discount: discount,
+      warehouseId: warehouseId,
+      unitNo: unit,
+      unitQty: qty,
+      unitFi: fi,
+    );
+  }
+
+  bool get inOtherUnit => unitNo != 1 && unitQty != 0;
+
+  /// Quantity and price as entered (in the chosen unit).
+  double get shownQty => inOtherUnit ? unitQty : qty;
+  int get shownFi => inOtherUnit ? unitFi : unitPrice;
+
+  int get gross => (shownQty * shownFi).round();
+  int get total => gross - discount;
 
   Map<String, dynamic> toJson() => {
         'productId': productId,
@@ -658,9 +746,13 @@ class InvoiceLine {
         'unitPrice': unitPrice,
         'discount': discount,
         if (warehouseId != null) 'warehouseId': warehouseId,
+        if (inOtherUnit) ...{'unitNo': unitNo, 'unitQty': unitQty, 'unitFi': unitFi},
       };
 
   factory InvoiceLine.fromJson(Map<String, dynamic> j) => InvoiceLine(
+        unitNo: _i(j['unitNo'], 1),
+        unitQty: _dbl(j['unitQty']),
+        unitFi: _i(j['unitFi']),
         warehouseId: _sn(j['warehouseId']),
         productId: _sn(j['productId']),
         title: _s(j['title']),
@@ -1770,4 +1862,16 @@ class DocMeta {
         spec: _s(j['sp']),
         costCenter: _s(j['cc']),
       );
+}
+
+/// «واحدهای شمارش» — a counting unit (Sakan: نام واحد / نام لاتین).
+class CountUnit {
+  String id;
+  String name;
+  String latin;
+  CountUnit({required this.id, required this.name, this.latin = ''});
+
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, if (latin.isNotEmpty) 'latin': latin};
+
+  factory CountUnit.fromJson(Map<String, dynamic> j) => CountUnit(id: _s(j['id']), name: _s(j['name']), latin: _s(j['latin']));
 }

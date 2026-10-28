@@ -12,7 +12,7 @@ import '../print_designer.dart';
 import '../shell.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
-import 'invoice_editor.dart' show fmtQty, showInvoiceEditor;
+import 'invoice_editor.dart' show fmtQty, fmtStock, showInvoiceEditor;
 import 'product_dialog.dart';
 
 // ================================================================ shared bits
@@ -652,7 +652,7 @@ class _KardexWinState extends State<_KardexWin> {
           ListTile(
             dense: true,
             title: const Text('جمع کل', style: TextStyle(fontWeight: FontWeight.w800)),
-            trailing: Text('${fmtQty(s.stock(p.id))} ${p.unit}', textDirection: TextDirection.ltr, style: const TextStyle(fontWeight: FontWeight.w800)),
+            trailing: Text(fmtStock(p, s.stock(p.id)), style: const TextStyle(fontWeight: FontWeight.w800)),
           ),
         ]),
       ),
@@ -740,7 +740,7 @@ class _KardexWinState extends State<_KardexWin> {
                       ),
                       const SizedBox(width: 14),
                       _lbl('گزارش موجودی:'),
-                      _kb('${fmtQty(s.stock(p.id))} ${p.unit}', () => _stockReport(s, p), width: 150),
+                      _kb(fmtStock(p, s.stock(p.id)), () => _stockReport(s, p), width: 150),
                     ]),
                     const SizedBox(height: 6),
                     Row(children: [
