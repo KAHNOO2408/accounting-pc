@@ -27,6 +27,7 @@ import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
+import 'dialogs/tools_dialogs.dart';
 import 'dialogs/device_dialogs.dart';
 import 'dialogs/extras_dialogs.dart';
 import 'dialogs/custom_report_dialogs.dart';
@@ -271,6 +272,11 @@ final List<_Tab> _tabs = [
           shortcut: 'Ctrl+7', activator: _k(LogicalKeyboardKey.digit7, ctrl: true), run: (c, _) => showWasteDialog(c)),
       _Item('تبدیل کالا', Icons.autorenew_rounded, _amber, run: (c, _) => showConvertDialog(c)),
     ]),
+    _Group('فروشگاه', [
+      _Item('فاکتور فروشگاهی', Icons.point_of_sale_rounded, _green, run: (c, _) => showShopInvoice(c)),
+      _Item('فرمول های تغییر نرخ', Icons.price_change_outlined, _amber, run: (c, _) => showPriceFormulas(c)),
+      _Item('ساخت نام و بارکد استاندارد', Icons.qr_code_rounded, _amber, run: (c, _) => showStandardBarcodes(c)),
+    ]),
     _Group('بالانس', [
       _Item('خرید بالانس', Icons.local_shipping_outlined, _blue, run: (c, _) => showBalanceEditor(c)),
       _Item('برگشت از خرید بالانس', Icons.assignment_return_outlined, _red, run: (c, _) => showBalanceEditor(c, isReturn: true)),
@@ -435,6 +441,7 @@ final List<_Tab> _tabs = [
       _Item('ترازنامه', Icons.balance_rounded, _blue, run: _page(AppPage.balanceSheet)),
       _Item('تراز آزمایشی', Icons.scale_outlined, _blue, run: (c, _) => showTrialBalanceFilter(c)),
       _Item('گزارش از وضعیت حساب', Icons.fact_check_outlined, _cyan, run: (c, _) => showAccountStatus(c)),
+      _Item('سند ترکیبی عملیات یک روز یا یک ماه', Icons.merge_rounded, _blue, run: (c, _) => showCombinedVoucher(c)),
       _Item('نمودار سود و زیان', Icons.bar_chart_rounded, _green, run: (c, _) => showProfitChart(c)),
       _Item('گزارش مطالبات', Icons.call_received_rounded, _green, run: (c, _) => showInstallmentPlans(c, receivable: true)),
       _Item('گزارش تعهدات', Icons.call_made_rounded, _red, run: (c, _) => showInstallmentPlans(c, receivable: false)),

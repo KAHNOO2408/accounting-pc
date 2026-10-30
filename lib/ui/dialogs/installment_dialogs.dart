@@ -145,6 +145,7 @@ void printInstallmentBook(AppStore s, InstallmentPlan p) {
       ('تاریخ شروع پرداخت اقساط', jFormat(p.firstDue)),
       if (p.interestPct != 0) ('درصد سود', '${p.interestPct}'),
       if (p.penaltyPct != 0) ('درصد جریمه', '${p.penaltyPct}'),
+      if (p.guarantorName.isNotEmpty) ('ضامن', '${p.guarantorName} ${p.guarantorPhone}'.trim()),
     ],
     itemHeaders: const ['ردیف', 'تاریخ سررسید قسط', 'مبلغ قسط', 'تاریخ پرداخت', 'مهر و امضا'],
     items: [
@@ -177,11 +178,14 @@ class _EditorState extends State<_Editor> {
   late final _interest = TextEditingController(text: _p.interestPct == 0 ? '' : '${_p.interestPct}');
   late final _penalty = TextEditingController(text: _p.penaltyPct == 0 ? '' : '${_p.penaltyPct}');
   late final _babat = TextEditingController(text: _p.babat);
+  late final _gName = TextEditingController(text: _p.guarantorName);
+  late final _gPhone = TextEditingController(text: _p.guarantorPhone);
+  late final _gId = TextEditingController(text: _p.guarantorId);
   String? _err;
 
   @override
   void dispose() {
-    for (final c in [_principal, _count, _every, _interest, _penalty, _babat]) {
+    for (final c in [_principal, _count, _every, _interest, _penalty, _babat, _gName, _gPhone, _gId]) {
       c.dispose();
     }
     super.dispose();
@@ -194,7 +198,10 @@ class _EditorState extends State<_Editor> {
       ..everyMonths = (int.tryParse(normalizeDigits(_every.text)) ?? 1).clamp(1, 120)
       ..interestPct = double.tryParse(normalizeDigits(_interest.text)) ?? 0
       ..penaltyPct = double.tryParse(normalizeDigits(_penalty.text)) ?? 0
-      ..babat = _babat.text.trim();
+      ..babat = _babat.text.trim()
+      ..guarantorName = _gName.text.trim()
+      ..guarantorPhone = _gPhone.text.trim()
+      ..guarantorId = normalizeDigits(_gId.text.trim());
   }
 
   @override
@@ -240,6 +247,15 @@ class _EditorState extends State<_Editor> {
           ),
           const SizedBox(width: 8),
           Expanded(flex: 2, child: TextField(controller: _babat, decoration: const InputDecoration(labelText: 'بابت', isDense: true))),
+        ]),
+        const SizedBox(height: 8),
+        Row(children: [
+          const Text('اطلاعات ضامن: '),
+          Expanded(child: TextField(controller: _gName, decoration: const InputDecoration(labelText: 'نام ضامن', isDense: true))),
+          const SizedBox(width: 6),
+          Expanded(child: TextField(controller: _gPhone, textDirection: TextDirection.ltr, decoration: const InputDecoration(labelText: 'تلفن ضامن', isDense: true))),
+          const SizedBox(width: 6),
+          Expanded(child: TextField(controller: _gId, textDirection: TextDirection.ltr, decoration: const InputDecoration(labelText: 'کد ملی ضامن', isDense: true))),
         ]),
         const SizedBox(height: 8),
         Row(children: [

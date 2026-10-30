@@ -37,6 +37,11 @@ class InstallmentPlan {
   List<Installment> items;
   int createdAt;
 
+  /// «اطلاعات ضامن».
+  String guarantorName = '';
+  String guarantorPhone = '';
+  String guarantorId = ''; // کد ملی
+
   InstallmentPlan({
     required this.id,
     this.personId,
@@ -95,6 +100,9 @@ class InstallmentPlan {
         'babat': babat,
         'items': items.map((e) => e.toJson()).toList(),
         'createdAt': createdAt,
+        if (guarantorName.isNotEmpty) 'guarantorName': guarantorName,
+        if (guarantorPhone.isNotEmpty) 'guarantorPhone': guarantorPhone,
+        if (guarantorId.isNotEmpty) 'guarantorId': guarantorId,
       };
 
   factory InstallmentPlan.fromJson(Map<String, dynamic> j) => InstallmentPlan(
@@ -111,5 +119,8 @@ class InstallmentPlan {
         babat: _s(j['babat']),
         items: _list(j['items']).map(Installment.fromJson).toList(),
         createdAt: _i(j['createdAt']),
-      );
+      )
+        ..guarantorName = _s(j['guarantorName'])
+        ..guarantorPhone = _s(j['guarantorPhone'])
+        ..guarantorId = _s(j['guarantorId']);
 }

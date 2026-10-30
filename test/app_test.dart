@@ -21,6 +21,7 @@ import 'package:taraz/data/serials.dart';
 import 'package:taraz/data/custom_reports.dart';
 import 'package:taraz/data/scale.dart';
 import 'package:taraz/data/tax_report.dart';
+import 'package:taraz/data/tools.dart';
 import 'package:taraz/data/insurance_disk.dart';
 import 'package:taraz/core/iran_system.dart';
 import 'package:taraz/ui/dialogs/payroll_dialogs.dart';
@@ -2617,5 +2618,27 @@ void main() {
     expect(b.lastError, isNull);
     expect(a.syncFromDisk(), isTrue);
     expect(a.people.any((p) => p.name == 'From B'), isTrue);
+  });
+
+  test('price formulas, standard barcodes, combined voucher, guarantor', () {
+    final s = _tempStore();
+    final a = Product(id: newId(), name: 'A', code: '7', buyPrice: 1000, sellPrice: 1500);
+    final b = Product(id: newId(), name: 'B', code: '8', buyPrice: 2000, sellPrice: 2500, info: {'barcode': '6261234567890'});
+    s.upsertProduct(a);
+    s.upsertProduct(b);
+    expect(formulaPrice(s, a, PriceField.sell1, PriceMode.percent, 10), 1650);
+    expect(formulaPrice(s, a, PriceField.sell1, PriceMode.marginOnBuy, 30, round: 1000), 2000);
+    expect(s.applyPriceFormula([a, b], PriceField.sell1, PriceMode.amount, 100), 2);
+    expect(b.sellPrice, 2600);
+    expect(s.makeStandardBarcodes(), 1);
+    expect(a.info['barcode'], startsWith('200000000007'));
+    expect(a.info['barcode']!.length, 13);
+    expect(s.matchScan(a.info['barcode']!)!.$1.id, a.id);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.purchase, number: 1, date: DateTime(2026, 10, 5), lines: [InvoiceLine(productId: a.id, qty: 2, unitPrice: 1000)]));
+    final rows = combinedVoucher(s, DateTime(2026, 10, 1), DateTime(2026, 10, 31));
+    expect(rows.fold<int>(0, (x, r) => x + r.$3), rows.fold<int>(0, (x, r) => x + r.$4));
+    expect(rows.any((r) => r.$1 == '1150' && r.$3 == 2000), isTrue);
+    final plan = InstallmentPlan(id: newId(), interestFrom: DateTime(2026), firstDue: DateTime(2026, 2))..guarantorName = 'Zamen';
+    expect(InstallmentPlan.fromJson(plan.toJson()).guarantorName, 'Zamen');
   });
 }
