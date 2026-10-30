@@ -77,7 +77,10 @@ class _StatementsState extends State<_Statements> {
               s.updateSettings((_) {});
               setState(() => _edit = !_edit);
             }, icon: Icons.edit_note_rounded),
-            if (!widget.balanceSheet) _range(_from, _to, (a, b) => setState(() => (_from, _to) = (a, b))),
+            if (!widget.balanceSheet) _range(_from, _to, (a, b) => setState(() {
+                _from = a;
+                _to = b;
+              })),
             if (widget.balanceSheet) SizedBox(width: 170, child: DateField(label: 'تا تاریخ', value: _to, onChanged: (d) => setState(() => _to = d ?? _to))),
             sakanBtn('چاپ', () => printTable(
                   store: s,
@@ -181,7 +184,10 @@ class _IncExpState extends State<_IncExp> {
     return FormDialog(
       title: 'صورت خلاصه درآمد و هزینه',
       width: 700,
-      leading: _range(_from, _to, (a, b) => setState(() => (_from, _to) = (a, b))),
+      leading: _range(_from, _to, (a, b) => setState(() {
+                _from = a;
+                _to = b;
+              })),
       actions: [
         TextButton(
           onPressed: () => printTable(
@@ -252,7 +258,10 @@ class _DynState extends State<_Dyn> {
               ],
               onChanged: (v) => setState(() => _g = v ?? _g),
             ),
-            _range(_from, _to, (a, b) => setState(() => (_from, _to) = (a, b))),
+            _range(_from, _to, (a, b) => setState(() {
+                _from = a;
+                _to = b;
+              })),
             sakanBtn('چاپ', () => printTable(
                   store: s,
                   title: '${_m.label} ${_g.label}',
@@ -333,7 +342,10 @@ class _ConsState extends State<_Cons> {
     return FormDialog(
       title: 'گزارش تلفیقی صورت حساب سود و زیان',
       width: 960,
-      leading: _range(_from, _to, (a, b) => setState(() => (_from, _to) = (a, b))),
+      leading: _range(_from, _to, (a, b) => setState(() {
+                _from = a;
+                _to = b;
+              })),
       actions: [
         TextButton(
           onPressed: () => printTable(
