@@ -24,6 +24,7 @@ import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
+import 'dialogs/service_dialogs.dart';
 import 'dialogs/guarantee_dialogs.dart';
 import 'dialogs/production_dialogs.dart';
 import 'dialogs/woo_dialogs.dart';
@@ -258,6 +259,11 @@ final List<_Tab> _tabs = [
           shortcut: 'Ctrl+F7', activator: _k(LogicalKeyboardKey.f7, ctrl: true), run: _page(AppPage.proformas)),
       _Item('سفارشات', Icons.assignment_outlined, _cyan, run: (c, _) => showOrders(c)),
       _Item('تعیین سفارش روزانه', Icons.today_outlined, _cyan, run: (c, _) => showDailyQuota(c)),
+    ]),
+    _Group('خدمات و گارانتی', [
+      _Item('پذیرش', Icons.handyman_outlined, _amber, run: (c, _) => showReceptionEditor(c)),
+      _Item('لیست پذیرش', Icons.build_outlined, _amber, run: (c, _) => showReceptions(c)),
+      _Item('لیست گارانتی', Icons.verified_outlined, _amber, run: (c, _) => showWarranties(c)),
     ]),
     _Group('فروشگاه اینترنتی', [
       _Item('لیست فاکتورهای ووکامرس', Icons.shopping_cart_checkout_rounded, _violet, run: (c, _) => showWooOrders(c)),

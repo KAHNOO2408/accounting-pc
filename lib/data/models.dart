@@ -3,6 +3,7 @@ import 'invoice_settings.dart';
 export 'invoice_settings.dart';
 export 'production.dart';
 export 'guarantee.dart';
+export 'service.dart';
 
 String newId() {
   final r = Random();

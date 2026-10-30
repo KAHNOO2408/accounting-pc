@@ -87,6 +87,10 @@ class AppStore extends ChangeNotifier {
 
   /// «اسناد انتظامی» (سفته، وثیقه، ضمانت نامه).
   List<GuaranteeDoc> guarantees = [];
+
+  /// «گارانتی» and «پذیرش» (repair service).
+  List<Warranty> warranties = [];
+  List<Reception> receptions = [];
   List<WooOrder> wooOrders = [];
 
   /// «حقوق و دستمزد».
@@ -261,6 +265,8 @@ class AppStore extends ChangeNotifier {
     formulas = list('formulas').map(ProductionFormula.fromJson).toList();
     productions = list('productions').map(Production.fromJson).toList();
     guarantees = list('guarantees').map(GuaranteeDoc.fromJson).toList();
+    warranties = list('warranties').map(Warranty.fromJson).toList();
+    receptions = list('receptions').map(Reception.fromJson).toList();
     employees = list('employees').map(Employee.fromJson).toList();
     payPeriods = list('payPeriods').map(PayPeriod.fromJson).toList();
     payslips = list('payslips').map(Payslip.fromJson).toList();
@@ -483,6 +489,8 @@ class AppStore extends ChangeNotifier {
         'formulas': formulas.map((e) => e.toJson()).toList(),
         'productions': productions.map((e) => e.toJson()).toList(),
         'guarantees': guarantees.map((e) => e.toJson()).toList(),
+        'warranties': warranties.map((e) => e.toJson()).toList(),
+        'receptions': receptions.map((e) => e.toJson()).toList(),
         'employees': employees.map((e) => e.toJson()).toList(),
         'payPeriods': payPeriods.map((e) => e.toJson()).toList(),
         'payslips': payslips.map((e) => e.toJson()).toList(),
@@ -2264,6 +2272,9 @@ class AppStore extends ChangeNotifier {
     for (final o in wooOrders) {
       if (o.invoiceId == id) o.invoiceId = null;
     }
+    for (final r in receptions) {
+      if (r.invoiceId == id) r.invoiceId = null;
+    }
     if (inv != null && !inv.proforma) {
       final who = person(inv.personId)?.name ?? 'متفرقه';
       _recycle('inv:$id', number: docMeta['inv:$id']?.number ?? inv.number, date: inv.date,
@@ -2751,6 +2762,55 @@ class AppStore extends ChangeNotifier {
 
   /// Opening cost per unit of a product (used for opening stock value).
   int openingCost(Product p) => p.openingCost > 0 ? p.openingCost : p.buyPrice;
+
+  // ---------------------------------------------------------------- گارانتی و پذیرش
+
+  int nextWarrantyCode() => warranties.fold<int>(1, (n, w) => w.code >= n ? w.code + 1 : n);
+  int nextReceptionNumber() => receptions.fold<int>(1, (n, r) => r.number >= n ? r.number + 1 : n);
+
+  /// Warranty by code or serial (current or original).
+  Warranty? findWarranty(String q) {
+    final t = q.trim();
+    if (t.isEmpty) return null;
+    return warranties.where((w) => '${w.code}' == t || w.serial == t || w.currentSerial == t).firstOrNull;
+  }
+
+  void saveWarranty(Warranty w) {
+    final i = warranties.indexWhere((x) => x.id == w.id);
+    if (i >= 0) {
+      warranties[i] = w;
+    } else {
+      warranties.add(w);
+    }
+    _commit();
+  }
+
+  void saveReception(Reception r) {
+    final i = receptions.indexWhere((x) => x.id == r.id);
+    if (i >= 0) {
+      receptions[i] = r;
+    } else {
+      if (r.user.isEmpty) r.user = currentUser.name;
+      receptions.add(r);
+      _log('ثبت', 'پذیرش ${r.number}', docDate: r.date);
+    }
+    _commit();
+  }
+
+  /// «صدور فاکتور» of a repair: a service sale with the repair cost.
+  Invoice receptionInvoice(Reception r) {
+    final old = invoices.where((i) => i.id == r.invoiceId).firstOrNull;
+    final inv = old ??
+        Invoice(id: newId(), kind: InvoiceKind.sale, number: nextInvoiceNumber(InvoiceKind.sale), date: DateTime.now(), personId: r.personId, info: {'reception': '${r.number}'});
+    inv.personId = r.personId;
+    inv.lines = [
+      InvoiceLine(title: 'تعمیر ${r.productName}${r.serial.isEmpty ? '' : ' سریال ${r.serial}'} — پذیرش ${r.number}', qty: 1, unitPrice: r.cost),
+    ];
+    inv.note = r.repairNote;
+    r.invoiceId = inv.id;
+    saveInvoice(inv);
+    return inv;
+  }
 
   // ---------------------------------------------------------------- اسناد انتظامی
 

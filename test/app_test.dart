@@ -2237,4 +2237,33 @@ void main() {
     expect(again.guarantees.single.openTotal, 2000000);
     expect(s.nextGuaranteeNumber(), 2);
   });
+
+  test('warranty and repair reception', () {
+    final s = _tempStore();
+    final c = Person(id: newId(), name: 'Customer');
+    s.upsertPerson(c);
+    final w = Warranty(id: newId(), code: s.nextWarrantyCode(), productName: 'Phone', serial: 'SN1', start: DateTime(2026, 1, 1), end: DateTime(2026, 12, 31), personId: c.id);
+    s.saveWarranty(w);
+    expect(w.activeAt(DateTime(2026, 10, 30)), isTrue);
+    expect(w.activeAt(DateTime(2027, 1, 1)), isFalse);
+    w.events.add(WarrantyEvent(date: DateTime(2026, 5, 1), kind: 'تعویض', newSerial: 'SN2'));
+    s.saveWarranty(w);
+    expect(s.findWarranty('SN2')?.id, w.id);
+    expect(s.findWarranty('SN1')?.id, w.id);
+    expect(s.findWarranty('${w.code}')?.id, w.id);
+
+    final r = Reception(id: newId(), number: s.nextReceptionNumber(), date: DateTime(2026, 10, 30), personId: c.id, productName: 'Phone', serial: 'SN2', warrantyCode: w.code, problem: 'Screen', cost: 500000);
+    s.saveReception(r);
+    final inv = s.receptionInvoice(r);
+    expect(inv.total, 500000);
+    expect(s.personBalance(c.id), 500000);
+    r.cost = 600000;
+    expect(s.receptionInvoice(r).id, inv.id); // re-issuing updates the same invoice
+    expect(s.personBalance(c.id), 600000);
+    final again = AppStore.open(s.storage);
+    expect(again.receptions.single.invoiceId, inv.id);
+    expect(again.warranties.single.currentSerial, 'SN2');
+    s.removeInvoice(inv.id);
+    expect(s.receptions.single.invoiceId, isNull);
+  });
 }

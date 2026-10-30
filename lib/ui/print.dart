@@ -180,6 +180,56 @@ ${footer == null ? '' : '<tfoot><tr>${[for (var i = 0; i < footer.length; i++) c
   return f.path;
 }
 
+/// Prints a small slip — a customer receipt, a repair label or a kitchen
+/// order — as label/value rows plus optional item rows (80mm or A5).
+String printSlip({
+  required AppStore store,
+  required String title,
+  required List<(String, String)> fields,
+  List<String> itemHeaders = const [],
+  List<List<String>> items = const [],
+  String footer = '',
+  bool narrow = true,
+  int copies = 1,
+  String fileName = 'slip',
+}) {
+  final s = store.settings;
+  final one = StringBuffer()
+    ..writeln('<div class="slip"><h1>${_esc(s.businessName)}</h1><h2>${_esc(title)}</h2><table class="f">')
+    ..writeAll([for (final (k, v) in fields) '<tr><th>${_esc(k)}</th><td>${_esc(v)}</td></tr>'], '\n')
+    ..writeln('</table>');
+  if (items.isNotEmpty) {
+    one
+      ..writeln('<table class="i"><thead><tr>${itemHeaders.map((h) => '<th>${_esc(h)}</th>').join()}</tr></thead><tbody>')
+      ..writeAll([for (final r in items) '<tr>${r.map((c) => '<td>${_esc(c)}</td>').join()}</tr>'], '\n')
+      ..writeln('</tbody></table>');
+  }
+  if (footer.isNotEmpty) one.writeln('<div class="ft">${_esc(footer)}</div>');
+  one.writeln('</div>');
+  final html = '''<!doctype html>
+<html lang="fa" dir="rtl"><head><meta charset="utf-8"><title>${_esc(title)}</title>
+<style>
+  @page { size: ${narrow ? '80mm auto' : 'A5'}; margin: 4mm; }
+  body { font-family: Vazirmatn, Tahoma, sans-serif; font-size: ${narrow ? 11 : 12}px; color: #000; margin: 0; }
+  .slip { width: ${narrow ? '72mm' : '100%'}; margin: 0 auto 6mm; page-break-after: always; }
+  h1 { font-size: 14px; text-align: center; margin: 0; } h2 { font-size: 13px; text-align: center; margin: 2px 0 6px; border-bottom: 1px dashed #000; padding-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; } .f th { text-align: right; white-space: nowrap; padding: 2px 0 2px 6px; width: 1%; } .f td { padding: 2px 0; }
+  .i { margin-top: 6px; } .i th, .i td { border-bottom: 1px dotted #000; padding: 3px 2px; text-align: right; } .i th { border-bottom: 1px solid #000; }
+  .ft { margin-top: 8px; text-align: center; border-top: 1px dashed #000; padding-top: 4px; }
+  .noprint { text-align: center; margin: 10px; } @media print { .noprint { display: none; } }
+</style></head><body>
+<div class="noprint"><button onclick="window.print()">چاپ</button></div>
+${List.filled(copies < 1 ? 1 : copies, one.toString()).join()}
+<script>window.onload=function(){setTimeout(function(){window.print();},300);};</script>
+</body></html>''';
+  final dir = Directory('${Storage.userFolder.path}${Storage.sep}prints');
+  if (!dir.existsSync()) dir.createSync(recursive: true);
+  final f = File('${dir.path}${Storage.sep}$fileName.html');
+  f.writeAsStringSync(html, flush: true);
+  openFile(f.path);
+  return f.path;
+}
+
 /// Detail (تفصیلی) code shown in «کد دفتر».
 String _tafsiliCode(AppStore s, Posting p) {
   final id = p.tafsiliId;
