@@ -45,7 +45,7 @@ jobs:
         run: |
           flutter test --reporter expanded 2>&1 | Tee-Object -FilePath test.log
           if ($LASTEXITCODE -ne 0) {
-            $lines = Get-Content test.log | Select-String -Pattern 'FAILED|Expected|Actual|Exception|Error|error|overflowed|\[E\]|test/app_test.dart|lib/|creator|page:|Which' | Select-Object -First 80
+            $lines = Get-Content test.log | Where-Object { ($_ -match '\[E\]') -or ($_ -notmatch '^\d\d:\d\d \+\d+') } | Where-Object { $_.Trim() -ne '' -and $_ -notmatch '^\s*(package:flutter|dart:)' } | Select-Object -First 150 | ForEach-Object { [pscustomobject]@{ Line = $_ } }
             $msg = ($lines | ForEach-Object { $_.Line.Trim() }) -join '%0A'
             Write-Output "::error title=tests::$msg"
             exit 1
