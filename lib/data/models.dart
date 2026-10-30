@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'invoice_settings.dart';
+export 'invoice_settings.dart';
 
 String newId() {
   final r = Random();
@@ -879,6 +881,7 @@ class Invoice {
 
   /// Row amount after its share of the invoice discount (base of VAT).
   int netOf(InvoiceLine l) {
+    if (info['vatGross'] == '1') return l.total; // VAT on the amount before the invoice discount
     final sub = subtotal;
     return l.total - (sub == 0 ? 0 : (discount * l.total / sub).round());
   }
@@ -1190,6 +1193,10 @@ class AppSettings {
   /// New sale/purchase invoices start with «عوارض و مالیات بر اقلام» on.
   bool vatDefault;
 
+  /// «تنظیمات فاکتور فروش / خرید».
+  InvoiceOptions saleOptions;
+  InvoiceOptions buyOptions;
+
   AppSettings({
     this.themeMode = 'light',
     this.currency = 'تومان',
@@ -1215,7 +1222,11 @@ class AppSettings {
     this.vatTaxPct = 10,
     this.vatDutyPct = 0,
     this.vatDefault = false,
+    InvoiceOptions? saleOptions,
+    InvoiceOptions? buyOptions,
   })  : openingOther = openingOther ?? {},
+        saleOptions = saleOptions ?? InvoiceOptions(),
+        buyOptions = buyOptions ?? InvoiceOptions(msgNegative: false),
         sms = sms ?? SmsConfig();
 
   bool get hasPassword => passwordHash.isNotEmpty;
@@ -1245,6 +1256,8 @@ class AppSettings {
         'vatTaxPct': vatTaxPct,
         'vatDutyPct': vatDutyPct,
         'vatDefault': vatDefault,
+        'saleOptions': saleOptions.toJson(),
+        'buyOptions': buyOptions.toJson(),
       };
 
   factory AppSettings.fromJson(Map<String, dynamic> j) => AppSettings(
@@ -1274,6 +1287,8 @@ class AppSettings {
         vatTaxPct: _dbl(j['vatTaxPct'], 10),
         vatDutyPct: _dbl(j['vatDutyPct']),
         vatDefault: j['vatDefault'] == true,
+        saleOptions: j['saleOptions'] == null ? null : InvoiceOptions.fromJson(j['saleOptions']),
+        buyOptions: j['buyOptions'] == null ? null : InvoiceOptions.fromJson(j['buyOptions']),
       );
 }
 

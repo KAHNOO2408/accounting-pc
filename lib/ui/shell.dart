@@ -7,6 +7,7 @@ import '../data/models.dart';
 import '../data/store.dart';
 import 'auth/auth_screens.dart';
 import 'dialogs/consign_dialogs.dart';
+import 'dialogs/invoice_options_dialog.dart';
 import 'dialogs/marketing_dialogs.dart';
 import 'dialogs/payroll_dialogs.dart';
 import 'dialogs/units_dialog.dart';
@@ -393,6 +394,8 @@ final List<_Tab> _tabs = [
     _Group('تنظیمات', [
       _Item('تنظیمات', Icons.tune_rounded, _blue, run: _page(AppPage.settings)),
       _Item('طراحی فرم های چاپ', Icons.print_outlined, _violet, run: (c, _) => showPrintForms(c)),
+      _Item('تنظیمات فاکتور فروش', Icons.point_of_sale_rounded, _green, run: (c, _) => showInvoiceOptionsDialog(c, buy: false)),
+      _Item('تنظیمات فاکتور خرید', Icons.shopping_cart_checkout_rounded, _red, run: (c, _) => showInvoiceOptionsDialog(c, buy: true)),
       _Item('سطل بازیافت', Icons.delete_outline_rounded, _red, run: (c, _) => showRecycleBin(c)),
     ]),
     _Group('متفرقه', [

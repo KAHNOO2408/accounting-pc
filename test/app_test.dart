@@ -2004,4 +2004,15 @@ void main() {
     expect(s.profit(DateTime(2026), DateTime(2027)).sales, 10000);
     expect(InvoiceLine.fromJson(inv.lines.first.toJson()).taxPct, 9);
   });
+
+  test('تنظیمات فاکتور: options round-trip and price range', () {
+    final o = InvoiceOptions(priceRange: true, minPct: 10, maxPct: 20, allowNegative: false);
+    final b = InvoiceOptions.fromJson(o.toJson());
+    expect(b.allowNegative, isFalse);
+    expect(b.range(1000), (900, 1200));
+    expect(InvoiceOptions().range(1000), isNull);
+    final s = _tempStore();
+    s.updateSettings((x) => x.saleOptions = o);
+    expect(AppStore.open(s.storage).settings.saleOptions.minPct, 10);
+  });
 }

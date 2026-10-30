@@ -541,6 +541,29 @@ class _ChequeMoveDialogState extends State<_ChequeMoveDialog> {
 
   List<Cheque> _rows(AppStore s) => [for (final id in _ids) if (s.cheque(id) != null) s.cheque(id)!];
 
+  /// «تعیین نوع چاپ» — prints the list of moved cheques.
+  void _printList() {
+    final s = StoreScope.read(context);
+    final rows = _rows(s);
+    if (rows.isEmpty) return toast(context, 'چکی انتخاب نشده', error: true);
+    final copies = (int.tryParse(_copies.text.trim()) ?? 1).clamp(1, 9);
+    for (var i = 0; i < copies; i++) {
+      printTable(
+        store: s,
+        title: 'جا به جایی چک ${_number.text}',
+        subtitle: '${jFormat(_date)}  ${_desc.text}',
+        headers: const ['ردیف', 'شماره چک', 'بانک', 'سررسید', 'صاحب حساب', 'مبلغ'],
+        rows: [
+          for (var k = 0; k < rows.length; k++)
+            ['${k + 1}', rows[k].serial, rows[k].bank, jFormat(rows[k].dueDate), s.person(rows[k].personId)?.name ?? '', groupDigits(rows[k].amount)],
+        ],
+        numeric: const {5},
+        footer: ['', '', '', '', 'جمع', groupDigits(rows.fold<int>(0, (a, c) => a + c.amount))],
+        fileName: 'cheque-move',
+      );
+    }
+  }
+
   Future<void> _details() async {
     final s = StoreScope.read(context);
     await showDialog<void>(
@@ -679,7 +702,7 @@ class _ChequeMoveDialogState extends State<_ChequeMoveDialog> {
         const SingleActivator(LogicalKeyboardKey.f1): _details,
         const SingleActivator(LogicalKeyboardKey.f9): _save,
         const SingleActivator(LogicalKeyboardKey.f10): () => Navigator.pop(context),
-        const SingleActivator(LogicalKeyboardKey.f12): () => showComingSoon(context, 'تعیین نوع چاپ'),
+        const SingleActivator(LogicalKeyboardKey.f12): _printList,
         const SingleActivator(LogicalKeyboardKey.insert): _add,
         const SingleActivator(LogicalKeyboardKey.delete): _remove,
       },
@@ -691,7 +714,7 @@ class _ChequeMoveDialogState extends State<_ChequeMoveDialog> {
           width: 980,
           footer: Row(children: [
             OutlinedButton.icon(
-              onPressed: () => showComingSoon(context, 'تعیین نوع چاپ'),
+              onPressed: _printList,
               icon: const Icon(Icons.print_outlined, size: 18),
               label: const Text('تعیین نوع چاپ (F12)'),
             ),

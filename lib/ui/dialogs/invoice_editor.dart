@@ -16,6 +16,7 @@ import '../theme.dart';
 import '../widgets/common.dart';
 import 'composite_dialogs.dart';
 import 'consign_dialogs.dart';
+import 'invoice_options_dialog.dart';
 import 'marketing_dialogs.dart';
 import 'misc_dialogs.dart';
 import 'price_dialog.dart';
@@ -177,6 +178,30 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   bool _vat = false;
 
   bool get _isEdit => widget.edit != null;
+
+  /// «تنظیمات فاکتور» of this invoice side.
+  InvoiceOptions get _opt {
+    final st = StoreScope.read(context).settings;
+    return _buy ? st.buyOptions : st.saleOptions;
+  }
+
+  /// Last unit price (unit 1) of [p] in invoices of this kind, optionally for [personId].
+  int? _lastFi(AppStore s, Product p, {String? personId}) {
+    Invoice? best;
+    InvoiceLine? line;
+    for (final inv in s.realInvoices) {
+      if (inv.kind != _kind || inv.id == widget.edit?.id) continue;
+      if (personId != null && inv.personId != personId) continue;
+      for (final l in inv.lines) {
+        if (l.productId != p.id) continue;
+        if (best == null || inv.date.isAfter(best.date) || (inv.date == best.date && inv.createdAt > best.createdAt)) {
+          best = inv;
+          line = l;
+        }
+      }
+    }
+    return line?.unitPrice;
+  }
   bool get _legacy => (widget.edit?.paid ?? 0) > 0;
   bool get _buy => _kind.buySide;
   String get _title => _proforma ? 'پیش فاکتور فروش' : _kind.label;
@@ -230,6 +255,11 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       _number.text = '${store.nextInvoiceNumber(_kind, proforma: _proforma)}';
       _warehouseNo.text = '${_nextWarehouseNo(store)}';
       _vat = store.settings.vatDefault && !_proforma;
+      final o = _kind.buySide ? store.settings.buyOptions : store.settings.saleOptions;
+      if (o.autoRequestNo) {
+        final n = store.invoices.where((i) => i.kind == _kind).map((i) => int.tryParse(i.info['requestNo'] ?? '') ?? 0).fold<int>(0, (a, b) => b > a ? b : a);
+        _requestNo.text = '${n + 1}';
+      }
     }
     if (_lines.isEmpty) _lines.add(_Line());
     if (_services.isEmpty) _services.add(_Line());
@@ -287,7 +317,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     final sub = _subtotal;
     var tax = 0, duty = 0;
     for (final l in rows) {
-      final net = l.total - (sub == 0 ? 0 : (_discount * l.total / sub).round());
+      final net = l.total - (!_opt.vatAfterDiscount || sub == 0 ? 0 : (_discount * l.total / sub).round());
       final (t, d) = _vatPct(s, l);
       tax += (net * t / 100).round();
       duty += (net * d / 100).round();
@@ -306,7 +336,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   // ------------------------------------------------------------------ rows
 
   void _addLine() {
-    final l = _Line();
+    final l = _Line()..warehouseId = _opt.defaultWarehouseId;
     _listen(l);
     setState(() {
       _rows.add(l);
@@ -330,15 +360,27 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   }
 
   Future<void> _pickProduct(_Line l, Product p) async {
+    final o = _opt;
+    final s = StoreScope.read(context);
+    if (!o.allowDuplicate && _lines.any((x) => !identical(x, l) && x.productId == p.id)) {
+      toast(context, 'ثبت کالای تکراری در فاکتور مجاز نیست (تنظیمات فاکتور)', error: true);
+      setState(() => l.title.clear());
+      return;
+    }
+    int? last;
+    if (o.lastFi) last = _lastFi(s, p, personId: o.lastFiByPerson ? _person : null) ?? (o.lastFiByPerson ? _lastFi(s, p) : null);
     setState(() {
       l.productId = p.id;
-      l.title.text = p.name;
-      l.unit = p.hasUnit(p.defaultUnit) ? p.defaultUnit : 1;
+      final latin = p.info['latin'] ?? '';
+      l.title.text = o.latinNames && latin.isNotEmpty ? latin : p.name;
+      final du = o.defaultUnit != 0 ? o.defaultUnit : p.defaultUnit;
+      l.unit = p.hasUnit(du) ? du : 1;
       l.factor = p.unitFactor(l.unit);
-      final price = ((_buy ? p.buyPrice : p.sellPrice) * l.factor).round();
+      final price = ((last ?? (_buy ? p.buyPrice : p.sellPrice)) * l.factor).round();
       if (price > 0) l.price.text = groupDigits(price);
       _selRow = _lines.indexOf(l);
     });
+    if (o.msgLastFi && last != null && mounted) toast(context, 'آخرین فی ${_buy ? 'خرید' : 'فروش'} ${p.name}: ${groupDigits(last)}');
     // Sakan asks for the quantity and the unit price right away
     final q = await showQtyDialog(context, product: p, personId: _person, warehouseId: l.warehouseId, initial: l.baseQty, buy: _buy);
     if (q != null && mounted) setState(() => l.qty.text = fmtQty(q / l.factor));
@@ -611,6 +653,49 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     } else if (!_proforma && !_legacy && !settle && !draft && _person == null) {
       err = 'فاکتور متفرقه بدون تسویه ثبت نمی‌شود؛ $_partyLabel را انتخاب کنید یا «تایید F9» را بزنید';
     }
+    final o = _opt;
+    final warn = <String>[];
+    if (err == null && !o.allowDuplicate) {
+      final ids = [for (final l in lines) if (l.productId != null) l.productId];
+      if (ids.toSet().length != ids.length) err = 'ثبت کالای تکراری در فاکتور مجاز نیست (تنظیمات فاکتور)';
+    }
+    if (err == null && !_proforma) {
+      final multi = store.warehouses.length > 1;
+      for (final l in lines.where((l) => l.productId != null)) {
+        final p = store.product(l.productId)!;
+        final after = store.stock(p.id, excludeInvoiceId: (_saved ?? widget.edit)?.id, warehouseId: multi ? store.whId(l.warehouseId) : null) +
+            _kind.stockSign * l.baseQty;
+        if (_kind.stockSign < 0 && after < 0) {
+          if (!o.allowNegative) {
+            err = 'فروش منفی مجاز نیست: موجودی ${p.name} کافی نیست';
+            break;
+          }
+          if (o.msgNegative) warn.add('موجودی ${p.name} منفی می‌شود (${fmtQty(after)})');
+        }
+        if (_kind == InvoiceKind.sale) {
+          if (o.msgMinStock && p.minQty > 0 && after < p.minQty) warn.add('موجودی ${p.name} به کمتر از حداقل (${fmtQty(p.minQty)}) می‌رسد');
+          final op = double.tryParse(p.info['orderPoint'] ?? '') ?? 0;
+          if (o.msgOrderPoint && op > 0 && after <= op) warn.add('${p.name} به نقطه سفارش (${fmtQty(op)}) رسید');
+          final r = o.range(p.sellPrice);
+          if (r != null) {
+            final fi = (l.p / l.factor).round();
+            final out = fi < r.$1 || (r.$2 > 0 && fi > r.$2);
+            if (out) {
+              final msg = 'فی ${p.name} (${groupDigits(fi)}) خارج از محدوده مجاز ${groupDigits(r.$1)}${r.$2 > 0 ? ' تا ${groupDigits(r.$2)}' : ''} است';
+              if (!o.allowOutOfRange) {
+                err = msg;
+                break;
+              }
+              warn.add(msg);
+            }
+          }
+        }
+        if (_kind == InvoiceKind.purchase && o.msgMaxStock) {
+          final mx = double.tryParse(p.info['maxQty'] ?? '') ?? 0;
+          if (mx > 0 && after > mx) warn.add('موجودی ${p.name} از حداکثر (${fmtQty(mx)}) بیشتر می‌شود');
+        }
+      }
+    }
     if (err == null && !_proforma) {
       for (final l in lines.where((l) => l.consignRef != null)) {
         final r = store.consignLine(l.consignRef);
@@ -626,6 +711,10 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     if (err != null) {
       setState(() => _err = err);
       return null;
+    }
+    if (!draft && warn.isNotEmpty) {
+      final ok = await confirm(context, 'پیغام‌های فاکتور', warn.join('\n'), ok: 'ثبت', danger: false);
+      if (!ok || !mounted) return null;
     }
     if (!draft && !await _marginOk(store, lines)) return null;
     List<PayItem> items = const [];
@@ -686,6 +775,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
         'shipSeller': _shipSeller == 0 ? '' : '$_shipSeller',
         'shipAcc': _shipSeller == 0 || _buy ? '' : (_shipAcc ?? ''),
         'distributor': _distributor ?? '',
+        'vatGross': _vat && !_opt.vatAfterDiscount ? '1' : '',
       }..removeWhere((_, v) => v.isEmpty));
     if (!_legacy) {
       inv
@@ -698,8 +788,12 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     _preItems = null;
     if (close) {
       if (mounted) {
-        Navigator.pop(context);
-        toast(context, '$_title شماره ${inv.number} ذخیره شد');
+        final nav = Navigator.of(context);
+        final again = _opt.reopenAfterSave && !_isEdit;
+        final kind = _kind, pro = _proforma;
+        nav.pop();
+        toast(nav.context, '$_title شماره ${inv.number} ذخیره شد');
+        if (again && nav.context.mounted) showInvoiceEditor(nav.context, kind: kind, proforma: pro);
       }
     } else if (mounted) {
       setState(() {
@@ -780,9 +874,13 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     final inv = await _save(close: false, askPay: false);
     if (inv == null || !mounted) return;
     nav.pop();
+    final o = _opt;
     for (final t in types) {
-      if (!nav.context.mounted) return;
-      await previewInvoice(nav.context, inv, t);
+      final copies = t == PrintDocType.invoice ? o.invoiceCopies : (t == PrintDocType.warehouse ? o.slipCopies : 1);
+      for (var c = 0; c < (copies < 1 ? 1 : copies); c++) {
+        if (!nav.context.mounted) return;
+        await previewInvoice(nav.context, inv, t);
+      }
     }
   }
 
@@ -995,7 +1093,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                   _lbl('شماره حواله انبار'),
                   _field(_warehouseNo, width: 110, ltr: true),
                   const Spacer(),
-                  _btn('بخش تنظیمات فاکتور', () => showComingSoon(context, 'بخش تنظیمات فاکتور')),
+                  _btn('بخش تنظیمات فاکتور', () => showInvoiceOptionsDialog(context, buy: _buy).then((_) => setState(() {}))),
                 ]),
                 const SizedBox(height: 6),
                 Row(children: [
