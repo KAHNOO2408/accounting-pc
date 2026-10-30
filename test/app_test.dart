@@ -2266,4 +2266,32 @@ void main() {
     s.removeInvoice(inv.id);
     expect(s.receptions.single.invoiceId, isNull);
   });
+
+  test('restaurant tab: kitchen rows, settle with service, recipe assembly', () {
+    final s = _tempStore();
+    final bread = Product(id: newId(), name: 'Bread');
+    final burger = Product(id: newId(), name: 'Burger', sellPrice: 100000, info: {'restaurant': '1'});
+    s.upsertProduct(bread);
+    s.upsertProduct(burger);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.purchase, number: 1, date: DateTime(2026, 10, 1), lines: [InvoiceLine(productId: bread.id, qty: 10, unitPrice: 5000)]));
+    s.saveFormula(ProductionFormula(id: newId(), name: 'Burger', productId: burger.id, lines: [ProductionLine(productId: bread.id, qty: 1)]));
+    final table = RestTable(id: newId(), number: s.nextTableNumber());
+    s.restTables.add(table);
+    s.restConfig = RestConfig(servicePct: 10, accountId: s.activeAccounts.first.id);
+    final tab = RestTab(id: newId(), tableId: table.id, opened: DateTime.now(), lines: [TabLine(productId: burger.id, qty: 2, price: 100000)]);
+    s.saveTab(tab);
+    expect(s.tabOfTable(table.id)?.id, tab.id);
+    expect(s.takeKitchenRows(tab).single.$2, 2);
+    expect(s.takeKitchenRows(tab), isEmpty);
+    tab.lines.single.qty = 3;
+    expect(s.takeKitchenRows(tab).single.$2, 1);
+    final inv = s.settleTab(tab);
+    expect(inv.total, 330000);
+    expect(inv.paid, 330000);
+    expect(inv.info['desk'], '1');
+    expect(s.tabOfTable(table.id), isNull);
+    expect(s.stock(bread.id), 7);
+    expect(s.stock(burger.id), 0);
+    expect(AppStore.open(s.storage).restConfig.servicePct, 10);
+  });
 }

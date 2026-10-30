@@ -24,6 +24,7 @@ import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
+import 'dialogs/restaurant_dialogs.dart';
 import 'dialogs/service_dialogs.dart';
 import 'dialogs/guarantee_dialogs.dart';
 import 'dialogs/production_dialogs.dart';
@@ -259,6 +260,11 @@ final List<_Tab> _tabs = [
           shortcut: 'Ctrl+F7', activator: _k(LogicalKeyboardKey.f7, ctrl: true), run: _page(AppPage.proformas)),
       _Item('سفارشات', Icons.assignment_outlined, _cyan, run: (c, _) => showOrders(c)),
       _Item('تعیین سفارش روزانه', Icons.today_outlined, _cyan, run: (c, _) => showDailyQuota(c)),
+    ]),
+    _Group('رستوران', [
+      _Item('فاکتور رستورانی', Icons.restaurant_rounded, _red, run: (c, _) => showRestaurant(c)),
+      _Item('رزرو میز', Icons.event_seat_outlined, _red, run: (c, _) => showReservations(c)),
+      _Item('تعریف میز', Icons.table_restaurant_outlined, _red, run: (c, _) => showTables(c)),
     ]),
     _Group('خدمات و گارانتی', [
       _Item('پذیرش', Icons.handyman_outlined, _amber, run: (c, _) => showReceptionEditor(c)),

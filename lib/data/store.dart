@@ -91,6 +91,12 @@ class AppStore extends ChangeNotifier {
   /// «گارانتی» and «پذیرش» (repair service).
   List<Warranty> warranties = [];
   List<Reception> receptions = [];
+
+  /// «رستوران»: tables, reservations, open orders and settings.
+  List<RestTable> restTables = [];
+  List<Reservation> reservations = [];
+  List<RestTab> restTabs = [];
+  RestConfig restConfig = RestConfig();
   List<WooOrder> wooOrders = [];
 
   /// «حقوق و دستمزد».
@@ -267,6 +273,10 @@ class AppStore extends ChangeNotifier {
     guarantees = list('guarantees').map(GuaranteeDoc.fromJson).toList();
     warranties = list('warranties').map(Warranty.fromJson).toList();
     receptions = list('receptions').map(Reception.fromJson).toList();
+    restTables = list('restTables').map(RestTable.fromJson).toList();
+    reservations = list('reservations').map(Reservation.fromJson).toList();
+    restTabs = list('restTabs').map(RestTab.fromJson).toList();
+    restConfig = j['restConfig'] is Map<String, dynamic> ? RestConfig.fromJson(j['restConfig'] as Map<String, dynamic>) : RestConfig();
     employees = list('employees').map(Employee.fromJson).toList();
     payPeriods = list('payPeriods').map(PayPeriod.fromJson).toList();
     payslips = list('payslips').map(Payslip.fromJson).toList();
@@ -491,6 +501,10 @@ class AppStore extends ChangeNotifier {
         'guarantees': guarantees.map((e) => e.toJson()).toList(),
         'warranties': warranties.map((e) => e.toJson()).toList(),
         'receptions': receptions.map((e) => e.toJson()).toList(),
+        'restTables': restTables.map((e) => e.toJson()).toList(),
+        'reservations': reservations.map((e) => e.toJson()).toList(),
+        'restTabs': restTabs.map((e) => e.toJson()).toList(),
+        'restConfig': restConfig.toJson(),
         'employees': employees.map((e) => e.toJson()).toList(),
         'payPeriods': payPeriods.map((e) => e.toJson()).toList(),
         'payslips': payslips.map((e) => e.toJson()).toList(),
@@ -2762,6 +2776,83 @@ class AppStore extends ChangeNotifier {
 
   /// Opening cost per unit of a product (used for opening stock value).
   int openingCost(Product p) => p.openingCost > 0 ? p.openingCost : p.buyPrice;
+
+  // ---------------------------------------------------------------- رستوران
+
+  int nextTableNumber() => restTables.fold<int>(1, (n, t) => t.number >= n ? t.number + 1 : n);
+
+  RestTab? tabOfTable(String tableId) => restTabs.where((t) => t.tableId == tableId).firstOrNull;
+
+  void saveTab(RestTab t) {
+    if (!restTabs.any((x) => x.id == t.id)) restTabs.add(t);
+    restTabs.removeWhere((x) => x.lines.isEmpty && x.id != t.id && x.tableId == null);
+    _commit();
+  }
+
+  void dropTab(String id) {
+    restTabs.removeWhere((t) => t.id == id);
+    _commit();
+  }
+
+  /// Rows not yet sent to the kitchen; marks them sent.
+  List<(TabLine, double)> takeKitchenRows(RestTab t) {
+    final out = <(TabLine, double)>[];
+    for (final l in t.lines) {
+      final d = l.qty - l.sent;
+      if (d.abs() > 1e-9) out.add((l, d));
+      l.sent = l.qty;
+    }
+    _commit();
+    return out;
+  }
+
+  /// «تسویه»: turns an open order into a sale invoice (consuming recipe
+  /// ingredients when «ترکیب و مونتاژ رستورانی» is on) and closes it.
+  Invoice settleTab(RestTab t, {String? accountId, int discount = 0, bool paid = true}) {
+    final table = restTables.where((x) => x.id == t.tableId).firstOrNull;
+    final service = (t.total * restConfig.servicePct / 100).round();
+    final fee = t.mode == TabMode.delivery ? restConfig.deliveryFee : 0;
+    final inv = Invoice(
+      id: newId(),
+      kind: InvoiceKind.sale,
+      number: nextInvoiceNumber(InvoiceKind.sale),
+      date: DateTime.now(),
+      personId: t.personId,
+      lines: [for (final l in t.lines.where((l) => l.qty > 0)) InvoiceLine(productId: l.productId, qty: l.qty, unitPrice: l.price)],
+      discount: discount,
+      extra: service + fee,
+      accountId: paid ? (accountId ?? restConfig.accountId) : null,
+      note: [t.mode == TabMode.dineIn ? (table?.title ?? '') : t.mode.label, if (t.note.isNotEmpty) t.note].where((x) => x.isNotEmpty).join(' — '),
+      info: {
+        'restaurant': t.mode.name,
+        if (table != null) 'desk': '${table.number}',
+        if (t.courierId != null) 'courier': t.courierId!,
+      },
+    );
+    inv.paid = inv.accountId == null ? 0 : inv.total;
+    if (restConfig.autoAssemble) {
+      for (final l in inv.lines) {
+        final f = formulas.where((x) => x.productId == l.productId).firstOrNull;
+        if (f == null) continue;
+        saveProduction(Production(
+          id: newId(),
+          number: nextProductionNumber(),
+          date: inv.date,
+          productId: f.productId,
+          qty: l.qty,
+          formulaId: f.id,
+          hallId: f.hallId,
+          lines: f.scaled(l.qty),
+          overhead: f.overheadFor(l.qty),
+          note: 'مونتاژ رستورانی فاکتور ${inv.number}',
+        ));
+      }
+    }
+    saveInvoice(inv);
+    restTabs.removeWhere((x) => x.id == t.id);
+    _commit();
+    return inv;
+  }
 
   // ---------------------------------------------------------------- گارانتی و پذیرش
 
