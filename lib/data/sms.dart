@@ -293,3 +293,81 @@ void autoChequeReminders(AppStore s) {
   }
   if (jobs.isNotEmpty) unawaited(sendSmsBatch(s, jobs));
 }
+
+// ------------------------------------------------------------------ automation
+
+/// Messages that are due now: scheduled ones, overdue installments and
+/// debtors with old unpaid invoices. Each job has a ref so it is sent once.
+List<SmsJob> dueAutoSms(AppStore s, {DateTime? now}) {
+  final t = now ?? DateTime.now();
+  final today = DateTime(t.year, t.month, t.day);
+  final jobs = <SmsJob>[];
+  bool ok(Person? p) => p != null && normalizeMobile(p.phone).isNotEmpty;
+
+  for (final sc in s.smsSchedules.where((x) => x.enabled && !x.at.isAfter(t))) {
+    final ref = 'sch:${sc.id}:${sc.at.toIso8601String()}';
+    if (s.smsSentFor(ref)) continue;
+    final people = switch (sc.target) {
+      SmsTarget.everyone => s.people,
+      SmsTarget.debtors => s.people.where((p) => s.personBalance(p.id) > 0),
+      SmsTarget.creditors => s.people.where((p) => s.personBalance(p.id) < 0),
+      SmsTarget.chosen => s.people.where((p) => sc.personIds.contains(p.id)),
+    };
+    for (final p in people.where(ok)) {
+      jobs.add(SmsJob(to: p.phone, name: p.name, text: fillSms(sc.text, smsValues(s, p)), ref: ref));
+    }
+  }
+
+  final a = s.smsAuto;
+  if (a.overdueInstallments) {
+    for (final plan in s.installmentPlans.where((p) => p.receivable)) {
+      final p = s.person(plan.personId);
+      if (!ok(p)) continue;
+      for (var k = 0; k < plan.items.length; k++) {
+        final it = plan.items[k];
+        if (it.settled || !it.due.isBefore(today)) continue;
+        final ref = 'inst:${plan.id}:$k';
+        if (s.smsSentFor(ref)) continue;
+        jobs.add(SmsJob(
+          to: p!.phone,
+          name: p.name,
+          text: fillSms(a.installmentTemplate, {...smsValues(s, p), 'مبلغ قسط': groupDigits(it.remaining), 'سررسید': jFormat(it.due), 'بابت': plan.babat}),
+          ref: ref,
+        ));
+      }
+    }
+  }
+  if (a.unpaidInvoices) {
+    final limit = today.subtract(Duration(days: a.unpaidDays));
+    final month = '${t.year}${t.month.toString().padLeft(2, '0')}';
+    for (final p in s.people.where(ok)) {
+      if (s.personBalance(p.id) <= 0) continue;
+      final old = s.realInvoices.any((i) => i.personId == p.id && i.kind == InvoiceKind.sale && i.date.isBefore(limit));
+      if (!old) continue;
+      final ref = 'debt:${p.id}:$month';
+      if (s.smsSentFor(ref)) continue;
+      jobs.add(SmsJob(to: p.phone, name: p.name, text: fillSms(a.unpaidTemplate, smsValues(s, p)), ref: ref));
+    }
+  }
+  return jobs;
+}
+
+/// Sends [dueAutoSms] and moves repeating schedules forward. Never throws.
+Future<int> runAutoSms(AppStore s) async {
+  if (!s.settings.sms.configured) return 0;
+  final jobs = dueAutoSms(s);
+  final now = DateTime.now();
+  for (final sc in s.smsSchedules.where((x) => x.enabled && !x.at.isAfter(now))) {
+    sc.lastRun = now;
+    if (sc.repeat == Repeat.none) {
+      sc.enabled = false;
+    } else {
+      while (!sc.at.isAfter(now)) {
+        sc.at = sc.repeat.next(sc.at);
+      }
+    }
+  }
+  s.updateSettings((_) {});
+  if (jobs.isEmpty) return 0;
+  return sendSmsBatch(s, jobs);
+}

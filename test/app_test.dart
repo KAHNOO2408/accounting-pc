@@ -18,6 +18,7 @@ import 'package:taraz/data/marketing.dart';
 import 'package:taraz/data/payroll.dart';
 import 'package:taraz/data/woo.dart';
 import 'package:taraz/data/serials.dart';
+import 'package:taraz/data/custom_reports.dart';
 import 'package:taraz/data/insurance_disk.dart';
 import 'package:taraz/core/iran_system.dart';
 import 'package:taraz/ui/dialogs/payroll_dialogs.dart';
@@ -2485,5 +2486,42 @@ void main() {
     expect(a.overtimeMinutes, 95); // 570−30 = 540 vs 450 → 90; 485−30 = 455 vs 450 → 5
     expect(s.applyAttendance(period), 1);
     expect(s.payslipOf(period, e).workDays, 30 - a.absentDays);
+  });
+
+  test('automatic sms jobs, reminders and custom statements', () {
+    final s = _tempStore();
+    final p = Person(id: newId(), name: 'Ali', phone: '09121234567');
+    s.upsertPerson(p);
+    final plan = InstallmentPlan(id: newId(), personId: p.id, principal: 1000, count: 2, interestFrom: DateTime(2026, 1, 1), firstDue: DateTime(2026, 2, 1));
+    plan.generate();
+    s.saveInstallmentPlan(plan);
+    final now = DateTime(2026, 10, 30, 12);
+    expect(dueAutoSms(s, now: now), isEmpty);
+    s.smsAuto.overdueInstallments = true;
+    expect(dueAutoSms(s, now: now).length, 2);
+    s.smsSchedules.add(SmsSchedule(id: newId(), text: 'سلام {نام}', at: DateTime(2026, 10, 30, 9), target: SmsTarget.chosen, personIds: [p.id]));
+    final jobs = dueAutoSms(s, now: now);
+    expect(jobs.length, 3);
+    expect(jobs.first.text, 'سلام Ali');
+    expect(Repeat.monthly.next(DateTime(2026, 1, 31, 9)).month, 3); // Dart rolls Feb 31 forward
+    final r = Reminder(id: newId(), at: DateTime(2026, 10, 1), title: 'Rent', repeat: Repeat.monthly);
+    expect(r.on(DateTime(2026, 11, 1)), isTrue);
+    expect(r.on(DateTime(2026, 11, 2)), isFalse);
+    expect(r.on(DateTime(2026, 9, 1)), isFalse);
+
+    final pr = Product(id: newId(), name: 'X');
+    s.upsertProduct(pr);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.purchase, number: 1, date: DateTime(2026, 4, 1), lines: [InvoiceLine(productId: pr.id, qty: 10, unitPrice: 100)]));
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: DateTime(2026, 5, 1), lines: [InvoiceLine(productId: pr.id, qty: 5, unitPrice: 300)]));
+    final pl = evaluateStatement(s, CustomStatement.sampleProfit(), from: DateTime(2026, 1, 1), to: DateTime(2026, 12, 31));
+    expect(pl[0], 1500);
+    expect(pl[1], -500);
+    expect(pl[2], 1000);
+    final bs = CustomStatement.sampleBalanceSheet();
+    final b = evaluateStatement(s, bs, to: DateTime(2026, 12, 31));
+    expect(b[3], b[9]); // assets = liabilities + equity
+    final dyn = dynamicSeries(s, DynMetric.sales, DynGroup.product, DateTime(2026, 1, 1), DateTime(2026, 12, 31));
+    expect(dyn.single, ('X', 1500));
+    expect(consolidatedProfit(s, DateTime(2026, 1, 1), DateTime(2026, 12, 31)).first.$2.netSales, 1500);
   });
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -24,6 +26,7 @@ import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
+import 'dialogs/custom_report_dialogs.dart';
 import 'dialogs/attendance_dialogs.dart';
 import 'dialogs/cost_center_dialogs.dart';
 import 'dialogs/serial_dialogs.dart';
@@ -52,7 +55,8 @@ import 'dialogs/bank_dialogs.dart';
 import 'dialogs/books_dialogs.dart';
 import 'dialogs/sakan_tools.dart';
 import 'dialogs/sms_dialogs.dart';
-import '../data/sms.dart' show autoChequeReminders;
+import '../data/sms.dart' show autoChequeReminders, runAutoSms;
+import 'dialogs/automation_dialogs.dart';
 import 'print_designer.dart' show showPrintForms;
 import 'pages/profit_page.dart';
 import 'pages/reports_page.dart';
@@ -429,6 +433,11 @@ final List<_Tab> _tabs = [
       _Item('نمودار سود و زیان', Icons.bar_chart_rounded, _green, run: (c, _) => showProfitChart(c)),
       _Item('گزارش مطالبات', Icons.call_received_rounded, _green, run: (c, _) => showInstallmentPlans(c, receivable: true)),
       _Item('گزارش تعهدات', Icons.call_made_rounded, _red, run: (c, _) => showInstallmentPlans(c, receivable: false)),
+      _Item('ترازنامه سفارشی', Icons.dashboard_customize_outlined, _blue, run: (c, _) => showCustomStatements(c, balanceSheet: true)),
+      _Item('صورتحساب سود/زیان سفارشی', Icons.dashboard_customize_outlined, _green, run: (c, _) => showCustomStatements(c, balanceSheet: false)),
+      _Item('صورت خلاصه درآمد و هزینه', Icons.summarize_outlined, _amber, run: (c, _) => showIncomeExpenseSummary(c)),
+      _Item('گزارشات پویا نمودار', Icons.insights_rounded, _violet, run: (c, _) => showDynamicReport(c)),
+      _Item('گزارش تلفیقی صورت حساب سود و زیان', Icons.merge_type_rounded, _green, run: (c, _) => showConsolidatedProfit(c)),
       _Item('صورت حساب سود و زیان', Icons.query_stats_rounded, _green,
           shortcut: 'Alt+F5', activator: _k(LogicalKeyboardKey.f5, alt: true), run: _page(AppPage.profit)),
       _Item('دفتر کل', Icons.menu_book_rounded, _blue, run: (c, _) => showGeneralLedgerFilter(c)),
@@ -462,6 +471,8 @@ final List<_Tab> _tabs = [
       _Item('معرفی دفاتر مالی', Icons.library_add_outlined, _green, run: (c, _) => showBooksManager(c)),
       _Item('مرکز اسناد', Icons.home_work_outlined, _amber, run: (c, _) => showDocCentersDialog(c)),
       _Item('مرکز دفاتر', Icons.domain_outlined, _slate, run: (c, _) => showBookCenters(c)),
+      _Item('یادسپار تقویم', Icons.calendar_month_rounded, _blue, run: (c, _) => showCalendar(c)),
+      _Item('پیامک خودکار و زمانبندی', Icons.schedule_send_rounded, _green, run: (c, _) => showSmsAutomation(c)),
       _Item('مراکز رکورد (هزینه)', Icons.workspaces_outline, _slate, run: (c, _) => showCostCenters(c)),
       _Item('بازاریابان', Icons.campaign_outlined, _green, run: (c, _) => showMarketersWindow(c)),
       _Item('گروه‌های یارانه', Icons.group_work_outlined, _green, run: (c, _) => showSubsidyGroups(c)),
@@ -540,12 +551,25 @@ class _ShellState extends State<Shell> {
     super.initState();
     // یادآوری سررسید چک (when enabled in the SMS settings)
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) autoChequeReminders(StoreScope.read(context));
+      if (!mounted) return;
+      final s = StoreScope.read(context);
+      autoChequeReminders(s);
+      unawaited(runAutoSms(s));
+      // «یادسپار تقویم»: today's open reminders
+      final today = DateTime.now();
+      final due = s.reminders.where((r) => !r.done && r.on(today)).toList();
+      if (due.isNotEmpty) toast(context, 'یادآوری امروز: ${due.map((r) => r.title).join('، ')}');
+    });
+    _autoTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+      if (mounted) unawaited(runAutoSms(StoreScope.read(context)));
     });
   }
 
+  Timer? _autoTimer;
+
   @override
   void dispose() {
+    _autoTimer?.cancel();
     _searchFocus.dispose();
     super.dispose();
   }

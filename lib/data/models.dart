@@ -8,6 +8,7 @@ export 'restaurant.dart';
 export 'balance_deal.dart';
 export 'installments.dart';
 export 'attendance.dart';
+export 'automation.dart';
 
 String newId() {
   final r = Random();

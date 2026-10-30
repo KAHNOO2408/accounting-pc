@@ -17,6 +17,7 @@ import 'payroll.dart';
 import 'report_layout.dart';
 import 'storage.dart';
 import 'woo.dart';
+import 'custom_reports.dart';
 
 class MonthTotals {
   int income = 0;
@@ -107,6 +108,14 @@ class AppStore extends ChangeNotifier {
   /// «مراکز رکورد (هزینه)».
   List<CostCenter> costCenters = [];
   List<CostCenterGroup> costCenterGroups = [];
+
+  /// Automatic SMS, schedules and calendar reminders.
+  SmsAuto smsAuto = SmsAuto();
+  List<SmsSchedule> smsSchedules = [];
+  List<Reminder> reminders = [];
+
+  /// «ترازنامه سفارشی» / «صورتحساب سود/زیان سفارشی» layouts.
+  List<CustomStatement> customStatements = [];
   List<WooOrder> wooOrders = [];
 
   /// «حقوق و دستمزد».
@@ -294,6 +303,10 @@ class AppStore extends ChangeNotifier {
     installmentPlans = list('installmentPlans').map(InstallmentPlan.fromJson).toList();
     costCenters = list('costCenters').map(CostCenter.fromJson).toList();
     costCenterGroups = list('costCenterGroups').map(CostCenterGroup.fromJson).toList();
+    smsAuto = j['smsAuto'] is Map<String, dynamic> ? SmsAuto.fromJson(j['smsAuto'] as Map<String, dynamic>) : SmsAuto();
+    smsSchedules = list('smsSchedules').map(SmsSchedule.fromJson).toList();
+    reminders = list('reminders').map(Reminder.fromJson).toList();
+    customStatements = list('customStatements').map(CustomStatement.fromJson).toList();
     reservations = list('reservations').map(Reservation.fromJson).toList();
     restTabs = list('restTabs').map(RestTab.fromJson).toList();
     restConfig = j['restConfig'] is Map<String, dynamic> ? RestConfig.fromJson(j['restConfig'] as Map<String, dynamic>) : RestConfig();
@@ -530,6 +543,10 @@ class AppStore extends ChangeNotifier {
         'installmentPlans': installmentPlans.map((e) => e.toJson()).toList(),
         'costCenters': costCenters.map((e) => e.toJson()).toList(),
         'costCenterGroups': costCenterGroups.map((e) => e.toJson()).toList(),
+        'smsAuto': smsAuto.toJson(),
+        'smsSchedules': smsSchedules.map((e) => e.toJson()).toList(),
+        'reminders': reminders.map((e) => e.toJson()).toList(),
+        'customStatements': customStatements.map((e) => e.toJson()).toList(),
         'reservations': reservations.map((e) => e.toJson()).toList(),
         'restTabs': restTabs.map((e) => e.toJson()).toList(),
         'restConfig': restConfig.toJson(),
