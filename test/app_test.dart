@@ -2219,4 +2219,22 @@ void main() {
     expect(s.stock(flour.id), 10);
     expect(s.stock(cake.id), 0);
   });
+
+  test('guarantee documents post to memo accounts until returned', () {
+    final s = _tempStore();
+    final p = Person(id: newId(), name: 'Contractor');
+    s.upsertPerson(p);
+    final it1 = GuaranteeItem(id: newId(), kind: GuaranteeKind.safte, serial: '123', amount: 5000000);
+    final it2 = GuaranteeItem(id: newId(), kind: GuaranteeKind.zemanat, serial: 'Z9', amount: 2000000);
+    s.saveGuarantee(GuaranteeDoc(id: newId(), number: s.nextGuaranteeNumber(), date: DateTime(2026, 10, 1), personId: p.id, items: [it1, it2]));
+    int memo() => buildJournal(s).where((x) => x.moeen == '1250').fold(0, (a, x) => a + x.debit - x.credit);
+    expect(memo(), 7000000);
+    s.returnGuarantee(it1, DateTime(2026, 10, 20));
+    expect(memo(), 2000000);
+    expect(s.personBalance(p.id), 0);
+    final again = AppStore.open(s.storage);
+    expect(again.guarantees.single.items.first.returnedOn, DateTime(2026, 10, 20));
+    expect(again.guarantees.single.openTotal, 2000000);
+    expect(s.nextGuaranteeNumber(), 2);
+  });
 }

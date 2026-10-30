@@ -84,6 +84,9 @@ class AppStore extends ChangeNotifier {
   List<ProductionHall> halls = [];
   List<ProductionFormula> formulas = [];
   List<Production> productions = [];
+
+  /// «اسناد انتظامی» (سفته، وثیقه، ضمانت نامه).
+  List<GuaranteeDoc> guarantees = [];
   List<WooOrder> wooOrders = [];
 
   /// «حقوق و دستمزد».
@@ -257,6 +260,7 @@ class AppStore extends ChangeNotifier {
     halls = list('halls').map(ProductionHall.fromJson).toList();
     formulas = list('formulas').map(ProductionFormula.fromJson).toList();
     productions = list('productions').map(Production.fromJson).toList();
+    guarantees = list('guarantees').map(GuaranteeDoc.fromJson).toList();
     employees = list('employees').map(Employee.fromJson).toList();
     payPeriods = list('payPeriods').map(PayPeriod.fromJson).toList();
     payslips = list('payslips').map(Payslip.fromJson).toList();
@@ -478,6 +482,7 @@ class AppStore extends ChangeNotifier {
         'halls': halls.map((e) => e.toJson()).toList(),
         'formulas': formulas.map((e) => e.toJson()).toList(),
         'productions': productions.map((e) => e.toJson()).toList(),
+        'guarantees': guarantees.map((e) => e.toJson()).toList(),
         'employees': employees.map((e) => e.toJson()).toList(),
         'payPeriods': payPeriods.map((e) => e.toJson()).toList(),
         'payslips': payslips.map((e) => e.toJson()).toList(),
@@ -2746,6 +2751,33 @@ class AppStore extends ChangeNotifier {
 
   /// Opening cost per unit of a product (used for opening stock value).
   int openingCost(Product p) => p.openingCost > 0 ? p.openingCost : p.buyPrice;
+
+  // ---------------------------------------------------------------- اسناد انتظامی
+
+  int nextGuaranteeNumber() => guarantees.fold<int>(1, (n, g) => g.number >= n ? g.number + 1 : n);
+
+  void saveGuarantee(GuaranteeDoc g) {
+    final i = guarantees.indexWhere((x) => x.id == g.id);
+    if (i >= 0) {
+      guarantees[i] = g;
+    } else {
+      guarantees.add(g);
+      _log('ثبت', '${g.label} ${g.number}', docDate: g.date);
+    }
+    _commit();
+  }
+
+  void removeGuarantee(String id) {
+    guarantees.removeWhere((g) => g.id == id);
+    _commit();
+  }
+
+  /// «عودت انتظامی»: returns (or with null, un-returns) one item.
+  void returnGuarantee(GuaranteeItem it, DateTime? date, [String note = '']) {
+    it.returnedOn = date;
+    it.returnNote = date == null ? '' : note;
+    _commit();
+  }
 
   // ---------------------------------------------------------------- production
 

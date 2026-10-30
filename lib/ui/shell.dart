@@ -24,6 +24,7 @@ import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
+import 'dialogs/guarantee_dialogs.dart';
 import 'dialogs/production_dialogs.dart';
 import 'dialogs/woo_dialogs.dart';
 import 'dialogs/orders_centers_dialogs.dart';
@@ -345,6 +346,11 @@ final List<_Tab> _tabs = [
       _Item('دریافت پرداخت بین حساب‌ها', Icons.compare_arrows_rounded, _blue, run: (c, _) => showBankOpsDialog(c, BankOp.between)),
       _Item('جا به جایی چک', Icons.swap_horiz_rounded, _cyan, run: (c, _) => showChequeMoveDialog(c)),
       _Item('راس‌گیری چک', Icons.calculate_outlined, _cyan, run: (c, _) => showChequeAverageDialog(c)),
+    ]),
+    _Group('انتظامی', [
+      _Item('دریافت انتظامی', Icons.move_to_inbox_outlined, _violet, run: (c, _) => showGuaranteeEditor(c, received: true)),
+      _Item('صدور انتظامی', Icons.outbox_outlined, _violet, run: (c, _) => showGuaranteeEditor(c, received: false)),
+      _Item('انتظامی ها', Icons.verified_user_outlined, _violet, run: (c, _) => showGuarantees(c)),
     ]),
   ]),
   _Tab('هزینه و درآمد', [

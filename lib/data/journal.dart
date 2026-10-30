@@ -286,6 +286,16 @@ List<Posting> buildJournal(AppStore s) {
           drM: '1260', crM: '1250', no: r.$1.number, order: inv.createdAt);
     }
   }
+  // «اسناد انتظامی»: open guarantees stay on 1250/1260 until returned
+  for (final g in s.guarantees) {
+    key = 'gua:${g.id}';
+    final who = s.person(g.personId)?.name ?? '';
+    final desc = '${g.label} ${who.isEmpty ? '' : (g.received ? 'از $who' : 'به $who')}${g.babat.isEmpty ? '' : ' بابت ${g.babat}'}'.trim();
+    pair(g.date, '${g.label} ${g.number}', desc, g.total, drM: '1250', crM: '1260', no: g.number, order: g.createdAt);
+    for (final it in g.items.where((i) => i.returnedOn != null)) {
+      pair(it.returnedOn!, 'عودت ${g.label} ${g.number}', '${it.kind.label} ${it.serial}', it.amount, drM: '1260', crM: '1250', no: g.number, order: g.createdAt);
+    }
+  }
   key = null;
 
   // ---------------------------------------------------------- manual vouchers
