@@ -17,6 +17,8 @@ import 'package:taraz/data/discounts.dart';
 import 'package:taraz/data/marketing.dart';
 import 'package:taraz/data/payroll.dart';
 import 'package:taraz/data/woo.dart';
+import 'package:taraz/data/insurance_disk.dart';
+import 'package:taraz/core/iran_system.dart';
 import 'package:taraz/ui/dialogs/payroll_dialogs.dart';
 import 'package:taraz/ui/dialogs/orders_centers_dialogs.dart';
 import 'package:taraz/data/models.dart';
@@ -2293,5 +2295,26 @@ void main() {
     expect(s.stock(bread.id), 7);
     expect(s.stock(burger.id), 0);
     expect(AppStore.open(s.storage).restConfig.servicePct, 10);
+  });
+
+  test('iran system encoding and insurance disk layout', () {
+    expect(encodeIranSystem('حسین'), [0xF6, 0xFE, 0xA8, 0x9F]);
+    expect(encodeIranSystem('سردار نژاد'), [0xA2, 0x90, 0xA6, 0xF7, 0x20, 0xA4, 0x90, 0xA2, 0xA4, 0xA8]);
+    expect(encodeIranSystem('محمد هادی'), [0xFD, 0xA2, 0x91, 0xFB, 0x20, 0xA2, 0xF5, 0x9F, 0xF5]);
+    expect(encodeIranSystem('علی 12'), [0x31, 0x32, 0x20, 0xFD, 0xF3, 0xE4]);
+    expect(encodeIranSystem('کلاس'), [0xA7, 0xF2, 0xEE]);
+    final kar = buildDbf(dskKarFields, [{}]);
+    final wor = buildDbf(dskWorFields, [{}, {}]);
+    // header and record lengths of the official templates
+    expect(kar[8] | kar[9] << 8, 769);
+    expect(kar[10] | kar[11] << 8, 287);
+    expect(wor[8] | wor[9] << 8, 897);
+    expect(wor[10] | wor[11] << 8, 332);
+    expect(wor.length, 897 + 2 * 332 + 1);
+    final w = buildDbf(dskWorFields, [{'DSW_FNAME': 'حسین', 'DSW_DD': 31, 'DSW_ID': '1234567890'}], persian: {'DSW_FNAME'});
+    final rec = w.sublist(897);
+    expect(String.fromCharCodes(rec.sublist(1, 11)), '1234567890');
+    final fname = 1 + 10 + 2 + 2 + 12 + 8;
+    expect(rec.sublist(fname, fname + 4), [0xF6, 0xFE, 0xA8, 0x9F]);
   });
 }

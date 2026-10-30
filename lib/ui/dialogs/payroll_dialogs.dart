@@ -1,8 +1,12 @@
+import 'dart:io';
+
+import 'package:file_selector/file_selector.dart' as fs;
 import 'package:flutter/material.dart';
 
 import '../../core/format.dart';
 import '../../core/jalali.dart';
 import '../../data/models.dart';
+import '../../data/insurance_disk.dart';
 import '../../data/payroll.dart';
 import '../../data/store.dart';
 import '../print.dart' show openFile, printTable;
@@ -1164,6 +1168,15 @@ class _ReportsTabState extends State<_ReportsTab> {
             final (h, rows) = _insurance(s, p);
             _xlsx(s, 'list-bime-${p.year}-${p.month}', h, rows, title);
           }, icon: Icons.table_view_outlined),
+          sakanBtn('دیسک بیمه (DBF)', () async {
+            final dir = await fs.getDirectoryPath(confirmButtonText: 'ذخیره دیسک بیمه');
+            if (dir == null || !mounted) return;
+            final (kar, wor) = insuranceDisk(s, p);
+            final sep = Platform.pathSeparator;
+            File('$dir${sep}DSKKAR00.DBF').writeAsBytesSync(kar, flush: true);
+            File('$dir${sep}DSKWOR00.DBF').writeAsBytesSync(wor, flush: true);
+            if (mounted) toast(context, 'DSKKAR00.DBF و DSKWOR00.DBF در $dir ذخیره شد');
+          }, icon: Icons.save_alt_rounded),
         ]),
         card('لیست مالیات حقوق', 'مبالغ پرداختی و مالیات هر نفر', [
           sakanBtn('چاپ', () {
