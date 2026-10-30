@@ -55,10 +55,10 @@ class CustomStatement {
       ]);
 
   static CustomStatement sampleProfit() => CustomStatement(id: newId(), name: 'صورتحساب سود/زیان سفارشی', balanceSheet: false, rows: [
-        StatementRow(title: 'فروش خالص', codes: ['4060', '4050', '-5055', '-5050'], creditPositive: true),
-        StatementRow(title: 'بهای تمام شده کالای فروش رفته', codes: ['-5040'], creditPositive: true),
+        StatementRow(title: 'فروش خالص', codes: ['4060', '4050', '5055', '5050'], creditPositive: true),
+        StatementRow(title: 'بهای تمام شده کالای فروش رفته', codes: ['5040'], creditPositive: true),
         StatementRow(title: 'سود ناخالص', total: true, creditPositive: true),
-        StatementRow(title: 'هزینه های عمومی و اداری', codes: ['-5005', '-5012', '-5013', '-5007'], creditPositive: true),
+        StatementRow(title: 'هزینه های عمومی و اداری', codes: ['5005', '5012', '5013', '5007'], creditPositive: true),
         StatementRow(title: 'سایر درآمدها', codes: ['4025', '4020', '4010'], creditPositive: true),
         StatementRow(title: 'سود خالص', total: true, creditPositive: true),
       ]);
