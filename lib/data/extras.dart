@@ -131,3 +131,37 @@ class CallLog {
   factory CallLog.fromJson(Map<String, dynamic> j) =>
       CallLog(number: _s(j['number']), date: _dt(j['date']) ?? DateTime.now(), personId: j['personId'] is String ? j['personId'] as String : null, note: _s(j['note']));
 }
+
+/// «سند تسویه» of «تسویه فاکتور به فاکتور»: payments of a person allocated
+/// to their invoices (each row: invoice, amount, cash / cheque part, note).
+class SettleRow {
+  String invoiceId;
+  int amount;
+  int cash;
+  int cheque;
+  String note;
+  SettleRow({required this.invoiceId, this.amount = 0, this.cash = 0, this.cheque = 0, this.note = ''});
+  Map<String, dynamic> toJson() => {'invoiceId': invoiceId, 'amount': amount, 'cash': cash, 'cheque': cheque, 'note': note};
+  factory SettleRow.fromJson(Map<String, dynamic> j) =>
+      SettleRow(invoiceId: _s(j['invoiceId']), amount: _i(j['amount']), cash: _i(j['cash']), cheque: _i(j['cheque']), note: _s(j['note']));
+}
+
+class SettleDoc {
+  String id;
+  int number; // شماره ثابت سند تسویه
+  DateTime date;
+  String? personId;
+  String note;
+  List<SettleRow> rows;
+  SettleDoc({required this.id, required this.number, required this.date, this.personId, this.note = '', List<SettleRow>? rows}) : rows = rows ?? [];
+  int get total => rows.fold(0, (a, r) => a + r.amount);
+  Map<String, dynamic> toJson() => {'id': id, 'number': number, 'date': date.toIso8601String(), 'personId': personId, 'note': note, 'rows': rows.map((r) => r.toJson()).toList()};
+  factory SettleDoc.fromJson(Map<String, dynamic> j) => SettleDoc(
+        id: _s(j['id']),
+        number: _i(j['number']),
+        date: _dt(j['date']) ?? DateTime.now(),
+        personId: j['personId'] is String ? j['personId'] as String : null,
+        note: _s(j['note']),
+        rows: _list(j['rows']).map(SettleRow.fromJson).toList(),
+      );
+}

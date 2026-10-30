@@ -2641,4 +2641,34 @@ void main() {
     final plan = InstallmentPlan(id: newId(), interestFrom: DateTime(2026), firstDue: DateTime(2026, 2))..guarantorName = 'Zamen';
     expect(InstallmentPlan.fromJson(plan.toJson()).guarantorName, 'Zamen');
   });
+
+  test('invoice to invoice settlement docs', () {
+    final s = _tempStore();
+    final c = Person(id: newId(), name: 'Buyer');
+    s.upsertPerson(c);
+    final pr = Product(id: newId(), name: 'P');
+    s.upsertProduct(pr);
+    final i1 = Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: DateTime(2026, 9, 1), personId: c.id, lines: [InvoiceLine(productId: pr.id, qty: 1, unitPrice: 1000)]);
+    final i2 = Invoice(id: newId(), kind: InvoiceKind.sale, number: 2, date: DateTime(2026, 9, 10), personId: c.id, lines: [InvoiceLine(productId: pr.id, qty: 1, unitPrice: 2000)]);
+    s.saveInvoice(i1);
+    s.saveInvoice(i2);
+    // a receipt of 1500 not linked to any invoice
+    s.upsertTxn(Txn(id: newId(), type: TxnType.collect, amount: 1500, date: DateTime(2026, 9, 20), accountId: s.activeAccounts.first.id, personId: c.id));
+    expect(s.personBalance(c.id), 1500);
+    expect(s.unallocatedPayments(c.id), 1500);
+    final d = SettleDoc(id: newId(), number: s.nextSettleNumber(), date: DateTime(2026, 9, 21), personId: c.id, rows: [
+      SettleRow(invoiceId: i1.id, amount: 1000, cash: 1000),
+      SettleRow(invoiceId: i2.id, amount: 500),
+    ]);
+    s.saveSettleDoc(d);
+    expect(s.invoiceUnsettled(i1), 0);
+    expect(s.invoiceUnsettled(i2), 1500);
+    expect(s.invoiceUnsettled(i2, excludeDoc: d.id), 2000);
+    expect(s.unallocatedPayments(c.id), 0);
+    final h = s.settleHistory(i2);
+    expect((h.single.$3, h.single.$4), (2000, 1500));
+    expect(AppStore.open(s.storage).settleDocs.single.total, 1500);
+    s.removeInvoice(i1.id);
+    expect(s.settleDocs.single.rows.single.invoiceId, i2.id);
+  });
 }

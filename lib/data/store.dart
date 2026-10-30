@@ -127,6 +127,9 @@ class AppStore extends ChangeNotifier {
   List<InternalMessage> messages = [];
   List<InvoiceOffset> offsets = [];
 
+  /// «سندهای تسویه» (تسویه فاکتور به فاکتور).
+  List<SettleDoc> settleDocs = [];
+
   /// «ترازو» (weighted barcodes) settings.
   ScaleConfig scale = ScaleConfig();
 
@@ -333,6 +336,7 @@ class AppStore extends ChangeNotifier {
     draws = list('draws').map(DrawCampaign.fromJson).toList();
     messages = list('messages').map(InternalMessage.fromJson).toList();
     offsets = list('offsets').map(InvoiceOffset.fromJson).toList();
+    settleDocs = list('settleDocs').map(SettleDoc.fromJson).toList();
     contacts = list('contacts').map(Contact.fromJson).toList();
     calls = list('calls').map(CallLog.fromJson).toList();
     printers = j['printers'] is Map ? {for (final e in (j['printers'] as Map).entries) '${e.key}': '${e.value}'} : {};
@@ -583,6 +587,7 @@ class AppStore extends ChangeNotifier {
         'draws': draws.map((e) => e.toJson()).toList(),
         'messages': messages.map((e) => e.toJson()).toList(),
         'offsets': offsets.map((e) => e.toJson()).toList(),
+        'settleDocs': settleDocs.map((e) => e.toJson()).toList(),
         'scale': scale.toJson(),
         'contacts': contacts.map((e) => e.toJson()).toList(),
         'calls': calls.map((e) => e.toJson()).toList(),
@@ -2486,6 +2491,11 @@ class AppStore extends ChangeNotifier {
     for (final r in receptions) {
       if (r.invoiceId == id) r.invoiceId = null;
     }
+    for (final d in settleDocs) {
+      d.rows.removeWhere((r) => r.invoiceId == id);
+    }
+    settleDocs.removeWhere((d) => d.rows.isEmpty);
+    offsets.removeWhere((o) => o.saleId == id || o.purchaseId == id);
     if (inv != null && !inv.proforma) {
       final who = person(inv.personId)?.name ?? 'متفرقه';
       _recycle('inv:$id', number: docMeta['inv:$id']?.number ?? inv.number, date: inv.date,
@@ -2996,6 +3006,69 @@ class AppStore extends ChangeNotifier {
     redemptions.add(Redemption(id: newId(), card: c.number, date: DateTime.now(), points: g.points, title: g.title, amount: g.amount));
     _commit();
     return true;
+  }
+
+  // ---------------------------------------------------------------- تسویه فاکتور
+
+  int nextSettleNumber() => settleDocs.fold<int>(1, (n, d) => d.number >= n ? d.number + 1 : n);
+
+  /// Paid part of an invoice outside settlement docs: paid at issue, its
+  /// «تسویه» voucher and «تسویه فاکتور به فاکتور» links.
+  int invoiceDirectPaid(Invoice inv) {
+    var t = inv.paid;
+    for (final v in vouchers.where((v) => v.kind == 'settle' && v.meta['invoice'] == inv.id)) {
+      final pays = v.meta['pays'];
+      if (pays is Map) t += pays.values.fold<int>(0, (a, x) => a + (x is num ? x.toInt() : 0));
+    }
+    t += offsets.where((o) => o.saleId == inv.id || o.purchaseId == inv.id).fold<int>(0, (a, o) => a + o.amount);
+    return t;
+  }
+
+  /// «مبلغ پرداخت شده فاکتور» (all settlement docs except [excludeDoc]).
+  int invoicePaidTotal(Invoice inv, {String? excludeDoc}) =>
+      invoiceDirectPaid(inv) +
+      settleDocs.where((d) => d.id != excludeDoc).expand((d) => d.rows).where((r) => r.invoiceId == inv.id).fold<int>(0, (a, r) => a + r.amount);
+
+  int invoiceUnsettled(Invoice inv, {String? excludeDoc}) => inv.total - invoicePaidTotal(inv, excludeDoc: excludeDoc);
+
+  /// «لیست سندهای تسویه» of an invoice: (doc, row, remain before, remain after).
+  List<(SettleDoc, SettleRow, int, int)> settleHistory(Invoice inv) {
+    var remain = inv.total - invoiceDirectPaid(inv);
+    final out = <(SettleDoc, SettleRow, int, int)>[];
+    final docs = settleDocs.where((d) => d.rows.any((r) => r.invoiceId == inv.id)).toList()..sort((a, b) => a.number.compareTo(b.number));
+    for (final d in docs) {
+      for (final r in d.rows.where((r) => r.invoiceId == inv.id)) {
+        out.add((d, r, remain, remain - r.amount));
+        remain -= r.amount;
+      }
+    }
+    return out;
+  }
+
+  /// Money of the person not yet allocated to invoices (for automatic allocation).
+  int unallocatedPayments(String personId, {bool sales = true}) {
+    final kinds = sales ? {InvoiceKind.sale} : {InvoiceKind.purchase};
+    final invs = realInvoices.where((i) => i.personId == personId && kinds.contains(i.kind));
+    final owed = invs.fold<int>(0, (a, i) => a + i.total);
+    final settled = invs.fold<int>(0, (a, i) => a + invoicePaidTotal(i));
+    final bal = personBalance(personId);
+    // balance = what is still owed (sales) or owed to them (purchases); what the
+    // invoices still show as open beyond that has been paid but not allocated
+    final open = owed - settled;
+    final free = sales ? open - bal : open + bal;
+    return free < 0 ? 0 : free;
+  }
+
+  void saveSettleDoc(SettleDoc d) {
+    d.rows.removeWhere((r) => r.amount == 0);
+    settleDocs.removeWhere((x) => x.id == d.id);
+    if (d.rows.isNotEmpty) settleDocs.add(d);
+    _commit();
+  }
+
+  void removeSettleDoc(String id) {
+    settleDocs.removeWhere((d) => d.id == id);
+    _commit();
   }
 
   // ---------------------------------------------------------------- قرعه کشی
