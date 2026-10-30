@@ -594,7 +594,8 @@ class _ShellState extends State<Shell> {
     // «شبکه»: pick up what other computers saved
     if (Storage.networked) {
       _syncTimer = Timer.periodic(const Duration(seconds: 3), (_) {
-        if (mounted) StoreScope.read(context).syncFromDisk();
+        // not while a window is open over the main screen (it may hold records being edited)
+        if (mounted && (ModalRoute.of(context)?.isCurrent ?? true)) StoreScope.read(context).syncFromDisk();
       });
     }
   }
