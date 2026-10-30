@@ -118,6 +118,12 @@ class AppStore extends ChangeNotifier {
   List<StaffLoan> staffLoans = [];
   PayrollRules payrollRules = PayrollRules();
   Workshop workshop = Workshop();
+  List<PayGroup> payGroups = [];
+
+  /// «حضور و غیاب».
+  List<Shift> shifts = [];
+  List<ClockRecord> clock = [];
+  Map<String, String> employeeShift = {}; // employee id → shift id
 
   /// Set when loading converted the data to a newer format.
   bool _needsSave = false;
@@ -297,6 +303,10 @@ class AppStore extends ChangeNotifier {
     leaves = list('leaves').map(Leave.fromJson).toList();
     missions = list('missions').map(Mission.fromJson).toList();
     staffLoans = list('staffLoans').map(StaffLoan.fromJson).toList();
+    payGroups = list('payGroups').map(PayGroup.fromJson).toList();
+    shifts = list('shifts').map(Shift.fromJson).toList();
+    clock = list('clock').map(ClockRecord.fromJson).toList();
+    employeeShift = j['employeeShift'] is Map ? {for (final e in (j['employeeShift'] as Map).entries) '${e.key}': '${e.value}'} : {};
     payrollRules = j['payrollRules'] is Map<String, dynamic> ? PayrollRules.fromJson(j['payrollRules'] as Map<String, dynamic>) : PayrollRules();
     workshop = j['workshop'] is Map<String, dynamic> ? Workshop.fromJson(j['workshop'] as Map<String, dynamic>) : Workshop();
     _ensureUnits();
@@ -530,6 +540,10 @@ class AppStore extends ChangeNotifier {
         'missions': missions.map((e) => e.toJson()).toList(),
         'staffLoans': staffLoans.map((e) => e.toJson()).toList(),
         'payrollRules': payrollRules.toJson(),
+        'payGroups': payGroups.map((e) => e.toJson()).toList(),
+        'shifts': shifts.map((e) => e.toJson()).toList(),
+        'clock': clock.map((e) => e.toJson()).toList(),
+        'employeeShift': employeeShift,
         'workshop': workshop.toJson(),
         'hiddenMoeens': hiddenMoeens.toList(),
         'customMoeens': customMoeens,
@@ -1624,6 +1638,7 @@ class AppStore extends ChangeNotifier {
       if (r.vam != 0) lines.add(VoucherLine(moeen: mStaff, tafsiliId: e.personId, desc: 'قسط وام ${e.fullName}', credit: r.vam));
       if (r.jarime != 0) lines.add(VoucherLine(moeen: mOtherIncome, desc: 'جریمه ${e.fullName}', credit: r.jarime));
       if (r.kosoratSabet != 0) lines.add(VoucherLine(moeen: mOtherLiab, desc: 'کسورات ${e.fullName}', credit: r.kosoratSabet));
+      if (r.gheirNaghdi != 0) lines.add(VoucherLine(moeen: mOtherLiab, desc: 'مزایای غیر نقدی ${e.fullName}', credit: r.gheirNaghdi));
       // the advance was already paid to the person account: it is not deducted twice
       final net = r.khales + r.mosaede;
       if (net != 0) lines.add(VoucherLine(moeen: mDebtorsTrade, tafsiliId: e.personId, desc: 'حقوق ${p.name} ${e.fullName}', credit: net));
@@ -1647,6 +1662,94 @@ class AppStore extends ChangeNotifier {
       createdAt: old?.createdAt,
     );
     p.voucherId = v.id;
+    saveVoucher(v);
+    return v;
+  }
+
+  // ------------------------------------------------------------ حضور و غیاب
+
+  Shift shiftOf(Employee e) =>
+      shifts.where((x) => x.id == employeeShift[e.id]).firstOrNull ?? shifts.firstOrNull ?? Shift(id: '', name: 'پیش فرض');
+
+  ClockRecord? clockOf(String employeeId, DateTime d) =>
+      clock.where((c) => c.employeeId == employeeId && c.date.year == d.year && c.date.month == d.month && c.date.day == d.day).firstOrNull;
+
+  void saveClock(ClockRecord r) {
+    clock.removeWhere((c) => c.employeeId == r.employeeId && c.date.year == r.date.year && c.date.month == r.date.month && c.date.day == r.date.day);
+    if (r.inMin != null || r.outMin != null || r.note.isNotEmpty) clock.add(r);
+    _commit();
+  }
+
+  /// Imports punches (personnel / card code, day, minutes): first punch = entry,
+  /// last = exit. Returns (days imported, unknown codes).
+  (int, Set<String>) importPunches(List<(String, DateTime, int)> punches) {
+    final unknown = <String>{};
+    final days = <String, List<int>>{};
+    final who = <String, (Employee, DateTime)>{};
+    for (final (code, d, m) in punches) {
+      final e = employees.where((e) => normalizeDigits(e.personnelCode) == code || normalizeDigits(e.cardCode) == code).firstOrNull;
+      if (e == null) {
+        unknown.add(code);
+        continue;
+      }
+      final k = '${e.id}|${d.toIso8601String()}';
+      (days[k] ??= []).add(m);
+      who[k] = (e, d);
+    }
+    for (final e in days.entries) {
+      final t = e.value..sort();
+      final (emp, d) = who[e.key]!;
+      final old = clockOf(emp.id, d);
+      if (old != null && old.edited) continue; // keep manual corrections
+      clock.removeWhere((c) => identical(c, old));
+      clock.add(ClockRecord(employeeId: emp.id, date: d, inMin: t.first, outMin: t.length > 1 ? t.last : null));
+    }
+    _commit();
+    return (days.length, unknown);
+  }
+
+  AttendanceResult attendance(Employee e, PayPeriod p) =>
+      attendanceOf(clock.where((c) => c.employeeId == e.id && !c.date.isBefore(p.start) && !c.date.isAfter(p.end)).toList(), shiftOf(e), p.start, p.end);
+
+  /// «انتقال به کارکرد»: absences, overtime and short hours into the payslips of [p].
+  int applyAttendance(PayPeriod p) {
+    var n = 0;
+    for (final e in employeesIn(p)) {
+      if (!clock.any((c) => c.employeeId == e.id && !c.date.isBefore(p.start) && !c.date.isAfter(p.end))) continue;
+      final r = attendance(e, p);
+      final s = payslipOf(p, e);
+      s
+        ..workDays = (p.days - r.absentDays).clamp(0, 31).toDouble()
+        ..overtimeHours = (r.overtimeMinutes / 60 * 100).round() / 100
+        ..shortHours = (r.shortMinutes / 60 * 100).round() / 100;
+      savePayslip(s);
+      n++;
+    }
+    return n;
+  }
+
+  /// «سند اتوماتیک ذخیره»: the end-of-service reserve of a period (Dr salary expense, Cr 2130).
+  Voucher? postServiceReserve(PayPeriod p) {
+    vouchers.removeWhere((v) => v.kind == 'serviceReserve' && v.meta['period'] == p.id);
+    var total = 0;
+    for (final e in employeesIn(p)) {
+      total += serviceReserve(e, payResult(p, e));
+    }
+    if (total == 0) {
+      _commit();
+      return null;
+    }
+    final desc = 'ذخیره مزایای پایان خدمت ${p.name}';
+    final v = Voucher(
+      id: newId(),
+      number: nextVoucherNumber(),
+      fixedNumber: nextFixedNumber(),
+      date: p.end,
+      desc: desc,
+      kind: 'serviceReserve',
+      meta: {'period': p.id},
+      lines: [VoucherLine(moeen: mSalaryExpense, desc: desc, debit: total), VoucherLine(moeen: '2130', desc: desc, credit: total)],
+    );
     saveVoucher(v);
     return v;
   }

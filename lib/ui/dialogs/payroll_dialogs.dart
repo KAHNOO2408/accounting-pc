@@ -211,6 +211,8 @@ class _ItemsEditorState extends State<_ItemsEditor> {
               const Text('بیمه'),
               Checkbox(value: it.taxed, onChanged: (v) => setState(() => it.taxed = v ?? true)),
               const Text('مالیات'),
+              Checkbox(value: it.nonCash, onChanged: (v) => setState(() => it.nonCash = v ?? false)),
+              const Text('غیر نقدی'),
             ],
             IconButton(onPressed: () => setState(() => widget.items.remove(it)), icon: const Icon(Icons.close_rounded, color: Color(0xFFE53935))),
           ]),
@@ -257,6 +259,7 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
     c('annualLeaveDays').text = '${e.annualLeaveDays}';
     c('monthlyWage').text = e.monthlyWage == 0 ? '' : groupDigits(e.monthlyWage);
     c('sanavat').text = e.sanavatMonthly == 0 ? '' : groupDigits(e.sanavatMonthly);
+    c('taxExempt').text = e.taxExemptMonthly == 0 ? '' : groupDigits(e.taxExemptMonthly);
   }
 
   @override
@@ -293,7 +296,8 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
       ..children = int.tryParse(normalizeDigits(c('children').text)) ?? 0
       ..annualLeaveDays = int.tryParse(normalizeDigits(c('annualLeaveDays').text)) ?? 26
       ..monthlyWage = parseMoney(c('monthlyWage').text)
-      ..sanavatMonthly = parseMoney(c('sanavat').text);
+      ..sanavatMonthly = parseMoney(c('sanavat').text)
+      ..taxExemptMonthly = parseMoney(c('taxExempt').text);
     e.benefits.removeWhere((b) => b.name.isEmpty && b.amount == 0);
     e.deductions.removeWhere((b) => b.name.isEmpty && b.amount == 0);
     if (e.nationalId.isNotEmpty && e.nationalId.length != 10) return setState(() => _err = 'شماره ملی باید ۱۰ رقم باشد');
@@ -355,6 +359,28 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
           FilterChip(label: const Text('سنوات مشمول بیمه'), selected: e.sanavatInsured, onSelected: (v) => setState(() => e.sanavatInsured = v)),
           FilterChip(label: const Text('سنوات مشمول مالیات'), selected: e.sanavatTaxed, onSelected: (v) => setState(() => e.sanavatTaxed = v)),
           _tf(c('annualLeaveDays'), 'مرخصی استحقاقی سالانه (روز)', width: 200, ltr: true),
+          _tf(c('taxExempt'), 'هزینه‌های مستمر معاف از مالیات (ماهانه)', width: 260, money: true),
+          if (StoreScope.read(context).payGroups.isNotEmpty)
+            SizedBox(
+              width: 220,
+              child: DropdownButtonFormField<String?>(
+                value: StoreScope.read(context).payGroups.any((g) => g.id == e.payGroupId) ? e.payGroupId : null,
+                decoration: const InputDecoration(labelText: 'گروه حقوق', isDense: true),
+                items: [
+                  const DropdownMenuItem<String?>(value: null, child: Text('—')),
+                  for (final g in StoreScope.read(context).payGroups) DropdownMenuItem<String?>(value: g.id, child: Text(g.name)),
+                ],
+                onChanged: (v) => setState(() {
+                  final g = StoreScope.read(context).payGroups.where((x) => x.id == v).firstOrNull;
+                  if (g == null) {
+                    e.payGroupId = null;
+                  } else {
+                    g.applyTo(e);
+                    c('monthlyWage').text = groupDigits(e.monthlyWage);
+                  }
+                }),
+              ),
+            ),
         ]),
         _ItemsEditor(title: 'مزایای مستمر (حق مسکن، بن، حق اولاد …)', items: e.benefits),
         const SizedBox(height: 10),
@@ -1151,6 +1177,44 @@ class _ReportsTabState extends State<_ReportsTab> {
       const SizedBox(height: 10),
       if (p == null) const Text('ابتدا در «کارکرد و فیش حقوقی» یک دوره ایجاد کنید'),
       if (p != null) ...[
+        card('ذخیره مزایای پایان خدمت', 'ذخیره ماهانه هر نفر (یک ماه حقوق و مزایای مستمر برای هر سال)', [
+          sakanBtn('چاپ جدول ذخیره', () {
+            final emps = s.employeesIn(p);
+            final vals = [for (final e in emps) serviceReserve(e, s.payResult(p, e))];
+            printTable(
+              store: s,
+              title: 'جدول ساخت ذخیره مزایای پایان خدمت کارکنان ${p.name}',
+              headers: const ['کد', 'نام', 'حقوق و مزایای مستمر', 'ذخیره ماه'],
+              rows: [
+                for (var i = 0; i < emps.length; i++)
+                  [emps[i].personnelCode, emps[i].fullName, _m(s.payResult(p, emps[i]).hoghoghMahiane + s.payResult(p, emps[i]).mazayaMostamar), _m(vals[i])],
+              ],
+              numeric: const {2, 3},
+              footer: ['', 'جمع', '', _m(vals.fold(0, (a, v) => a + v))],
+              fileName: 'zakhire-payan-khedmat',
+            );
+          }, icon: Icons.print_outlined),
+          sakanBtn('سند اتوماتیک ذخیره', () {
+            final v = s.postServiceReserve(p);
+            toast(context, v == null ? 'مبلغی برای ذخیره نیست' : 'سند ${v.number} ثبت شد');
+          }, icon: Icons.post_add_rounded),
+        ]),
+        card('لیست پرسنل با حقوق منفی', 'کسورات بیشتر از حقوق و مزایا', [
+          sakanBtn('نمایش', () {
+            final bad = [for (final e in s.employeesIn(p)) if (s.payResult(p, e).khales < 0) e];
+            printTable(
+              store: s,
+              title: 'لیست پرسنل با حقوق منفی ${p.name}',
+              headers: const ['کد', 'نام', 'جمع حقوق و مزایا', 'جمع کسورات', 'خالص'],
+              rows: [
+                for (final e in bad)
+                  [e.personnelCode, e.fullName, _m(s.payResult(p, e).jamKol), _m(s.payResult(p, e).jamKosorat), _m(s.payResult(p, e).khales)],
+              ],
+              numeric: const {2, 3, 4},
+              fileName: 'hoghogh-manfi',
+            );
+          }, icon: Icons.warning_amber_rounded),
+        ]),
         card('لیست حقوق و دستمزد', 'همه پرسنل دوره با جمع ستون‌ها', [
           sakanBtn('چاپ', () => printPayslips(s, p, s.employeesIn(p)), icon: Icons.print_outlined),
           sakanBtn('چاپ همه فیش‌ها (جدا)', () {
@@ -1372,5 +1436,124 @@ class _SettingsTabState extends State<_SettingsTab> {
       const SizedBox(height: 12),
       Align(alignment: AlignmentDirectional.centerEnd, child: FilledButton(onPressed: () => _save(s), child: const Text('ذخیره تنظیمات'))),
     ]);
+  }
+}
+
+/// «گروه حقوق»: shared wage and benefits; «اعمال به اعضا» copies them to every member.
+Future<void> showPayGroups(BuildContext context) => showDialog<void>(context: context, builder: (_) => const _PayGroups());
+
+class _PayGroups extends StatefulWidget {
+  const _PayGroups();
+
+  @override
+  State<_PayGroups> createState() => _PayGroupsState();
+}
+
+class _PayGroupsState extends State<_PayGroups> {
+  String? _sel;
+  final _name = TextEditingController();
+  final _wage = TextEditingController();
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _wage.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = StoreScope.of(context);
+    final g = s.payGroups.where((x) => x.id == _sel).firstOrNull;
+    return FormDialog(
+      title: 'گروه حقوق',
+      width: 820,
+      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('بستن'))],
+      child: SizedBox(
+        height: 460,
+        child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          SizedBox(
+            width: 240,
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              FilledButton.tonalIcon(
+                onPressed: () {
+                  final n = PayGroup(id: newId(), name: 'گروه ${s.payGroups.length + 1}');
+                  s.payGroups.add(n);
+                  s.updateSettings((_) {});
+                  setState(() {
+                    _sel = n.id;
+                    _name.text = n.name;
+                    _wage.text = '';
+                  });
+                },
+                icon: const Icon(Icons.add_rounded),
+                label: const Text('گروه جدید'),
+              ),
+              Expanded(
+                child: ListView(children: [
+                  for (final x in s.payGroups)
+                    ListTile(
+                      dense: true,
+                      selected: x.id == _sel,
+                      title: Text(x.name),
+                      subtitle: Text('${s.employees.where((e) => e.payGroupId == x.id).length} نفر — ${groupDigits(x.monthlyWage)}'),
+                      onTap: () => setState(() {
+                        _sel = x.id;
+                        _name.text = x.name;
+                        _wage.text = x.monthlyWage == 0 ? '' : groupDigits(x.monthlyWage);
+                      }),
+                    ),
+                ]),
+              ),
+            ]),
+          ),
+          const VerticalDivider(),
+          Expanded(
+            child: g == null
+                ? const Center(child: Text('یک گروه انتخاب کنید'))
+                : ListView(children: [
+                    TextField(controller: _name, decoration: const InputDecoration(labelText: 'نام گروه'), onChanged: (v) => g.name = v.trim()),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _wage,
+                      textDirection: TextDirection.ltr,
+                      inputFormatters: [MoneyInputFormatter()],
+                      decoration: const InputDecoration(labelText: 'حقوق ماهیانه'),
+                      onChanged: (v) => g.monthlyWage = parseMoney(v),
+                    ),
+                    const SizedBox(height: 8),
+                    _ItemsEditor(title: 'مزایای مستمر گروه', items: g.benefits),
+                    const SizedBox(height: 8),
+                    Wrap(spacing: 6, children: [
+                      FilledButton.icon(
+                        onPressed: () {
+                          var n = 0;
+                          for (final e in s.employees.where((e) => e.payGroupId == g.id)) {
+                            g.applyTo(e);
+                            n++;
+                          }
+                          s.updateSettings((_) {});
+                          toast(context, 'به $n نفر اعمال شد');
+                        },
+                        icon: const Icon(Icons.done_all_rounded),
+                        label: const Text('ذخیره و اعمال به اعضا'),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: s.employees.any((e) => e.payGroupId == g.id)
+                            ? null
+                            : () {
+                                s.payGroups.remove(g);
+                                s.updateSettings((_) {});
+                                setState(() => _sel = null);
+                              },
+                        icon: const Icon(Icons.delete_outline_rounded),
+                        label: const Text('حذف گروه'),
+                      ),
+                    ]),
+                  ]),
+          ),
+        ]),
+      ),
+    );
   }
 }

@@ -2442,4 +2442,48 @@ void main() {
     expect(again.costCenterRows().length, 3);
     expect(again.costCenters.single.code, 1);
   });
+
+  test('payroll extras: non-cash, tax exemption, reserve, groups, attendance', () {
+    final s = _tempStore();
+    final person = Person(id: newId(), name: 'Reza');
+    s.upsertPerson(person);
+    final e = Employee(id: newId(), personId: person.id, personnelCode: '7', firstName: 'Reza', lastName: 'K', monthlyWage: 30000000);
+    s.employees.add(e);
+    final g = PayGroup(id: newId(), name: 'Workers', monthlyWage: 36500000, benefits: [PayItem2(name: 'Food', amount: 1000000, nonCash: true)]);
+    s.payGroups.add(g);
+    g.applyTo(e);
+    expect(e.monthlyWage, 36500000);
+    final period = PayPeriod(id: newId(), year: 1405, month: 7, days: 30, start: DateTime(2026, 9, 23), end: DateTime(2026, 10, 22));
+    s.payPeriods.add(period);
+    s.addEmployeesToPeriod(period);
+    final r = s.payResult(period, e);
+    expect(r.gheirNaghdi, 1000000);
+    expect(r.khales, r.jamKol - r.jamKosorat - 1000000);
+    final taxBefore = r.mashmoolMaliat;
+    e.taxExemptMonthly = 500000;
+    expect(s.payResult(period, e).mashmoolMaliat, taxBefore - 500000);
+    expect(serviceReserve(e, r), ((36500000 + 1000000) * 30 / 365).round());
+    final v = s.postPayroll(period);
+    expect(v.lines.fold<int>(0, (a, l) => a + l.debit), v.lines.fold<int>(0, (a, l) => a + l.credit));
+    expect(s.postServiceReserve(period)!.lines.first.debit, serviceReserve(e, r));
+    // attendance
+    expect(parseClockDate('1405/07/01'), DateTime(2026, 9, 23));
+    final punches = parseClockRows([
+      ['کد', 'تاریخ', 'ورود', 'خروج'],
+      ['7', '1405/07/01', '08:10', '17:40'],
+      ['7', '2026-09-24 07:55'],
+      ['7', '2026-09-24 16:00'],
+      ['99', '1405/07/01', '08:00', '16:00'],
+    ]);
+    final (n, unknown) = s.importPunches(punches);
+    expect(n, 2);
+    expect(unknown, {'99'});
+    expect(s.clockOf(e.id, DateTime(2026, 9, 24))!.inMin, 7 * 60 + 55);
+    final a = s.attendance(e, period);
+    expect(a.presentDays, 2);
+    expect(a.lateCount, 1);
+    expect(a.overtimeMinutes, 95); // 570−30 = 540 vs 450 → 90; 485−30 = 455 vs 450 → 5
+    expect(s.applyAttendance(period), 1);
+    expect(s.payslipOf(period, e).workDays, 30 - a.absentDays);
+  });
 }

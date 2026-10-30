@@ -7,6 +7,7 @@ export 'service.dart';
 export 'restaurant.dart';
 export 'balance_deal.dart';
 export 'installments.dart';
+export 'attendance.dart';
 
 String newId() {
   final r = Random();
@@ -345,6 +346,7 @@ class Voucher {
         'balance' => 'خرید بالانس',
         'revaluation' => 'تسعیر نرخ ارز',
         'staffLoan' => 'پرداخت وام پرسنل',
+        'serviceReserve' => 'ذخیره مزایای پایان خدمت',
         _ => 'سند دستی',
       };
 

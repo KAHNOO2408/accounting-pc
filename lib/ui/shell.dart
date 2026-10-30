@@ -24,6 +24,7 @@ import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
+import 'dialogs/attendance_dialogs.dart';
 import 'dialogs/cost_center_dialogs.dart';
 import 'dialogs/serial_dialogs.dart';
 import 'dialogs/installment_dialogs.dart';
@@ -411,6 +412,9 @@ final List<_Tab> _tabs = [
       _Item('مرخصی', Icons.beach_access_outlined, _cyan, run: (c, _) => showPayrollWindow(c, tab: 2)),
       _Item('ماموریت', Icons.flight_takeoff_rounded, _cyan, run: (c, _) => showPayrollWindow(c, tab: 3)),
       _Item('وام پرسنل', Icons.account_balance_wallet_outlined, _amber, run: (c, _) => showPayrollWindow(c, tab: 4)),
+      _Item('حضور و غیاب', Icons.fingerprint_rounded, _blue, run: (c, _) => showAttendance(c)),
+      _Item('تعیین شیفت', Icons.schedule_rounded, _blue, run: (c, _) => showShifts(c)),
+      _Item('گروه حقوق', Icons.groups_outlined, _green, run: (c, _) => showPayGroups(c)),
     ]),
     _Group('گزارش و تنظیم', [
       _Item('گزارشات حقوق، بیمه و مالیات', Icons.summarize_outlined, _violet, run: (c, _) => showPayrollWindow(c, tab: 5)),

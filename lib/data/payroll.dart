@@ -120,10 +120,11 @@ class PayItem2 {
   int amount;
   bool insured; // مشمول بیمه
   bool taxed; // مشمول مالیات
-  PayItem2({required this.name, this.amount = 0, this.insured = true, this.taxed = true});
-  Map<String, dynamic> toJson() => {'name': name, 'amount': amount, 'insured': insured, 'taxed': taxed};
+  bool nonCash; // مزایای غیر نقدی (کالا، خدمات): مشمول، ولی نقدی پرداخت نمی‌شود
+  PayItem2({required this.name, this.amount = 0, this.insured = true, this.taxed = true, this.nonCash = false});
+  Map<String, dynamic> toJson() => {'name': name, 'amount': amount, 'insured': insured, 'taxed': taxed, if (nonCash) 'nonCash': true};
   factory PayItem2.fromJson(Map<String, dynamic> j) =>
-      PayItem2(name: _s(j['name']), amount: _i(j['amount']), insured: j['insured'] != false, taxed: j['taxed'] != false);
+      PayItem2(name: _s(j['name']), amount: _i(j['amount']), insured: j['insured'] != false, taxed: j['taxed'] != false, nonCash: j['nonCash'] == true);
 }
 
 /// «پرسنل» — linked to a person account (حساب تفصیلی) for the salary payable.
@@ -165,6 +166,13 @@ class Employee {
   bool sanavatTaxed;
   int annualLeaveDays; // مرخصی استحقاقی سالانه
   List<PayItem2> benefits; // مزایای مستمر
+
+  /// «هزینه های مستمر پرداختی معاف از مالیات توسط مودی» (e.g. supplementary
+  /// insurance premiums) deducted from the taxable pay each month.
+  int taxExemptMonthly = 0;
+
+  /// «گروه حقوق» this employee follows.
+  String? payGroupId;
   List<PayItem2> deductions; // کسورات ثابت
   bool active;
 
@@ -247,6 +255,8 @@ class Employee {
         'sanavatTaxed': sanavatTaxed,
         'annualLeaveDays': annualLeaveDays,
         'benefits': benefits.map((e) => e.toJson()).toList(),
+        if (taxExemptMonthly != 0) 'taxExemptMonthly': taxExemptMonthly,
+        if (payGroupId != null) 'payGroupId': payGroupId,
         'deductions': deductions.map((e) => e.toJson()).toList(),
         'active': active,
       };
@@ -289,7 +299,29 @@ class Employee {
         benefits: _list(j['benefits']).map(PayItem2.fromJson).toList(),
         deductions: _list(j['deductions']).map(PayItem2.fromJson).toList(),
         active: j['active'] != false,
-      );
+      )
+        ..taxExemptMonthly = _i(j['taxExemptMonthly'])
+        ..payGroupId = j['payGroupId'] is String ? j['payGroupId'] as String : null;
+}
+
+/// «گروه حقوق»: a wage and fixed benefits shared by a group of employees.
+class PayGroup {
+  String id;
+  String name;
+  int monthlyWage;
+  List<PayItem2> benefits;
+  PayGroup({required this.id, required this.name, this.monthlyWage = 0, List<PayItem2>? benefits}) : benefits = benefits ?? [];
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'monthlyWage': monthlyWage, 'benefits': benefits.map((e) => e.toJson()).toList()};
+  factory PayGroup.fromJson(Map<String, dynamic> j) =>
+      PayGroup(id: _s(j['id']), name: _s(j['name']), monthlyWage: _i(j['monthlyWage']), benefits: _list(j['benefits']).map(PayItem2.fromJson).toList());
+
+  /// Copies the group's wage and benefits to [e].
+  void applyTo(Employee e) {
+    e
+      ..payGroupId = id
+      ..monthlyWage = monthlyWage
+      ..benefits = [for (final b in benefits) PayItem2.fromJson(b.toJson())];
+  }
 }
 
 // ===================================================================== leaves, missions, loans
@@ -605,6 +637,7 @@ class PayResult {
   int dastmozdGheirMashmoolBime = 0;
   int mashmoolMaliat = 0;
 
+  int gheirNaghdi = 0; // مزایای غیر نقدی (در جمع حقوق هست، نقدی پرداخت نمی‌شود)
   int bimeSahmBimeShode = 0;
   int bimeSahmKarfarma = 0;
   int bimeBikari = 0;
@@ -628,7 +661,7 @@ class PayResult {
       haghSanavat + mazayaMostamar + ezafeKari + haghShift + haghMamoriat + safar + padash + pardakhthayeMoavaghe + sayerPardakhthayeNaghdy + eydi + bazKharidMorkhasi + extraBenefits;
   int get jamKol => hoghoghMahiane + jamMazaya - kasrKar; // جمع حقوق و مزایا
   int get jamKosorat => bimeSahmBimeShode + maliat + vam + mosaede + jarime + kosoratSabet;
-  int get khales => jamKol - jamKosorat; // مبلغ پرداختی
+  int get khales => jamKol - jamKosorat - gheirNaghdi; // مبلغ پرداختی
   int get employerCost => jamKol + bimeSahmKarfarma + bimeBikari + bimeMashagheleSakht;
 }
 
@@ -667,11 +700,13 @@ PayResult computePayslip({
   for (final b in e.benefits) {
     final v = (b.amount * ratio).round();
     r.mazayaMostamar += v;
+    if (b.nonCash) r.gheirNaghdi += v;
     if (b.insured) benefitsInsured += v;
     if (b.taxed) benefitsTaxed += v;
   }
   for (final b in p.extraBenefits) {
     r.extraBenefits += b.amount;
+    if (b.nonCash) r.gheirNaghdi += b.amount;
     if (b.insured) benefitsInsured += b.amount;
     if (b.taxed) benefitsTaxed += b.amount;
   }
@@ -712,6 +747,7 @@ PayResult computePayslip({
   final eydiTaxed = rules.eydiTaxExempt > 0 && r.eydi > rules.eydiTaxExempt ? r.eydi - rules.eydiTaxExempt : 0;
   taxable += eydiTaxed;
   taxable -= r.bimeSahmBimeShode;
+  taxable -= e.taxExemptMonthly;
   if (taxable < 0) taxable = 0;
   r.mashmoolMaliat = taxable;
   r.maliat = rules.tax(taxable);
@@ -724,3 +760,7 @@ PayResult computePayslip({
 }
 
 String newPayrollId() => newId();
+
+/// «جدول ساخت ذخیره مزایای پایان خدمت کارکنان»: one month of service reserve
+/// (حقوق و مزایای مستمر × روزهای کارکرد ÷ ۳۶۵) — accrues a month's pay per year.
+int serviceReserve(Employee e, PayResult r) => ((r.hoghoghMahiane + r.mazayaMostamar) * 30 / 365).round();
