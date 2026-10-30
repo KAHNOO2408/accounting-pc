@@ -24,6 +24,7 @@ import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
+import 'dialogs/serial_dialogs.dart';
 import 'dialogs/installment_dialogs.dart';
 import 'dialogs/extra_reports.dart';
 import 'dialogs/balance_dialogs.dart';
@@ -240,6 +241,10 @@ final List<_Tab> _tabs = [
     ]),
   ]),
   _Tab('عملیات کالا', [
+    _Group('سریال', [
+      _Item('لیست سریال ها', Icons.qr_code_2_rounded, _cyan, run: (c, _) => showSerialList(c)),
+      _Item('انتقال بین سریال', Icons.swap_horiz_rounded, _cyan, run: (c, _) => showSerialSwap(c)),
+    ]),
     _Group('تولید', [
       _Item('تولید حرفه ای', Icons.precision_manufacturing_outlined, _green, run: (c, _) => showProductions(c)),
       _Item('فرمول های تولید', Icons.science_outlined, _green, run: (c, _) => showFormulas(c)),

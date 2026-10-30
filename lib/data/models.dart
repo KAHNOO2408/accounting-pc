@@ -803,7 +803,13 @@ class InvoiceLine {
   /// «سهم یارانه» percent of the row.
   double subsidyPct;
 
+  /// «سریال های کالا» of the row and the chosen «مشخصه» (e.g. «قرمز / L»).
+  List<String> serials;
+  String variant;
+
   InvoiceLine({
+    List<String>? serials,
+    this.variant = '',
     this.subsidyPct = 0,
     this.consignRef,
     this.taxPct = 0,
@@ -817,7 +823,7 @@ class InvoiceLine {
     this.unitNo = 1,
     this.unitQty = 0,
     this.unitFi = 0,
-  });
+  }) : serials = serials ?? [];
 
   /// A row entered in unit [unit] ([factor] of unit 1 each).
   factory InvoiceLine.inUnit({
@@ -867,9 +873,13 @@ class InvoiceLine {
         if (taxPct != 0) 'taxPct': taxPct,
         if (dutyPct != 0) 'dutyPct': dutyPct,
         if (subsidyPct != 0) 'subsidyPct': subsidyPct,
+        if (serials.isNotEmpty) 'serials': serials,
+        if (variant.isNotEmpty) 'variant': variant,
       };
 
   factory InvoiceLine.fromJson(Map<String, dynamic> j) => InvoiceLine(
+        serials: j['serials'] is List ? [for (final x in j['serials'] as List) '$x'] : null,
+        variant: _s(j['variant']),
         consignRef: _sn(j['consignRef']),
         taxPct: _dbl(j['taxPct']),
         dutyPct: _dbl(j['dutyPct']),

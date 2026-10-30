@@ -17,6 +17,7 @@ import 'package:taraz/data/discounts.dart';
 import 'package:taraz/data/marketing.dart';
 import 'package:taraz/data/payroll.dart';
 import 'package:taraz/data/woo.dart';
+import 'package:taraz/data/serials.dart';
 import 'package:taraz/data/insurance_disk.dart';
 import 'package:taraz/core/iran_system.dart';
 import 'package:taraz/ui/dialogs/payroll_dialogs.dart';
@@ -2388,5 +2389,37 @@ void main() {
     final again = AppStore.open(s.storage).installmentPlans.single;
     expect(again.remaining, p.total - p.items.first.amount);
     expect(again.items.first.paidOn, DateTime(2026, 2, 1));
+  });
+
+  test('serial tracking and product variants', () {
+    final s = _tempStore();
+    final phone = Product(id: newId(), name: 'Phone', info: {'serial': '1', 'openSerials': 'A0'});
+    final shirt = Product(id: newId(), name: 'Shirt', info: {'attrs': 'رنگ=قرمز,آبی;سایز=S,M'});
+    s.upsertProduct(phone);
+    s.upsertProduct(shirt);
+    expect(productVariants(shirt), ['قرمز / S', 'قرمز / M', 'آبی / S', 'آبی / M']);
+    final buy = Invoice(id: newId(), kind: InvoiceKind.purchase, number: 1, date: DateTime(2026, 10, 1), lines: [
+      InvoiceLine(productId: phone.id, qty: 2, unitPrice: 100, serials: ['A1', 'A2']),
+      InvoiceLine(productId: shirt.id, qty: 5, unitPrice: 10, variant: 'آبی / M'),
+    ]);
+    expect(s.checkSerials(buy), isNull);
+    s.saveInvoice(buy);
+    expect(s.serialsInStock(productId: phone.id).keys.toSet(), {'A0', 'A1', 'A2'});
+    expect(s.variantStock(shirt.id, 'آبی / M'), 5);
+    expect(s.variantStock(shirt.id, 'قرمز / S'), 0);
+    // buying an in-stock serial again, or selling one not in stock, is refused
+    expect(s.checkSerials(Invoice(id: 'x', kind: InvoiceKind.purchase, number: 2, date: DateTime(2026, 10, 2), lines: [InvoiceLine(productId: phone.id, qty: 1, serials: ['A1'])])), isNotNull);
+    expect(s.checkSerials(Invoice(id: 'x', kind: InvoiceKind.sale, number: 1, date: DateTime(2026, 10, 2), lines: [InvoiceLine(productId: phone.id, qty: 1, serials: ['Z9'])])), isNotNull);
+    expect(s.checkSerials(Invoice(id: 'x', kind: InvoiceKind.sale, number: 1, date: DateTime(2026, 10, 2), lines: [InvoiceLine(productId: phone.id, qty: 2, serials: ['A1'])])), isNotNull);
+    final sale = Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: DateTime(2026, 10, 3), lines: [InvoiceLine(productId: phone.id, qty: 1, unitPrice: 200, serials: ['A1'])]);
+    expect(s.checkSerials(sale), isNull);
+    s.saveInvoice(sale);
+    expect(s.serialsInStock(productId: phone.id).keys.toSet(), {'A0', 'A2'});
+    expect(s.serialMoves(serial: 'A1').length, 2);
+    // «انتقال بین سریال»
+    expect(s.swapSerial(sale.id, 'A1', 'A2'), isTrue);
+    expect(s.serialsInStock(productId: phone.id).keys.toSet(), {'A0', 'A1'});
+    expect(AppStore.open(s.storage).invoices.firstWhere((i) => i.id == sale.id).lines.single.serials, ['A2']);
+    expect(InvoiceLine.fromJson(buy.lines.last.toJson()).variant, 'آبی / M');
   });
 }

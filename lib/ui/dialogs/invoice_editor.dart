@@ -22,7 +22,9 @@ import 'misc_dialogs.dart';
 import 'price_dialog.dart';
 import 'simple_dialogs.dart';
 import 'orders_centers_dialogs.dart' show showProductOrders, checkDailyQuota;
+import 'serial_dialogs.dart';
 import 'sms_dialogs.dart';
+import '../../data/serials.dart';
 
 String fmtQty(double q) {
   if (q == q.roundToDouble()) return q.toInt().toString();
@@ -67,6 +69,10 @@ class _Line {
 
   /// Consignment row settled by this row («تسویه امانی»).
   String? consignRef;
+
+  /// «سریال های کالا» and «مشخصه» of the row.
+  List<String> serials = [];
+  String variant = '';
   final title = TextEditingController();
   final qty = TextEditingController(text: '1');
   final price = TextEditingController();
@@ -81,6 +87,8 @@ class _Line {
     x.warehouseId = l.warehouseId;
     x.title.text = l.title;
     x.consignRef = l.consignRef;
+    x.serials = [...l.serials];
+    x.variant = l.variant;
     if (l.inOtherUnit) {
       x.unit = l.unitNo;
       x.factor = l.qty / l.unitQty;
@@ -102,7 +110,9 @@ class _Line {
 
   InvoiceLine toLine() => InvoiceLine.inUnit(
       productId: productId, title: title.text.trim(), unit: unit, factor: factor, qty: q, fi: p, discount: d, warehouseId: warehouseId)
-    ..consignRef = consignRef;
+    ..consignRef = consignRef
+    ..serials = [...serials]
+    ..variant = variant;
 
   /// Switches the row to [n] of [pr], converting quantity and price.
   void setUnit(Product pr, int n) {
@@ -348,6 +358,24 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       _selRow = _rows.length - 1;
     });
     WidgetsBinding.instance.addPostFrameCallback((_) => l.titleFocus.requestFocus());
+  }
+
+  /// «سریال / مشخصه» of the selected row.
+  Future<void> _serialsOfRow() async {
+    final i = _selRow;
+    if (i == null || i >= _rows.length) return toast(context, 'ردیفی انتخاب نشده', error: true);
+    final l = _rows[i];
+    final s = StoreScope.read(context);
+    final p = s.product(l.productId);
+    if (p == null) return toast(context, 'ردیف کالا ندارد', error: true);
+    final r = await showRowSerials(context,
+        product: p, serials: l.serials, variant: l.variant, qty: l.baseQty.round(), outbound: _kind.stockSign < 0, excludeInvoiceId: (_saved ?? widget.edit)?.id);
+    if (r == null || !mounted) return;
+    setState(() {
+      l.serials = r.$1;
+      l.variant = r.$2;
+      if (tracksSerial(p) && r.$1.isNotEmpty) l.qty.text = fmtQty(r.$1.length / l.factor);
+    });
   }
 
   void _removeRow() {
@@ -784,6 +812,16 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
           if (mx > 0 && after > mx) warn.add('موجودی ${p.name} از حداکثر (${fmtQty(mx)}) بیشتر می‌شود');
         }
       }
+    }
+    if (err == null && !_proforma) {
+      for (final l in lines) {
+        final p = store.product(l.productId);
+        if (p != null && productVariants(p).isNotEmpty && l.variant.isEmpty) {
+          err = 'مشخصه ${p.name} را انتخاب کنید (دکمه «سریال / مشخصه»)';
+          break;
+        }
+      }
+      err ??= store.checkSerials(Invoice(id: (_saved ?? widget.edit)?.id ?? '-', kind: _kind, number: 0, date: _date, lines: [for (final l in lines) l.toLine()]));
     }
     if (err == null && _proforma && _kind == InvoiceKind.sale) {
       err = checkDailyQuota(store, _date, (_saved ?? widget.edit)?.id, [for (final l in lines) if (l.productId != null) (l.productId!, l.baseQty)]);
@@ -1269,6 +1307,8 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                 const SizedBox(width: 4),
                 _btn('ردیف کالاها', _rowsSummary),
                 const SizedBox(width: 4),
+                _btn('سریال / مشخصه', _serialsOfRow, key: 'F6'),
+                const SizedBox(width: 4),
                 _btn('رنگ ردیف ها جدول', () => setState(() => _zebra = !_zebra)),
               ]),
             ),
@@ -1506,7 +1546,9 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     final margin = goods ? _margin(store, l) : null;
     if (p != null) {
       final st = store.stock(p.id, excludeInvoiceId: widget.edit?.id, warehouseId: multiWh ? store.whId(l.warehouseId) : null);
-      stockInfo = 'موجودی ${fmtQty(st)}';
+      stockInfo = 'موجودی ${fmtQty(st)}'
+          '${l.variant.isEmpty ? '' : ' — ${l.variant} (${fmtQty(store.variantStock(p.id, l.variant, excludeInvoiceId: widget.edit?.id))})'}'
+          '${l.serials.isEmpty ? (tracksSerial(p) ? ' — سریال وارد نشده' : '') : ' — سریال: ${l.serials.join('، ')}'}';
       if (_kind.stockSign < 0 && l.baseQty > st) warn = true;
     }
     const dense = InputDecoration(isDense: true, border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 10));

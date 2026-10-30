@@ -14,6 +14,7 @@ import 'bulk_products_dialog.dart';
 import 'discount_dialogs.dart';
 import 'invoice_editor.dart' show fmtQty, parseQty;
 import 'misc_dialogs.dart';
+import 'serial_dialogs.dart' show showProductAttrs;
 import 'orders_centers_dialogs.dart' show pickProductCenters;
 
 /// «اطلاعات دفتر تفصیلی موجودی کالا» — Sakan's product form.
@@ -553,6 +554,8 @@ class _ProductDialogState extends State<_ProductDialog> {
               color: _sky,
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
               child: Row(children: [
+                _btn('سریال و مشخصه', () => widget.edit == null ? toast(context, 'ابتدا کالا را ذخیره کنید', error: true) : showProductAttrs(context, widget.edit!), icon: Icons.qr_code_2_rounded),
+                const SizedBox(width: 8),
                 _btn('انتخاب مرکز دفتر', () => widget.edit == null ? toast(context, 'ابتدا کالا را ذخیره کنید', error: true) : pickProductCenters(context, widget.edit!), icon: Icons.hub_outlined),
                 const Spacer(),
                 _btn('تایید', _save, key: 'F9', icon: Icons.check_circle_rounded, color: const Color(0xFFD7F2D7)),
