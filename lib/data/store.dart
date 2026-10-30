@@ -100,6 +100,9 @@ class AppStore extends ChangeNotifier {
 
   /// «خرید بالانس».
   List<BalanceDeal> balanceDeals = [];
+
+  /// «دفترچه اقساط».
+  List<InstallmentPlan> installmentPlans = [];
   List<WooOrder> wooOrders = [];
 
   /// «حقوق و دستمزد».
@@ -278,6 +281,7 @@ class AppStore extends ChangeNotifier {
     receptions = list('receptions').map(Reception.fromJson).toList();
     restTables = list('restTables').map(RestTable.fromJson).toList();
     balanceDeals = list('balanceDeals').map(BalanceDeal.fromJson).toList();
+    installmentPlans = list('installmentPlans').map(InstallmentPlan.fromJson).toList();
     reservations = list('reservations').map(Reservation.fromJson).toList();
     restTabs = list('restTabs').map(RestTab.fromJson).toList();
     restConfig = j['restConfig'] is Map<String, dynamic> ? RestConfig.fromJson(j['restConfig'] as Map<String, dynamic>) : RestConfig();
@@ -507,6 +511,7 @@ class AppStore extends ChangeNotifier {
         'receptions': receptions.map((e) => e.toJson()).toList(),
         'restTables': restTables.map((e) => e.toJson()).toList(),
         'balanceDeals': balanceDeals.map((e) => e.toJson()).toList(),
+        'installmentPlans': installmentPlans.map((e) => e.toJson()).toList(),
         'reservations': reservations.map((e) => e.toJson()).toList(),
         'restTabs': restTabs.map((e) => e.toJson()).toList(),
         'restConfig': restConfig.toJson(),
@@ -2781,6 +2786,23 @@ class AppStore extends ChangeNotifier {
 
   /// Opening cost per unit of a product (used for opening stock value).
   int openingCost(Product p) => p.openingCost > 0 ? p.openingCost : p.buyPrice;
+
+  // ---------------------------------------------------------------- دفترچه اقساط
+
+  void saveInstallmentPlan(InstallmentPlan p) {
+    final i = installmentPlans.indexWhere((x) => x.id == p.id);
+    if (i >= 0) {
+      installmentPlans[i] = p;
+    } else {
+      installmentPlans.add(p);
+    }
+    _commit();
+  }
+
+  void removeInstallmentPlan(String id) {
+    installmentPlans.removeWhere((p) => p.id == id);
+    _commit();
+  }
 
   // ---------------------------------------------------------------- خرید بالانس
 

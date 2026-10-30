@@ -24,6 +24,7 @@ import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
+import 'dialogs/installment_dialogs.dart';
 import 'dialogs/extra_reports.dart';
 import 'dialogs/balance_dialogs.dart';
 import 'dialogs/restaurant_dialogs.dart';
@@ -416,6 +417,8 @@ final List<_Tab> _tabs = [
       _Item('تراز آزمایشی', Icons.scale_outlined, _blue, run: (c, _) => showTrialBalanceFilter(c)),
       _Item('گزارش از وضعیت حساب', Icons.fact_check_outlined, _cyan, run: (c, _) => showAccountStatus(c)),
       _Item('نمودار سود و زیان', Icons.bar_chart_rounded, _green, run: (c, _) => showProfitChart(c)),
+      _Item('گزارش مطالبات', Icons.call_received_rounded, _green, run: (c, _) => showInstallmentPlans(c, receivable: true)),
+      _Item('گزارش تعهدات', Icons.call_made_rounded, _red, run: (c, _) => showInstallmentPlans(c, receivable: false)),
       _Item('صورت حساب سود و زیان', Icons.query_stats_rounded, _green,
           shortcut: 'Alt+F5', activator: _k(LogicalKeyboardKey.f5, alt: true), run: _page(AppPage.profit)),
       _Item('دفتر کل', Icons.menu_book_rounded, _blue, run: (c, _) => showGeneralLedgerFilter(c)),

@@ -2366,4 +2366,27 @@ void main() {
     expect(m.length, 12);
     expect(m[1].$2, 1000); // 11 Ordibehesht 1405 = 1 May 2026
   });
+
+  test('installment plan schedule, interest and penalty', () {
+    final s = _tempStore();
+    final p = InstallmentPlan(id: newId(), principal: 1200000, count: 12, interestFrom: DateTime(2026, 1, 1), firstDue: DateTime(2026, 2, 1), interestPct: 0);
+    p.generate();
+    expect(p.items.length, 12);
+    expect(p.total, 1200000);
+    expect(p.items[11].due, DateTime(2027, 1, 1));
+    p.interestPct = 36.5;
+    p.generate();
+    expect(p.items.first.amount, 100000 + 3100); // 31 days at 36.5% → 0.1% a day
+    expect(p.interest, greaterThan(0));
+    p.penaltyPct = 3;
+    expect(p.penaltyOf(p.items.first, DateTime(2026, 3, 3)), ((p.items.first.amount) * 0.03 * 30 / 30).round());
+    p.items.first
+      ..paid = p.items.first.amount
+      ..paidOn = DateTime(2026, 2, 1);
+    expect(p.penaltyOf(p.items.first, DateTime(2026, 3, 3)), 0);
+    s.saveInstallmentPlan(p);
+    final again = AppStore.open(s.storage).installmentPlans.single;
+    expect(again.remaining, p.total - p.items.first.amount);
+    expect(again.items.first.paidOn, DateTime(2026, 2, 1));
+  });
 }

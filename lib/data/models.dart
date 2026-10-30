@@ -6,6 +6,7 @@ export 'guarantee.dart';
 export 'service.dart';
 export 'restaurant.dart';
 export 'balance_deal.dart';
+export 'installments.dart';
 
 String newId() {
   final r = Random();
