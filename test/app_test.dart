@@ -21,6 +21,7 @@ import 'package:taraz/data/insurance_disk.dart';
 import 'package:taraz/core/iran_system.dart';
 import 'package:taraz/ui/dialogs/payroll_dialogs.dart';
 import 'package:taraz/ui/dialogs/orders_centers_dialogs.dart';
+import 'package:taraz/ui/dialogs/extra_reports.dart';
 import 'package:taraz/data/models.dart';
 import 'package:taraz/data/report_layout.dart';
 import 'package:taraz/data/storage.dart';
@@ -2345,5 +2346,24 @@ void main() {
     s.removeBalanceDeal(r.id);
     expect(s.personBalance(buyer.id), 24000);
     expect(AppStore.open(s.storage).balanceDeals.single.lines.first.qty, 20);
+  });
+
+  test('account status report and monthly profit', () {
+    final s = _tempStore();
+    final p = Person(id: newId(), name: 'Ali');
+    s.upsertPerson(p);
+    final now = DateTime(2026, 10, 30);
+    s.cheques.add(Cheque(id: newId(), direction: ChequeDirection.received, amount: 1000, dueDate: DateTime(2026, 10, 1), issueDate: now, personId: p.id));
+    s.cheques.add(Cheque(id: newId(), direction: ChequeDirection.received, amount: 2000, dueDate: DateTime(2026, 12, 1), issueDate: now, personId: p.id));
+    s.cheques.add(Cheque(id: newId(), direction: ChequeDirection.issued, amount: 500, dueDate: DateTime(2026, 12, 1), issueDate: now, personId: p.id));
+    final r = accountStatus(s, at: now).single;
+    expect((r.recvDue, r.recvNotDue, r.paidDue, r.paidNotDue), (1000, 2000, 0, 500));
+    final pr = Product(id: newId(), name: 'X');
+    s.upsertProduct(pr);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.purchase, number: 1, date: DateTime(2026, 4, 1), lines: [InvoiceLine(productId: pr.id, qty: 10, unitPrice: 100)]));
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: DateTime(2026, 5, 1), lines: [InvoiceLine(productId: pr.id, qty: 5, unitPrice: 300)]));
+    final m = monthlyProfit(s, 1405);
+    expect(m.length, 12);
+    expect(m[1].$2, 1000); // 11 Ordibehesht 1405 = 1 May 2026
   });
 }
