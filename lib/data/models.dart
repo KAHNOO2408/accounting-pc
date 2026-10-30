@@ -330,6 +330,7 @@ class Voucher {
         'payroll' => 'سند حقوق',
         'fx' => 'سند ارزی',
         'subsidy' => 'سهم یارانه',
+        'costAdjust' => 'تعدیل قیمت تمام شده کالا',
         'revaluation' => 'تسعیر نرخ ارز',
         'staffLoan' => 'پرداخت وام پرسنل',
         _ => 'سند دستی',
@@ -2200,3 +2201,30 @@ class Consignment {
         createdAt: _i(j['createdAt']),
       );
 }
+
+/// «مرکز دفاتر»: a named set of ledgers / detail accounts reported together
+/// (members are «moeen» or «moeen|tafsili»).
+class BookCenter {
+  String id;
+  String name;
+  String note;
+  List<String> members;
+  BookCenter({required this.id, required this.name, this.note = '', List<String>? members}) : members = members ?? [];
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'note': note, 'members': members};
+  factory BookCenter.fromJson(Map<String, dynamic> j) =>
+      BookCenter(id: _s(j['id']), name: _s(j['name']), note: _s(j['note']), members: j['members'] is List ? [for (final x in j['members'] as List) '$x'] : null);
+}
+
+/// «گروه مراکز دفتر».
+class CenterGroup {
+  String id;
+  String name;
+  List<String> centerIds;
+  CenterGroup({required this.id, required this.name, List<String>? centerIds}) : centerIds = centerIds ?? [];
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'centerIds': centerIds};
+  factory CenterGroup.fromJson(Map<String, dynamic> j) =>
+      CenterGroup(id: _s(j['id']), name: _s(j['name']), centerIds: j['centerIds'] is List ? [for (final x in j['centerIds'] as List) '$x'] : null);
+}
+
+/// «وضعیت سفارش» of a pro-forma (order).
+const orderStatuses = ['در انتظار', 'در حال انجام', 'خاتمه یافته', 'بلوکه شده', 'منتفی شده'];

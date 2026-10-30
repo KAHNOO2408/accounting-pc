@@ -21,6 +21,7 @@ import 'marketing_dialogs.dart';
 import 'misc_dialogs.dart';
 import 'price_dialog.dart';
 import 'simple_dialogs.dart';
+import 'orders_centers_dialogs.dart' show showProductOrders, checkDailyQuota;
 import 'sms_dialogs.dart';
 
 String fmtQty(double q) {
@@ -783,6 +784,9 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
           if (mx > 0 && after > mx) warn.add('موجودی ${p.name} از حداکثر (${fmtQty(mx)}) بیشتر می‌شود');
         }
       }
+    }
+    if (err == null && _proforma && _kind == InvoiceKind.sale) {
+      err = checkDailyQuota(store, _date, (_saved ?? widget.edit)?.id, [for (final l in lines) if (l.productId != null) (l.productId!, l.baseQty)]);
     }
     if (err == null && !_proforma) {
       for (final l in lines.where((l) => l.consignRef != null)) {
@@ -1787,7 +1791,7 @@ class _QtyDialogState extends State<_QtyDialog> {
         ],
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Wrap(spacing: 6, runSpacing: 6, children: [
-          OutlinedButton(onPressed: () => showComingSoon(context, 'وضعیت سفارش'), child: const Text('وضعیت سفارش')),
+          OutlinedButton(onPressed: () => showProductOrders(context, p), child: const Text('وضعیت سفارش')),
           OutlinedButton(onPressed: () => showProductHistory(context, p, mode: 0), child: const Text('کل فروش ها F2')),
           OutlinedButton(onPressed: () => showProductHistory(context, p, personId: widget.personId, mode: 1), child: const Text('کل فروش های طرف حساب F3')),
           OutlinedButton(onPressed: () => showProductHistory(context, p, mode: 2), child: const Text('کل خرید ها F4')),

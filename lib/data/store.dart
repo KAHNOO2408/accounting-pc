@@ -71,6 +71,11 @@ class AppStore extends ChangeNotifier {
   List<AmountDiscount> amountDiscounts = [];
   List<SubsidyGroup> subsidyGroups = [];
 
+  /// «مرکز دفاتر» and their groups; ribbon items hidden by «تنظیم دکمه‌ها».
+  List<BookCenter> bookCenters = [];
+  List<CenterGroup> centerGroups = [];
+  Set<String> hiddenButtons = {};
+
   /// «حقوق و دستمزد».
   List<Employee> employees = [];
   List<PayPeriod> payPeriods = [];
@@ -233,6 +238,10 @@ class AppStore extends ChangeNotifier {
     discountModels = list('discountModels').map(DiscountModel.fromJson).toList();
     amountDiscounts = list('amountDiscounts').map(AmountDiscount.fromJson).toList();
     subsidyGroups = list('subsidyGroups').map(SubsidyGroup.fromJson).toList();
+    bookCenters = list('bookCenters').map(BookCenter.fromJson).toList();
+    centerGroups = list('centerGroups').map(CenterGroup.fromJson).toList();
+    final hb = j['hiddenButtons'];
+    hiddenButtons = hb is List ? {for (final x in hb) '$x'} : {};
     employees = list('employees').map(Employee.fromJson).toList();
     payPeriods = list('payPeriods').map(PayPeriod.fromJson).toList();
     payslips = list('payslips').map(Payslip.fromJson).toList();
@@ -446,6 +455,9 @@ class AppStore extends ChangeNotifier {
         'discountModels': discountModels.map((e) => e.toJson()).toList(),
         'amountDiscounts': amountDiscounts.map((e) => e.toJson()).toList(),
         'subsidyGroups': subsidyGroups.map((e) => e.toJson()).toList(),
+        'bookCenters': bookCenters.map((e) => e.toJson()).toList(),
+        'centerGroups': centerGroups.map((e) => e.toJson()).toList(),
+        'hiddenButtons': hiddenButtons.toList(),
         'employees': employees.map((e) => e.toJson()).toList(),
         'payPeriods': payPeriods.map((e) => e.toJson()).toList(),
         'payslips': payslips.map((e) => e.toJson()).toList(),
@@ -1682,8 +1694,14 @@ class AppStore extends ChangeNotifier {
 
   /// Whether the signed-in user may use a ribbon button.
   bool canUse(String label) {
+    if (hiddenButtons.contains(label)) return false;
     final u = currentUser;
     return u.admin || !u.denied.contains(label);
+  }
+
+  void setHiddenButtons(Set<String> labels) {
+    hiddenButtons = labels;
+    _commit();
   }
 
   int nextUserCode() => allUsers.fold<int>(1, (n, u) => u.code >= n ? u.code + 1 : n);
@@ -2053,6 +2071,8 @@ class AppStore extends ChangeNotifier {
       discount: pf.discount,
       extra: pf.extra,
       note: pf.note.isEmpty ? 'از پیش‌فاکتور ${pf.number}' : '${pf.note} (پیش‌فاکتور ${pf.number})',
+      info: {'fromProforma': '${pf.number}', if (pf.info['subsidyAcc'] != null) 'subsidyAcc': pf.info['subsidyAcc']!},
+      marketers: pf.marketers,
     );
     invoices.removeWhere((i) => i.id == pf.id);
     saveInvoice(inv);

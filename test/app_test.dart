@@ -17,6 +17,7 @@ import 'package:taraz/data/discounts.dart';
 import 'package:taraz/data/marketing.dart';
 import 'package:taraz/data/payroll.dart';
 import 'package:taraz/ui/dialogs/payroll_dialogs.dart';
+import 'package:taraz/ui/dialogs/orders_centers_dialogs.dart';
 import 'package:taraz/data/models.dart';
 import 'package:taraz/data/report_layout.dart';
 import 'package:taraz/data/storage.dart';
@@ -2089,5 +2090,45 @@ void main() {
     expect(j.fold<int>(0, (a, p) => a + p.debit), j.fold<int>(0, (a, p) => a + p.credit));
     s.removeInvoice(inv.id);
     expect(s.vouchers.where((v) => v.kind == 'subsidy'), isEmpty);
+  });
+
+  test('orders quota, cost adjust, book centers and hidden buttons', () {
+    final s = _tempStore();
+    final pr = Product(id: newId(), name: 'Rice', info: {'dailyQuota': '10', 'dailyQuotaControl': '1'});
+    s.upsertProduct(pr);
+    final t = DateTime(2026, 10, 30);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.purchase, number: 1, date: t, lines: [InvoiceLine(productId: pr.id, qty: 10, unitPrice: 1000)]));
+    expect(s.avgCost(pr.id), 1000);
+
+    // «تعیین سفارش روزانه»
+    final o1 = Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: t, proforma: true, lines: [InvoiceLine(productId: pr.id, qty: 7, unitPrice: 1500)]);
+    s.saveInvoice(o1);
+    expect(checkDailyQuota(s, t, null, [(pr.id, 3)]), isNull);
+    expect(checkDailyQuota(s, t, null, [(pr.id, 4)]), isNotNull);
+    expect(checkDailyQuota(s, t, o1.id, [(pr.id, 10)]), isNull); // editing the same order
+    expect(checkDailyQuota(s, t.add(const Duration(days: 1)), null, [(pr.id, 10)]), isNull);
+
+    // «اعمال افزایش در قیمت تمام شده کالا»: +5000 over 10 units → 1500
+    s.saveVoucher(Voucher(id: newId(), number: s.nextVoucherNumber(), fixedNumber: s.nextFixedNumber(), date: t, kind: 'costAdjust', lines: [
+      VoucherLine(moeen: mStock, tafsiliId: pr.id, debit: 5000),
+      VoucherLine(moeen: mOtherExpense, credit: 5000),
+    ]));
+    expect(s.avgCost(pr.id), 1500);
+
+    // «مرکز دفاتر»
+    final c = BookCenter(id: newId(), name: 'Shop', members: ['$mStock|${pr.id}']);
+    s.bookCenters.add(c);
+    s.centerGroups.add(CenterGroup(id: newId(), name: 'All', centerIds: [c.id]));
+    s.updateSettings((_) {});
+    expect(centerBalance(s, c, buildJournal(s)), 15000);
+    final again = AppStore.open(s.storage);
+    expect(again.bookCenters.single.members, c.members);
+    expect(again.centerGroups.single.centerIds, [c.id]);
+
+    // «تنظیم دکمه‌ها»
+    expect(s.canUse('سفارشات'), isTrue);
+    s.setHiddenButtons({'سفارشات'});
+    expect(s.canUse('سفارشات'), isFalse);
+    expect(AppStore.open(s.storage).hiddenButtons, {'سفارشات'});
   });
 }

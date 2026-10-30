@@ -24,6 +24,7 @@ import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
+import 'dialogs/orders_centers_dialogs.dart';
 import 'dialogs/voucher_dialog.dart';
 import 'dialogs/txn_dialog.dart';
 import 'pages/accounts_page.dart';
@@ -176,8 +177,8 @@ final List<_Tab> _tabs = [
       _Item('انتقال حساب‌ها به دفتر', Icons.drive_file_move_outline, _violet, run: (c, _) => showTransferToBook(c)),
     ]),
     _Group('تسعیر نرخ', [
-      const _Item('اعمال کاهش در قیمت تمام شده کالا', Icons.trending_down_rounded, _red),
-      const _Item('اعمال افزایش در قیمت تمام شده کالا', Icons.trending_up_rounded, _green),
+      _Item('اعمال کاهش در قیمت تمام شده کالا', Icons.trending_down_rounded, _red, run: (c, _) => showCostAdjust(c, increase: false)),
+      _Item('اعمال افزایش در قیمت تمام شده کالا', Icons.trending_up_rounded, _green, run: (c, _) => showCostAdjust(c, increase: true)),
       _Item('تسعیر نرخ ارز', Icons.currency_exchange_rounded, _amber, run: (c, _) => showRevaluationDialog(c)),
       _Item('سند ارزی', Icons.receipt_long_outlined, _amber, run: (c, _) => showFxVoucherDialog(c)),
       _Item('گزارش از گردش ارزی', Icons.query_stats_rounded, _amber, run: (c, _) => showFxTurnover(c)),
@@ -247,6 +248,8 @@ final List<_Tab> _tabs = [
           shortcut: 'F7', activator: _k(LogicalKeyboardKey.f7), run: (c, _) => showInvoiceEditor(c, proforma: true)),
       _Item('لیست پیش فاکتور', Icons.library_books_outlined, _cyan,
           shortcut: 'Ctrl+F7', activator: _k(LogicalKeyboardKey.f7, ctrl: true), run: _page(AppPage.proformas)),
+      _Item('سفارشات', Icons.assignment_outlined, _cyan, run: (c, _) => showOrders(c)),
+      _Item('تعیین سفارش روزانه', Icons.today_outlined, _cyan, run: (c, _) => showDailyQuota(c)),
     ]),
     _Group('امانی', [
       _Item('دریافت امانی', Icons.move_to_inbox_outlined, _violet, run: (c, _) => showConsignEditor(c, ConsignDir.received)),
@@ -407,7 +410,7 @@ final List<_Tab> _tabs = [
       _Item('کدبندی دفاتر کل و معین', Icons.account_tree_outlined, _blue, run: (c, _) => showChartCoding(c)),
       _Item('معرفی دفاتر مالی', Icons.library_add_outlined, _green, run: (c, _) => showBooksManager(c)),
       _Item('مرکز اسناد', Icons.home_work_outlined, _amber, run: (c, _) => showDocCentersDialog(c)),
-      const _Item('مرکز دفاتر', Icons.domain_outlined, _slate),
+      _Item('مرکز دفاتر', Icons.domain_outlined, _slate, run: (c, _) => showBookCenters(c)),
       _Item('بازاریابان', Icons.campaign_outlined, _green, run: (c, _) => showMarketersWindow(c)),
       _Item('گروه‌های یارانه', Icons.group_work_outlined, _green, run: (c, _) => showSubsidyGroups(c)),
       _Item('مدل تخفیفات و اشانتیون', Icons.redeem_outlined, _violet, run: (c, _) => showDiscountModels(c)),
@@ -422,7 +425,7 @@ final List<_Tab> _tabs = [
     _Group('کاربران', [
       _Item('کاربران', Icons.manage_accounts_outlined, _blue, run: (c, _) => showUsersWindow(c)),
       _Item('ردپای کاربران', Icons.history_toggle_off_rounded, _violet, run: (c, _) => showAuditReport(c)),
-      const _Item('تنظیم دکمه‌ها', Icons.smart_button_outlined, _slate),
+      _Item('تنظیم دکمه‌ها', Icons.smart_button_outlined, _slate, run: (c, _) => showButtonSettings(c, ribbonCatalog())),
     ]),
   ]),
   _Tab('کنترل اسناد', [
@@ -439,7 +442,7 @@ final List<_Tab> _tabs = [
       _Item('مرتب کردن اسناد', Icons.sort_rounded, _blue,
           run: (c, _) => toast(c, 'اسناد همیشه بر اساس تاریخ و ترتیب ثبت مرتب هستند')),
       _Item('نمایش اخطارهای ورودی', Icons.warning_amber_rounded, _amber, run: (c, _) => showIncomingWarnings(c)),
-      const _Item('مدیریت گروه مراکز دفتر', Icons.hub_outlined, _slate),
+      _Item('مدیریت گروه مراکز دفتر', Icons.hub_outlined, _slate, run: (c, _) => showCenterGroups(c)),
     ]),
   ]),
   _Tab('خروج و پشتیبان', [
@@ -452,7 +455,7 @@ final List<_Tab> _tabs = [
           shortcut: 'F11', activator: _k(LogicalKeyboardKey.f11), run: (c, _) => quickBackup(c)),
       _Item('درباره ما', Icons.info_outline_rounded, _blue, run: (c, _) => showAboutTaraz(c)),
       _Item('اطلاعات نسخه خریداری شده', Icons.verified_outlined, _blue, run: (c, _) => showAboutTaraz(c, license: true)),
-      const _Item('ارتباط از راه دور', Icons.support_agent_rounded, _slate),
+      _Item('ارتباط از راه دور', Icons.support_agent_rounded, _slate, run: (c, _) => showRemoteSupport(c)),
     ]),
   ]),
 ];
