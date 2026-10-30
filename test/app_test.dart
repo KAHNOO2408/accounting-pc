@@ -2524,4 +2524,44 @@ void main() {
     expect(dyn.single, ('X', 1500));
     expect(consolidatedProfit(s, DateTime(2026, 1, 1), DateTime(2026, 12, 31)).first.$2.netSales, 1500);
   });
+
+  test('loyalty, draws, messages, cleanup and overhead variance', () {
+    final s = _tempStore();
+    final p = Person(id: newId(), name: 'Fan');
+    final idle = Person(id: newId(), name: 'Idle');
+    s.upsertPerson(p);
+    s.upsertPerson(idle);
+    final pr = Product(id: newId(), name: 'X');
+    final unused = Product(id: newId(), name: 'Unused');
+    s.upsertProduct(pr);
+    s.upsertProduct(unused);
+    final card = LoyaltyCard(number: '1001', personId: p.id, issued: DateTime(2026, 10, 1));
+    s.loyaltyCards.add(card);
+    s.loyalty = LoyaltyConfig(amountPerPoint: 1000, gifts: [GiftRow(points: 3, title: 'Mug', amount: 500)]);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 5, date: DateTime(2026, 10, 2), personId: p.id, lines: [InvoiceLine(productId: pr.id, qty: 5, unitPrice: 1000)]));
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 4, date: DateTime(2026, 9, 2), personId: p.id, lines: [InvoiceLine(productId: pr.id, qty: 9, unitPrice: 1000)]));
+    expect(s.loyaltyPoints(card), 5);
+    expect(s.redeem(card, s.loyalty.gifts.first), isTrue);
+    expect(s.loyaltyPoints(card), 2);
+    expect(s.redeem(card, s.loyalty.gifts.first), isFalse);
+    final d = DrawCampaign(id: newId(), name: 'Nowruz', prefix: 'N', from: DateTime(2026, 9, 1), to: DateTime(2026, 10, 30), minAmount: 4000);
+    expect(s.drawCodes(d).map((c) => c.$1).toList(), ['N4-1', 'N4-2', 'N5']);
+    s.sendMessage('*', 'hello');
+    expect(s.inbox(s.currentUser.id), isEmpty); // own broadcast
+    expect(s.unusedPeople().map((x) => x.name), ['Idle']);
+    expect(s.unusedProducts().map((x) => x.name), ['Unused']);
+    expect(s.removeUnused(persons: true, items: true), 2);
+    s.saveVoucher(Voucher(id: newId(), number: s.nextVoucherNumber(), fixedNumber: s.nextFixedNumber(), date: DateTime(2026, 10, 3), lines: [
+      VoucherLine(moeen: '1170', debit: 1200),
+      VoucherLine(moeen: '1010', credit: 1200),
+    ]));
+    s.saveVoucher(Voucher(id: newId(), number: s.nextVoucherNumber(), fixedNumber: s.nextFixedNumber(), date: DateTime(2026, 10, 3), lines: [
+      VoucherLine(moeen: '1150', debit: 1000),
+      VoucherLine(moeen: '2050', credit: 1000),
+    ]));
+    expect(s.overheadVariance(DateTime(2026, 10, 1), DateTime(2026, 10, 30)), (1000, 1200));
+    final v = s.postOverheadVariance(DateTime(2026, 10, 1), DateTime(2026, 10, 30))!;
+    expect(v.lines.firstWhere((l) => l.moeen == '5030').debit, 200);
+    expect(s.overheadVariance(DateTime(2026, 10, 1), DateTime(2026, 10, 30)), (0, 0));
+  });
 }

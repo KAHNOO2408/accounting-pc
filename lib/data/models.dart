@@ -9,6 +9,7 @@ export 'balance_deal.dart';
 export 'installments.dart';
 export 'attendance.dart';
 export 'automation.dart';
+export 'extras.dart';
 
 String newId() {
   final r = Random();
@@ -348,6 +349,7 @@ class Voucher {
         'revaluation' => 'تسعیر نرخ ارز',
         'staffLoan' => 'پرداخت وام پرسنل',
         'serviceReserve' => 'ذخیره مزایای پایان خدمت',
+        'overheadVariance' => 'سرشکن انحراف جذب سربار',
         _ => 'سند دستی',
       };
 

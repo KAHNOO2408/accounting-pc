@@ -26,6 +26,7 @@ import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
+import 'dialogs/extras_dialogs.dart';
 import 'dialogs/custom_report_dialogs.dart';
 import 'dialogs/attendance_dialogs.dart';
 import 'dialogs/cost_center_dialogs.dart';
@@ -255,6 +256,7 @@ final List<_Tab> _tabs = [
       _Item('تولید حرفه ای', Icons.precision_manufacturing_outlined, _green, run: (c, _) => showProductions(c)),
       _Item('فرمول های تولید', Icons.science_outlined, _green, run: (c, _) => showFormulas(c)),
       _Item('سالن های تولید', Icons.factory_outlined, _green, run: (c, _) => showHalls(c)),
+      _Item('سرشکن انحراف جذب سربار', Icons.balance_outlined, _green, run: (c, _) => showOverheadVariance(c)),
     ]),
     _Group('انبار', [
       _Item('انبارگردانی', Icons.fact_check_outlined, _amber,
@@ -284,6 +286,7 @@ final List<_Tab> _tabs = [
       _Item('فاکتور رستورانی', Icons.restaurant_rounded, _red, run: (c, _) => showRestaurant(c)),
       _Item('رزرو میز', Icons.event_seat_outlined, _red, run: (c, _) => showReservations(c)),
       _Item('تعریف میز', Icons.table_restaurant_outlined, _red, run: (c, _) => showTables(c)),
+      _Item('تسویه پیک', Icons.delivery_dining_outlined, _red, run: (c, _) => showCourierSettle(c)),
     ]),
     _Group('خدمات و گارانتی', [
       _Item('پذیرش', Icons.handyman_outlined, _amber, run: (c, _) => showReceptionEditor(c)),
@@ -472,6 +475,12 @@ final List<_Tab> _tabs = [
       _Item('مرکز اسناد', Icons.home_work_outlined, _amber, run: (c, _) => showDocCentersDialog(c)),
       _Item('مرکز دفاتر', Icons.domain_outlined, _slate, run: (c, _) => showBookCenters(c)),
       _Item('یادسپار تقویم', Icons.calendar_month_rounded, _blue, run: (c, _) => showCalendar(c)),
+      _Item('پیام های داخلی', Icons.forum_outlined, _blue, run: (c, _) => showMessages(c)),
+      _Item('کارت هواداری', Icons.loyalty_outlined, _violet, run: (c, _) => showLoyalty(c)),
+      _Item('قرعه کشی', Icons.casino_outlined, _violet, run: (c, _) => showDraws(c)),
+      _Item('پول شمار', Icons.payments_outlined, _green, run: (c, _) => showCashCounter(c)),
+      _Item('تسویه فاکتور به فاکتور', Icons.compare_arrows_rounded, _amber, run: (c, _) => showInvoiceOffset(c)),
+      _Item('حذف دفاتر بدون تراکنش', Icons.cleaning_services_outlined, _red, run: (c, _) => showCleanup(c)),
       _Item('پیامک خودکار و زمانبندی', Icons.schedule_send_rounded, _green, run: (c, _) => showSmsAutomation(c)),
       _Item('مراکز رکورد (هزینه)', Icons.workspaces_outline, _slate, run: (c, _) => showCostCenters(c)),
       _Item('بازاریابان', Icons.campaign_outlined, _green, run: (c, _) => showMarketersWindow(c)),
@@ -559,6 +568,8 @@ class _ShellState extends State<Shell> {
       final today = DateTime.now();
       final due = s.reminders.where((r) => !r.done && r.on(today)).toList();
       if (due.isNotEmpty) toast(context, 'یادآوری امروز: ${due.map((r) => r.title).join('، ')}');
+      final unread = s.unreadFor(s.currentUser.id);
+      if (unread > 0) toast(context, '$unread پیام داخلی خوانده نشده دارید (متفرقه ← پیام های داخلی)');
     });
     _autoTimer = Timer.periodic(const Duration(minutes: 5), (_) {
       if (mounted) unawaited(runAutoSms(StoreScope.read(context)));

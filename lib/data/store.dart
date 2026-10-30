@@ -18,6 +18,7 @@ import 'report_layout.dart';
 import 'storage.dart';
 import 'woo.dart';
 import 'custom_reports.dart';
+import 'journal.dart' show buildJournal;
 
 class MonthTotals {
   int income = 0;
@@ -116,6 +117,14 @@ class AppStore extends ChangeNotifier {
 
   /// «ترازنامه سفارشی» / «صورتحساب سود/زیان سفارشی» layouts.
   List<CustomStatement> customStatements = [];
+
+  /// «کارت هواداری»، «قرعه کشی»، «پیام های داخلی»، «تسویه فاکتور به فاکتور».
+  List<LoyaltyCard> loyaltyCards = [];
+  LoyaltyConfig loyalty = LoyaltyConfig();
+  List<Redemption> redemptions = [];
+  List<DrawCampaign> draws = [];
+  List<InternalMessage> messages = [];
+  List<InvoiceOffset> offsets = [];
   List<WooOrder> wooOrders = [];
 
   /// «حقوق و دستمزد».
@@ -307,6 +316,12 @@ class AppStore extends ChangeNotifier {
     smsSchedules = list('smsSchedules').map(SmsSchedule.fromJson).toList();
     reminders = list('reminders').map(Reminder.fromJson).toList();
     customStatements = list('customStatements').map(CustomStatement.fromJson).toList();
+    loyaltyCards = list('loyaltyCards').map(LoyaltyCard.fromJson).toList();
+    loyalty = j['loyalty'] is Map<String, dynamic> ? LoyaltyConfig.fromJson(j['loyalty'] as Map<String, dynamic>) : LoyaltyConfig();
+    redemptions = list('redemptions').map(Redemption.fromJson).toList();
+    draws = list('draws').map(DrawCampaign.fromJson).toList();
+    messages = list('messages').map(InternalMessage.fromJson).toList();
+    offsets = list('offsets').map(InvoiceOffset.fromJson).toList();
     reservations = list('reservations').map(Reservation.fromJson).toList();
     restTabs = list('restTabs').map(RestTab.fromJson).toList();
     restConfig = j['restConfig'] is Map<String, dynamic> ? RestConfig.fromJson(j['restConfig'] as Map<String, dynamic>) : RestConfig();
@@ -547,6 +562,12 @@ class AppStore extends ChangeNotifier {
         'smsSchedules': smsSchedules.map((e) => e.toJson()).toList(),
         'reminders': reminders.map((e) => e.toJson()).toList(),
         'customStatements': customStatements.map((e) => e.toJson()).toList(),
+        'loyaltyCards': loyaltyCards.map((e) => e.toJson()).toList(),
+        'loyalty': loyalty.toJson(),
+        'redemptions': redemptions.map((e) => e.toJson()).toList(),
+        'draws': draws.map((e) => e.toJson()).toList(),
+        'messages': messages.map((e) => e.toJson()).toList(),
+        'offsets': offsets.map((e) => e.toJson()).toList(),
         'reservations': reservations.map((e) => e.toJson()).toList(),
         'restTabs': restTabs.map((e) => e.toJson()).toList(),
         'restConfig': restConfig.toJson(),
@@ -2915,6 +2936,124 @@ class AppStore extends ChangeNotifier {
   /// Opening cost per unit of a product (used for opening stock value).
   int openingCost(Product p) => p.openingCost > 0 ? p.openingCost : p.buyPrice;
 
+  // ---------------------------------------------------------------- کارت هواداری
+
+  /// Sales (net of returns) of the card owner since the card was issued.
+  int loyaltyPurchases(LoyaltyCard c) {
+    var t = 0;
+    for (final i in realInvoices.where((i) => i.personId == c.personId && !i.date.isBefore(dateOnly(c.issued)))) {
+      if (i.kind == InvoiceKind.sale) t += i.total;
+      if (i.kind == InvoiceKind.saleReturn) t -= i.total;
+    }
+    return t;
+  }
+
+  int loyaltyEarned(LoyaltyCard c) => loyalty.amountPerPoint <= 0 ? 0 : loyaltyPurchases(c) ~/ loyalty.amountPerPoint;
+  int loyaltyUsed(LoyaltyCard c) => redemptions.where((r) => r.card == c.number).fold(0, (a, r) => a + r.points);
+  int loyaltyPoints(LoyaltyCard c) => loyaltyEarned(c) - loyaltyUsed(c);
+
+  /// Uses [g] on card [c]; false when the points are not enough.
+  bool redeem(LoyaltyCard c, GiftRow g) {
+    if (loyaltyPoints(c) < g.points) return false;
+    redemptions.add(Redemption(id: newId(), card: c.number, date: DateTime.now(), points: g.points, title: g.title, amount: g.amount));
+    _commit();
+    return true;
+  }
+
+  // ---------------------------------------------------------------- قرعه کشی
+
+  /// Codes of a campaign: (code, invoice). One code per [minAmount] of each qualifying sale.
+  List<(String, Invoice)> drawCodes(DrawCampaign d) {
+    final out = <(String, Invoice)>[];
+    final list = realInvoices.where((i) => i.kind == InvoiceKind.sale && !i.date.isBefore(dateOnly(d.from)) && !i.date.isAfter(d.to)).toList()
+      ..sort((a, b) => a.number.compareTo(b.number));
+    for (final i in list) {
+      if (i.total < d.minAmount || i.total <= 0) continue;
+      final n = d.minAmount <= 0 ? 1 : (i.total ~/ d.minAmount).clamp(1, 100);
+      for (var k = 1; k <= n; k++) {
+        out.add(('${d.prefix}${i.number}${n > 1 ? '-$k' : ''}', i));
+      }
+    }
+    return out;
+  }
+
+  // ---------------------------------------------------------------- پیام های داخلی
+
+  List<InternalMessage> inbox(String userId) => messages.where((m) => m.to == userId || (m.to == '*' && m.from != userId)).toList()..sort((a, b) => b.date.compareTo(a.date));
+  int unreadFor(String userId) => inbox(userId).where((m) => !m.readBy.contains(userId)).length;
+
+  void sendMessage(String to, String text) {
+    messages.add(InternalMessage(id: newId(), from: currentUser.id, to: to, date: DateTime.now(), text: text));
+    if (messages.length > 2000) messages.removeAt(0);
+    _commit();
+  }
+
+  void markRead(String userId) {
+    for (final m in inbox(userId)) {
+      m.readBy.add(userId);
+    }
+    _commit();
+  }
+
+  // ---------------------------------------------------------------- پاکسازی
+
+  /// «حذف دفاتر اشخاص بدون تراکنش» / «حذف کالاهای بدون تراکنش».
+  List<Person> unusedPeople() => people.where((p) => !personInUse(p.id) && !invoices.any((i) => i.personId == p.id) && !employees.any((e) => e.personId == p.id)).toList();
+  List<Product> unusedProducts() => products.where((p) => !productInUse(p.id) && p.openingQty == 0 && !formulas.any((f) => f.productId == p.id || f.lines.any((l) => l.productId == p.id))).toList();
+
+  int removeUnused({bool persons = false, bool items = false}) {
+    var n = 0;
+    if (persons) {
+      final ids = {for (final p in unusedPeople()) p.id};
+      n += ids.length;
+      people.removeWhere((p) => ids.contains(p.id));
+    }
+    if (items) {
+      final ids = {for (final p in unusedProducts()) p.id};
+      n += ids.length;
+      products.removeWhere((p) => ids.contains(p.id));
+    }
+    _commit();
+    return n;
+  }
+
+  // ---------------------------------------------------------------- سربار
+
+  /// «سرشکن انحراف جذب سربار»: absorbed overhead (credits on 2050) against the
+  /// actual overhead on [actualLedger] in the range; the voucher closes both
+  /// and posts the difference to 5030.
+  (int, int) overheadVariance(DateTime from, DateTime to, {String actualLedger = '1170'}) {
+    var absorbed = 0, actual = 0;
+    for (final p in buildJournal(this)) {
+      if (p.date.isBefore(from) || p.date.isAfter(to)) continue;
+      if (p.moeen == '2050') absorbed += p.credit - p.debit;
+      if (p.moeen == actualLedger) actual += p.debit - p.credit;
+    }
+    return (absorbed, actual);
+  }
+
+  Voucher? postOverheadVariance(DateTime from, DateTime to, {String actualLedger = '1170'}) {
+    final (absorbed, actual) = overheadVariance(from, to, actualLedger: actualLedger);
+    if (absorbed == 0 && actual == 0) return null;
+    const desc = 'سرشکن انحراف جذب سربار';
+    final diff = actual - absorbed; // + : under-absorbed (expense)
+    final v = Voucher(
+      id: newId(),
+      number: nextVoucherNumber(),
+      fixedNumber: nextFixedNumber(),
+      date: to,
+      desc: desc,
+      kind: 'overheadVariance',
+      lines: [
+        if (absorbed != 0) VoucherLine(moeen: '2050', desc: desc, debit: absorbed > 0 ? absorbed : 0, credit: absorbed < 0 ? -absorbed : 0),
+        if (actual != 0) VoucherLine(moeen: actualLedger, desc: desc, debit: actual < 0 ? -actual : 0, credit: actual > 0 ? actual : 0),
+        if (diff != 0) VoucherLine(moeen: '5030', desc: desc, debit: diff > 0 ? diff : 0, credit: diff < 0 ? -diff : 0),
+      ],
+    );
+    saveVoucher(v);
+    return v;
+  }
+
   // ---------------------------------------------------------------- مراکز هزینه
 
   int nextCostCenterCode() => costCenters.fold<int>(1, (n, c) => c.code >= n ? c.code + 1 : n);
@@ -3051,7 +3190,8 @@ class AppStore extends ChangeNotifier {
       kind: InvoiceKind.sale,
       number: nextInvoiceNumber(InvoiceKind.sale),
       date: DateTime.now(),
-      personId: t.personId,
+      // «تسویه پیک»: an unpaid delivery is owed by the courier until settled
+      personId: t.personId ?? (!paid && t.mode == TabMode.delivery ? t.courierId : null),
       lines: [for (final l in t.lines.where((l) => l.qty > 0)) InvoiceLine(productId: l.productId, qty: l.qty, unitPrice: l.price)],
       discount: discount,
       extra: service + fee,

@@ -102,7 +102,7 @@ class _RestaurantState extends State<_Restaurant> {
                 items: [for (final a in cash) DropdownMenuItem<String?>(value: a.id, child: Text(a.name))],
                 onChanged: (v) => set(() => acc = v),
               ),
-            if (!paid && t.personId == null) const Text('برای ثبت نسیه، مشترک را انتخاب کنید', style: TextStyle(color: Colors.red)),
+            if (!paid && t.personId == null) Text(t.mode == TabMode.delivery && t.courierId != null ? 'مبلغ به حساب پیک ثبت می‌شود (تسویه پیک)' : 'برای ثبت نسیه، مشترک یا پیک را انتخاب کنید', style: const TextStyle(color: Colors.red)),
           ]),
         );
       }),
@@ -110,7 +110,7 @@ class _RestaurantState extends State<_Restaurant> {
     final discount = parseMoney(disc.text);
     disc.dispose();
     if (ok != true || !mounted) return;
-    if (!paid && t.personId == null) return toast(context, 'برای ثبت نسیه، مشترک را انتخاب کنید', error: true);
+    if (!paid && t.personId == null && (t.mode != TabMode.delivery || t.courierId == null)) return toast(context, 'برای ثبت نسیه، مشترک یا پیک را انتخاب کنید', error: true);
     final inv = s.settleTab(t, accountId: acc, discount: discount, paid: paid);
     printInvoice(s, inv);
     setState(() => _tab = null);
