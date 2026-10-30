@@ -79,6 +79,11 @@ class AppStore extends ChangeNotifier {
 
   /// «ووکامرس»: connection settings and the fetched site orders.
   WooConfig woo = WooConfig();
+
+  /// «تولید»: halls, formulas and production documents.
+  List<ProductionHall> halls = [];
+  List<ProductionFormula> formulas = [];
+  List<Production> productions = [];
   List<WooOrder> wooOrders = [];
 
   /// «حقوق و دستمزد».
@@ -249,6 +254,9 @@ class AppStore extends ChangeNotifier {
     hiddenButtons = hb is List ? {for (final x in hb) '$x'} : {};
     woo = j['woo'] is Map<String, dynamic> ? WooConfig.fromJson(j['woo'] as Map<String, dynamic>) : WooConfig();
     wooOrders = list('wooOrders').map(WooOrder.fromJson).toList();
+    halls = list('halls').map(ProductionHall.fromJson).toList();
+    formulas = list('formulas').map(ProductionFormula.fromJson).toList();
+    productions = list('productions').map(Production.fromJson).toList();
     employees = list('employees').map(Employee.fromJson).toList();
     payPeriods = list('payPeriods').map(PayPeriod.fromJson).toList();
     payslips = list('payslips').map(Payslip.fromJson).toList();
@@ -467,6 +475,9 @@ class AppStore extends ChangeNotifier {
         'hiddenButtons': hiddenButtons.toList(),
         'woo': woo.toJson(),
         'wooOrders': wooOrders.map((e) => e.toJson()).toList(),
+        'halls': halls.map((e) => e.toJson()).toList(),
+        'formulas': formulas.map((e) => e.toJson()).toList(),
+        'productions': productions.map((e) => e.toJson()).toList(),
         'employees': employees.map((e) => e.toJson()).toList(),
         'payPeriods': payPeriods.map((e) => e.toJson()).toList(),
         'payslips': payslips.map((e) => e.toJson()).toList(),
@@ -2038,6 +2049,13 @@ class AppStore extends ChangeNotifier {
         }
       }
     }
+    // «تولید»: produced units at their production cost
+    for (final pr in productions) {
+      if (pr.productId == productId && pr.qty > 0) {
+        qty += pr.qty;
+        cost += pr.totalCost;
+      }
+    }
     // costs charged to the product by vouchers (e.g. freight in a composite expense)
     for (final v in vouchers) {
       if (v.isYearEnd) continue;
@@ -2729,6 +2747,62 @@ class AppStore extends ChangeNotifier {
   /// Opening cost per unit of a product (used for opening stock value).
   int openingCost(Product p) => p.openingCost > 0 ? p.openingCost : p.buyPrice;
 
+  // ---------------------------------------------------------------- production
+
+  int nextProductionNumber() => productions.fold<int>(1, (n, p) => p.number >= n ? p.number + 1 : n);
+
+  /// «برآورد قیمت تمام شده»: (material cost, overhead) of producing [qty] with [f].
+  (int, int) estimateProduction(ProductionFormula f, double qty) {
+    var m = 0;
+    for (final l in f.scaled(qty)) {
+      m += (l.qty * avgCost(l.productId)).round();
+    }
+    return (m, f.overheadFor(qty));
+  }
+
+  /// Saves a production: freezes material costs and writes its stock movements.
+  void saveProduction(Production p) {
+    adjusts.removeWhere((a) => a.groupId == p.id);
+    productions.removeWhere((x) => x.id == p.id);
+    for (final l in p.lines) {
+      l.cost = (l.qty * avgCost(l.productId)).round();
+    }
+    productions.add(p);
+    final note = 'تولید شماره ${p.number}${p.note.isEmpty ? '' : ' — ${p.note}'}';
+    for (final l in p.lines.where((l) => l.qty != 0)) {
+      adjusts.add(StockAdjust(id: newId(), date: p.date, productId: l.productId, qty: -l.qty, reason: AdjustReason.produceOut, groupId: p.id, note: note, warehouseId: p.warehouseId, createdAt: p.createdAt));
+    }
+    adjusts.add(StockAdjust(id: newId(), date: p.date, productId: p.productId, qty: p.qty, reason: AdjustReason.produceIn, groupId: p.id, note: note, warehouseId: p.warehouseId, createdAt: p.createdAt + 1));
+    _log('ثبت', note, docDate: p.date);
+    _commit();
+  }
+
+  void removeProduction(String id) {
+    adjusts.removeWhere((a) => a.groupId == id);
+    productions.removeWhere((p) => p.id == id);
+    _commit();
+  }
+
+  void saveFormula(ProductionFormula f) {
+    final i = formulas.indexWhere((x) => x.id == f.id);
+    if (i >= 0) {
+      formulas[i] = f;
+    } else {
+      formulas.add(f);
+    }
+    _commit();
+  }
+
+  void saveHall(ProductionHall h) {
+    final i = halls.indexWhere((x) => x.id == h.id);
+    if (i >= 0) {
+      halls[i] = h;
+    } else {
+      halls.add(h);
+    }
+    _commit();
+  }
+
   // ---------------------------------------------------------------- stock adjustments
 
   void addAdjusts(List<StockAdjust> list) {
@@ -2740,6 +2814,7 @@ class AppStore extends ChangeNotifier {
   /// Removes an adjustment and its pair (for conversions).
   void removeAdjust(StockAdjust a) {
     adjusts.removeWhere((x) => x.id == a.id || (a.groupId.isNotEmpty && x.groupId == a.groupId));
+    productions.removeWhere((p) => p.id == a.groupId);
     _commit();
   }
 
@@ -2838,6 +2913,7 @@ class AppStore extends ChangeNotifier {
     for (final a in adjusts) {
       if (a.date.isBefore(from) || a.date.isAfter(to)) continue;
       if (a.reason == AdjustReason.convertIn || a.reason == AdjustReason.convertOut) continue;
+      if (a.reason == AdjustReason.produceIn || a.reason == AdjustReason.produceOut) continue;
       r.stockLoss += (-a.qty * c(a.productId)).round();
     }
     for (final inv in realInvoices) {

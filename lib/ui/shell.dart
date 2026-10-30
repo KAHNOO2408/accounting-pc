@@ -24,6 +24,7 @@ import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
+import 'dialogs/production_dialogs.dart';
 import 'dialogs/woo_dialogs.dart';
 import 'dialogs/orders_centers_dialogs.dart';
 import 'dialogs/voucher_dialog.dart';
@@ -233,6 +234,11 @@ final List<_Tab> _tabs = [
     ]),
   ]),
   _Tab('عملیات کالا', [
+    _Group('تولید', [
+      _Item('تولید حرفه ای', Icons.precision_manufacturing_outlined, _green, run: (c, _) => showProductions(c)),
+      _Item('فرمول های تولید', Icons.science_outlined, _green, run: (c, _) => showFormulas(c)),
+      _Item('سالن های تولید', Icons.factory_outlined, _green, run: (c, _) => showHalls(c)),
+    ]),
     _Group('انبار', [
       _Item('انبارگردانی', Icons.fact_check_outlined, _amber,
           shortcut: 'Ctrl+9', activator: _k(LogicalKeyboardKey.digit9, ctrl: true), run: _page(AppPage.stockCount)),

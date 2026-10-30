@@ -2178,4 +2178,45 @@ void main() {
     s.removeInvoice(inv.id);
     expect(s.wooOrders.single.invoiceId, isNull);
   });
+
+  test('production consumes materials and builds cost', () {
+    final s = _tempStore();
+    final flour = Product(id: newId(), name: 'Flour', unit: 'kg');
+    final sugar = Product(id: newId(), name: 'Sugar', unit: 'kg');
+    final cake = Product(id: newId(), name: 'Cake');
+    for (final p in [flour, sugar, cake]) {
+      s.upsertProduct(p);
+    }
+    final t = DateTime(2026, 10, 1);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.purchase, number: 1, date: t, lines: [
+      InvoiceLine(productId: flour.id, qty: 10, unitPrice: 2000),
+      InvoiceLine(productId: sugar.id, qty: 5, unitPrice: 4000),
+    ]));
+    final f = ProductionFormula(id: newId(), name: 'Cake', productId: cake.id, yieldQty: 2, overhead: 1000, lines: [
+      ProductionLine(productId: flour.id, qty: 1),
+      ProductionLine(productId: sugar.id, qty: 0.5),
+    ]);
+    s.saveFormula(f);
+    expect(s.estimateProduction(f, 4), (8000, 2000)); // 2kg flour + 1kg sugar
+    final pr = Production(id: newId(), number: s.nextProductionNumber(), date: t, productId: cake.id, qty: 4, lines: f.scaled(4), overhead: f.overheadFor(4));
+    s.saveProduction(pr);
+    expect(s.stock(flour.id), 8);
+    expect(s.stock(sugar.id), 4);
+    expect(s.stock(cake.id), 4);
+    expect(s.avgCost(cake.id), 2500);
+    expect(s.avgCost(flour.id), 2000);
+    final j = buildJournal(s);
+    expect(j.fold<int>(0, (a, p) => a + p.debit), j.fold<int>(0, (a, p) => a + p.credit));
+    int bal(String? t) => j.where((p) => p.moeen == mStock && p.tafsiliId == t).fold(0, (a, p) => a + p.debit - p.credit);
+    expect(bal(cake.id), 10000);
+    expect(bal(flour.id), 16000);
+    expect(j.where((p) => p.moeen == mAbsorbedOverhead).fold<int>(0, (a, p) => a + p.credit), 2000);
+    // re-saving does not duplicate stock movements
+    s.saveProduction(pr);
+    expect(s.stock(cake.id), 4);
+    expect(AppStore.open(s.storage).productions.single.totalCost, 10000);
+    s.removeProduction(pr.id);
+    expect(s.stock(flour.id), 10);
+    expect(s.stock(cake.id), 0);
+  });
 }

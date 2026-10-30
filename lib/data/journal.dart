@@ -244,8 +244,22 @@ List<Posting> buildJournal(AppStore s) {
   // ------------------------------------------------------- stock adjustments
   key = null;
   for (final a in s.adjusts) {
+    if (a.reason == AdjustReason.produceIn || a.reason == AdjustReason.produceOut) continue;
     final v = (a.qty * s.avgCost(a.productId)).round();
     pair(a.date, a.reason.label, a.note, v, drM: mStock, drT: a.productId, crM: mStockLoss, crT: a.productId, order: a.createdAt);
+  }
+
+  // ------------------------------------------------------------ «تولید»
+  // Dr finished product (materials + overhead) / Cr each material, Cr overhead.
+  for (final pr in s.productions) {
+    final label = 'تولید';
+    final desc = 'تولید شماره ${pr.number} — ${s.product(pr.productId)?.name ?? ''}';
+    for (final l in pr.lines.where((l) => l.cost != 0)) {
+      pair(pr.date, label, desc, l.cost, drM: mStock, drT: pr.productId, crM: mStock, crT: l.productId, no: pr.number, order: pr.createdAt);
+    }
+    if (pr.overhead != 0) {
+      pair(pr.date, label, desc, pr.overhead, drM: mStock, drT: pr.productId, crM: pr.overheadAcc, no: pr.number, order: pr.createdAt);
+    }
   }
 
   // ---------------------------------------------------------- امانی (memo)

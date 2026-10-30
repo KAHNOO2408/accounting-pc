@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'invoice_settings.dart';
 export 'invoice_settings.dart';
+export 'production.dart';
 
 String newId() {
   final r = Random();
@@ -1003,7 +1004,7 @@ class Invoice {
       );
 }
 
-enum AdjustReason { waste, consume, count, convertOut, convertIn }
+enum AdjustReason { waste, consume, count, convertOut, convertIn, produceOut, produceIn }
 
 extension AdjustReasonX on AdjustReason {
   String get label => switch (this) {
@@ -1012,6 +1013,8 @@ extension AdjustReasonX on AdjustReason {
         AdjustReason.count => 'اصلاح انبارگردانی',
         AdjustReason.convertOut => 'تبدیل (خروج)',
         AdjustReason.convertIn => 'تبدیل (ورود)',
+        AdjustReason.produceOut => 'مصرف در تولید',
+        AdjustReason.produceIn => 'تولید',
       };
 }
 
