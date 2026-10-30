@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/format.dart';
+import '../../core/jalali.dart' show normalizeDigits;
 import '../../data/models.dart';
 import '../../data/store.dart';
 import '../widgets/common.dart';
