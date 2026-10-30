@@ -9,7 +9,8 @@ class Storage {
 
   static String get sep => Platform.pathSeparator;
 
-  static Storage init() {
+  /// This computer's own data folder (%APPDATA%\TarazAccounting).
+  static Directory get localDir {
     final env = Platform.environment;
     String base;
     if (Platform.isWindows) {
@@ -19,7 +20,73 @@ class Storage {
     }
     final dir = Directory('$base${sep}TarazAccounting');
     if (!dir.existsSync()) dir.createSync(recursive: true);
-    return Storage(dir);
+    return dir;
+  }
+
+  static File get _serverFile => File('${localDir.path}${sep}server.json');
+
+  /// «اتصال به سرور»: a shared folder (e.g. \\PC1\Taraz) used instead of the
+  /// local data, so several computers work on the same books.
+  static String? get serverPath {
+    try {
+      if (!_serverFile.existsSync()) return null;
+      final j = jsonDecode(_serverFile.readAsStringSync());
+      final p = j is Map ? '${j['path'] ?? ''}' : '';
+      return p.isEmpty ? null : p;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static set serverPath(String? p) {
+    if (p == null || p.trim().isEmpty) {
+      if (_serverFile.existsSync()) _serverFile.deleteSync();
+    } else {
+      _serverFile.writeAsStringSync(jsonEncode({'path': p.trim()}), flush: true);
+    }
+  }
+
+  /// True when the data folder is the shared server folder.
+  static bool get networked {
+    final p = serverPath;
+    return p != null && Directory(p).existsSync();
+  }
+
+  static Storage init() {
+    final p = serverPath;
+    if (p != null) {
+      try {
+        final d = Directory(p);
+        if (d.existsSync()) return Storage(d);
+      } catch (_) {}
+    }
+    return Storage(localDir);
+  }
+
+  // ------------------------------------------------ concurrent use (network)
+
+  String _stamp = '';
+
+  String _currentStamp() {
+    try {
+      final st = dataFile.statSync();
+      return st.type == FileSystemEntityType.notFound ? '' : '${st.modified.millisecondsSinceEpoch}:${st.size}';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  /// Another computer saved the data after we last read or wrote it.
+  bool changedExternally() => _stamp.isNotEmpty && _currentStamp() != _stamp;
+
+  /// Name of the computer that saved last (written next to the data).
+  File get _writerFile => File('${dir.path}${sep}last-writer.txt');
+  String get lastWriter {
+    try {
+      return _writerFile.existsSync() ? _writerFile.readAsStringSync().trim() : '';
+    } catch (_) {
+      return '';
+    }
   }
 
   File get dataFile => File('${dir.path}${sep}data.json');
@@ -41,7 +108,10 @@ class Storage {
           final txt = f.readAsStringSync();
           if (txt.trim().isEmpty) continue;
           final j = jsonDecode(txt);
-          if (j is Map<String, dynamic>) return j;
+          if (j is Map<String, dynamic>) {
+            if (f.path == dataFile.path) _stamp = _currentStamp();
+            return j;
+          }
         }
       } catch (_) {
         // try the next candidate
@@ -65,6 +135,10 @@ class Storage {
         if (tmp.existsSync()) tmp.deleteSync();
       } catch (_) {}
     }
+    _stamp = _currentStamp();
+    try {
+      _writerFile.writeAsStringSync('${Platform.localHostname} ${DateTime.now().toIso8601String()}');
+    } catch (_) {}
   }
 
   /// A one-off copy of the data file before a format change (never deleted).

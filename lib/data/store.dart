@@ -621,6 +621,15 @@ class AppStore extends ChangeNotifier {
   }
 
   void _persist() {
+    // another computer on the network saved first: take its data, do not overwrite
+    if (storage.changedExternally()) {
+      final d = storage.read();
+      if (d != null) {
+        _fromJson(d);
+        lastError = 'اطلاعات همزمان در کامپیوتر دیگری (${storage.lastWriter.split(' ').first}) تغییر کرده بود؛ اطلاعات تازه بارگذاری شد و آخرین تغییر شما ذخیره نشد. لطفا دوباره ثبت کنید.';
+        return;
+      }
+    }
     try {
       storage.save(toJson());
       lastError = null;
@@ -633,6 +642,16 @@ class AppStore extends ChangeNotifier {
     _sortTxns();
     _persist();
     notifyListeners();
+  }
+
+  /// «شبکه»: reloads when another computer saved the shared data. Returns true when reloaded.
+  bool syncFromDisk() {
+    if (!storage.changedExternally()) return false;
+    final d = storage.read();
+    if (d == null) return false;
+    _fromJson(d);
+    notifyListeners();
+    return true;
   }
 
   /// Saves and notifies (used when another component edits fields directly).

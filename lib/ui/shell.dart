@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../core/jalali.dart';
 import '../data/journal.dart' show TbLevel;
 import '../data/models.dart';
+import '../data/storage.dart';
 import '../data/store.dart';
 import 'auth/auth_screens.dart';
 import 'dialogs/consign_dialogs.dart';
@@ -532,6 +533,7 @@ final List<_Tab> _tabs = [
           shortcut: 'F11', activator: _k(LogicalKeyboardKey.f11), run: (c, _) => quickBackup(c)),
       _Item('درباره ما', Icons.info_outline_rounded, _blue, run: (c, _) => showAboutTaraz(c)),
       _Item('اطلاعات نسخه خریداری شده', Icons.verified_outlined, _blue, run: (c, _) => showAboutTaraz(c, license: true)),
+      _Item('اتصال به سرور (شبکه)', Icons.lan_outlined, _slate, run: (c, _) => showServerSettings(c)),
       _Item('ارتباط از راه دور', Icons.support_agent_rounded, _slate, run: (c, _) => showRemoteSupport(c)),
     ]),
   ]),
@@ -579,13 +581,21 @@ class _ShellState extends State<Shell> {
     _autoTimer = Timer.periodic(const Duration(minutes: 5), (_) {
       if (mounted) unawaited(runAutoSms(StoreScope.read(context)));
     });
+    // «شبکه»: pick up what other computers saved
+    if (Storage.networked) {
+      _syncTimer = Timer.periodic(const Duration(seconds: 8), (_) {
+        if (mounted) StoreScope.read(context).syncFromDisk();
+      });
+    }
   }
 
   Timer? _autoTimer;
+  Timer? _syncTimer;
 
   @override
   void dispose() {
     _autoTimer?.cancel();
+    _syncTimer?.cancel();
     _searchFocus.dispose();
     super.dispose();
   }

@@ -9,6 +9,7 @@ import '../../core/jalali.dart';
 import '../../core/xlsx.dart';
 import '../../data/models.dart';
 import '../../data/scale.dart';
+import '../../data/storage.dart';
 import '../../data/store.dart';
 import '../../data/tax_report.dart';
 import '../print.dart' show openFile, printTable;
@@ -399,5 +400,68 @@ Future<void> showTaxFile(BuildContext context) {
         ]),
       );
     }),
+  );
+}
+
+// ================================================================ اتصال به سرور (شبکه)
+
+/// «لیست سرورها» / «اتصال اولیه»: work on a shared folder from several computers.
+Future<void> showServerSettings(BuildContext context) {
+  final s = StoreScope.read(context);
+  String? path = Storage.serverPath;
+  String? msg;
+  return showDialog<void>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, set) => FormDialog(
+        title: 'اتصال به سرور (کار شبکه‌ای)',
+        width: 640,
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('بستن')),
+          if (path != null)
+            OutlinedButton(
+              onPressed: () => set(() {
+                Storage.serverPath = null;
+                path = null;
+                msg = 'اتصال قطع شد؛ برنامه را دوباره باز کنید تا اطلاعات همین کامپیوتر استفاده شود.';
+              }),
+              child: const Text('قطع اتصال'),
+            ),
+          FilledButton.icon(
+            onPressed: () async {
+              final dir = await fs.getDirectoryPath(confirmButtonText: 'انتخاب پوشه مشترک');
+              if (dir == null) return;
+              final target = File('$dir${Storage.sep}data.json');
+              if (!target.existsSync()) {
+                // first computer: copy this computer's data to the server folder
+                s.storage.dataFile.copySync(target.path);
+              }
+              Storage.serverPath = dir;
+              set(() {
+                path = dir;
+                msg = target.existsSync() ? 'متصل شد. برنامه را ببندید و دوباره باز کنید.' : 'متصل شد.';
+              });
+            },
+            icon: const Icon(Icons.lan_outlined),
+            label: const Text('انتخاب پوشه مشترک'),
+          ),
+        ],
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Text('محل فعلی اطلاعات: ${s.storage.dir.path}', textDirection: TextDirection.ltr),
+          const SizedBox(height: 6),
+          Text(path == null ? 'حالت: تک کاربره (اطلاعات روی همین کامپیوتر)' : 'حالت: شبکه — $path', style: const TextStyle(fontWeight: FontWeight.w800)),
+          if (Storage.networked) Text('آخرین ذخیره: ${s.storage.lastWriter}', textDirection: TextDirection.ltr),
+          const SizedBox(height: 10),
+          const Text(
+            '۱. روی کامپیوتر اصلی (سرور) یک پوشه بسازید و آن را در شبکه به اشتراک بگذارید (دسترسی خواندن و نوشتن).\n'
+            '۲. در کامپیوتر اصلی «انتخاب پوشه مشترک» را بزنید؛ اطلاعات فعلی به آن پوشه منتقل می‌شود.\n'
+            '۳. در کامپیوترهای دیگر همان پوشه را از مسیر شبکه (مثلا \\\\PC1\\Taraz) انتخاب کنید.\n'
+            'هر کامپیوتر هر چند ثانیه تغییرات دیگران را می‌خواند. اگر دو نفر همزمان ثبت کنند، ثبت دوم ذخیره نمی‌شود و پیغام می‌دهد که دوباره ثبت شود.',
+            style: TextStyle(fontSize: 12.5, height: 1.7),
+          ),
+          if (msg != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(msg!, style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF2E7D32)))),
+        ]),
+      ),
+    ),
   );
 }

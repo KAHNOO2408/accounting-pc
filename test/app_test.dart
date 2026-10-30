@@ -2597,4 +2597,25 @@ void main() {
     expect(missingTaxInfo(rows), isEmpty);
     expect(AppStore.open(s.storage).person(p.id)!.info['nationalId'], '0012345678');
   });
+
+  test('network mode: a save from another computer is detected and loaded', () {
+    final dir = Directory.systemTemp.createTempSync('taraz_net');
+    final a = AppStore.open(Storage(dir));
+    final b = AppStore.open(Storage(dir));
+    a.upsertPerson(Person(id: newId(), name: 'From A'));
+    expect(b.storage.changedExternally(), isTrue);
+    expect(b.syncFromDisk(), isTrue);
+    expect(b.people.any((p) => p.name == 'From A'), isTrue);
+    expect(b.syncFromDisk(), isFalse);
+    // A saves again; B's next change is refused and B reloads A's data
+    a.upsertPerson(Person(id: newId(), name: 'A2'));
+    b.upsertPerson(Person(id: newId(), name: 'From B'));
+    expect(b.lastError, isNotNull);
+    expect(b.people.any((p) => p.name == 'A2'), isTrue);
+    expect(b.people.any((p) => p.name == 'From B'), isFalse);
+    b.upsertPerson(Person(id: newId(), name: 'From B'));
+    expect(b.lastError, isNull);
+    expect(a.syncFromDisk(), isTrue);
+    expect(a.people.any((p) => p.name == 'From B'), isTrue);
+  });
 }
