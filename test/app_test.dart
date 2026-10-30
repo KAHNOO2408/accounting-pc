@@ -19,6 +19,8 @@ import 'package:taraz/data/payroll.dart';
 import 'package:taraz/data/woo.dart';
 import 'package:taraz/data/serials.dart';
 import 'package:taraz/data/custom_reports.dart';
+import 'package:taraz/data/scale.dart';
+import 'package:taraz/data/tax_report.dart';
 import 'package:taraz/data/insurance_disk.dart';
 import 'package:taraz/core/iran_system.dart';
 import 'package:taraz/ui/dialogs/payroll_dialogs.dart';
@@ -2563,5 +2565,36 @@ void main() {
     final v = s.postOverheadVariance(DateTime(2026, 10, 1), DateTime(2026, 10, 30))!;
     expect(v.lines.firstWhere((l) => l.moeen == '5030').debit, 200);
     expect(s.overheadVariance(DateTime(2026, 10, 1), DateTime(2026, 10, 30)), (0, 0));
+  });
+
+  test('weighted barcodes, caller lookup and seasonal tax rows', () {
+    final s = _tempStore();
+    final cheese = Product(id: newId(), name: 'Cheese', code: '123', sellPrice: 500000, info: {'plu': '42', 'scale': '1', 'barcode': '6260000000017'});
+    s.upsertProduct(cheese);
+    expect(ean13Check('400638133393'), 1); // 4006381333931
+    final code = makeWeighted('21', '42', 1250, s.scale);
+    expect(code.length, 13);
+    expect(parseWeighted(code, s.scale), ('00042', 1250));
+    final hit = s.matchScan(code)!;
+    expect(hit.$1.id, cheese.id);
+    expect(hit.$2, 1.25);
+    expect(s.matchScan('6260000000017')!.$2, isNull);
+    expect(s.matchScan('123')!.$1.id, cheese.id);
+    expect(s.scaleFile(), contains('42,Cheese,500000'));
+
+    final p = Person(id: newId(), name: 'Caller', phone: '0912 111 2233', info: {'nationalId': '0012345678'});
+    s.upsertPerson(p);
+    expect(s.whoCalls('+989121112233').$1?.id, p.id);
+    expect(s.logCall('09121112233').personId, p.id);
+
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: DateTime(2026, 10, 1), personId: p.id, lines: [InvoiceLine(productId: cheese.id, qty: 2, unitPrice: 1000)]));
+    final (from, to) = seasonRange(1405, 3);
+    expect(from, DateTime(2026, 9, 23));
+    expect(to, DateTime(2026, 12, 21));
+    final rows = seasonRows(s, 1405, 3, sales: true);
+    expect(rows.single.amount, 2000);
+    expect(seasonTable(rows).single[2], '0012345678');
+    expect(missingTaxInfo(rows), isEmpty);
+    expect(AppStore.open(s.storage).person(p.id)!.info['nationalId'], '0012345678');
   });
 }

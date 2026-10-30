@@ -108,3 +108,26 @@ class InvoiceOffset {
   factory InvoiceOffset.fromJson(Map<String, dynamic> j) =>
       InvoiceOffset(id: _s(j['id']), saleId: _s(j['saleId']), purchaseId: _s(j['purchaseId']), amount: _i(j['amount']), date: _dt(j['date']) ?? DateTime.now());
 }
+
+/// «دفترچه تلفن»: a contact that is not an account.
+class Contact {
+  String id;
+  String name;
+  String phone;
+  String note;
+  Contact({required this.id, required this.name, this.phone = '', this.note = ''});
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'phone': phone, 'note': note};
+  factory Contact.fromJson(Map<String, dynamic> j) => Contact(id: _s(j['id']), name: _s(j['name']), phone: _s(j['phone']), note: _s(j['note']));
+}
+
+/// «لیست تماس های اخیر».
+class CallLog {
+  String number;
+  DateTime date;
+  String? personId;
+  String note;
+  CallLog({required this.number, required this.date, this.personId, this.note = ''});
+  Map<String, dynamic> toJson() => {'number': number, 'date': date.toIso8601String(), 'personId': personId, 'note': note};
+  factory CallLog.fromJson(Map<String, dynamic> j) =>
+      CallLog(number: _s(j['number']), date: _dt(j['date']) ?? DateTime.now(), personId: j['personId'] is String ? j['personId'] as String : null, note: _s(j['note']));
+}

@@ -25,6 +25,7 @@ import 'orders_centers_dialogs.dart' show showProductOrders, checkDailyQuota;
 import 'serial_dialogs.dart';
 import 'sms_dialogs.dart';
 import '../../data/serials.dart';
+import '../../data/scale.dart';
 
 String fmtQty(double q) {
   if (q == q.roundToDouble()) return q.toInt().toString();
@@ -1572,6 +1573,23 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                     line: l,
                     products: store.productsSorted.where((x) => !x.archived).toList(),
                     onPick: (p) => _pickProduct(l, p),
+                    onScan: (p, q) {
+                      if (q == null) {
+                        _pickProduct(l, p);
+                        return;
+                      }
+                      // weighted barcode: product and weight straight from the label
+                      setState(() {
+                        l.productId = p.id;
+                        l.title.text = p.name;
+                        l.unit = 1;
+                        l.factor = 1;
+                        l.qty.text = fmtQty(q);
+                        final price = _buy ? p.buyPrice : p.sellPrice;
+                        if (price > 0) l.price.text = groupDigits(price);
+                      });
+                      _addLine();
+                    },
                     onTyped: () {
                       final cur = store.product(l.productId);
                       if (cur != null && cur.name != l.title.text) setState(() => l.productId = null);
@@ -1894,12 +1912,16 @@ class _ProductField extends StatefulWidget {
   final ValueChanged<Product> onPick;
   final VoidCallback onTyped;
 
+  /// A scanned barcode (or weighted scale barcode with its quantity).
+  final void Function(Product, double?)? onScan;
+
   const _ProductField({
     super.key,
     required this.line,
     required this.products,
     required this.onPick,
     required this.onTyped,
+    this.onScan,
   });
 
   @override
@@ -1928,7 +1950,14 @@ class _ProductFieldState extends State<_ProductField> {
           controller: controller,
           focusNode: focus,
           onChanged: (_) => widget.onTyped(),
-          onSubmitted: (_) => onSubmit(),
+          onSubmitted: (v) {
+            final hit = widget.onScan == null ? null : StoreScope.read(context).matchScan(v);
+            if (hit != null) {
+              widget.onScan!(hit.$1, hit.$2);
+            } else {
+              onSubmit();
+            }
+          },
           style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF1F3BB3)),
           decoration: const InputDecoration(
             isDense: true,

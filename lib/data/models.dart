@@ -195,9 +195,15 @@ class Person {
     this.marketerPct = 0,
     this.currencyId,
     this.priceType = 0,
-  });
+    Map<String, String>? info,
+  }) : info = info ?? {};
+
+  /// «اطلاعات مالیاتی» and other extra fields: kind (حقیقی/حقوقی), nationalId,
+  /// economicCode, postalCode, address.
+  Map<String, String> info;
 
   Map<String, dynamic> toJson() => {
+        if (info.isNotEmpty) 'info': info,
         'id': id,
         'name': name,
         'phone': phone,
@@ -221,6 +227,7 @@ class Person {
         marketerPct: _dbl(j['marketerPct']),
         currencyId: _sn(j['currencyId']),
         priceType: _i(j['priceType']),
+        info: j['info'] is Map ? {for (final e in (j['info'] as Map).entries) '${e.key}': '${e.value}'} : null,
       );
 }
 

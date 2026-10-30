@@ -44,11 +44,11 @@ class _ProductDialogState extends State<_ProductDialog> {
   TextEditingController c(String k) => _c.putIfAbsent(k, TextEditingController.new);
 
   static const _infoText = [
-    'suffix', 'latin', 'techNo', 'unitLatin', 'barcode', 'barcodes', 'nationalBarcode', 'taxId', //
+    'suffix', 'latin', 'techNo', 'unitLatin', 'barcode', 'barcodes', 'nationalBarcode', 'taxId', 'plu', //
     'taxPct', 'dutyPct', 'returnPct', 'discountPct', 'marketingPct', 'consumerPrice', 'maxQty', 'orderPoint',
     'settleDays', 'giftRial', 'giftPct', 'unitDiscount',
   ];
-  static const _flagKeys = ['defIn', 'defOut', 'countable', 'hidden', 'restaurant', 'autoPrice', 'noNegCheck'];
+  static const _flagKeys = ['defIn', 'defOut', 'countable', 'hidden', 'restaurant', 'autoPrice', 'noNegCheck', 'scale'];
 
   @override
   void initState() {
@@ -510,6 +510,9 @@ class _ProductDialogState extends State<_ProductDialog> {
                       _f('barcode', width: 200, ltr: true),
                       const SizedBox(width: 6),
                       _btn('بارکدهای فرعی', _subBarcodes),
+                      const SizedBox(width: 6),
+                      _lbl('کد ترازو (PLU):', width: 110),
+                      _f('plu', width: 90, ltr: true),
                       const SizedBox(width: 14),
                       _lbl('وزن کیلو گرم:'),
                       _n('weight', width: 100, decimal: true),
@@ -534,6 +537,7 @@ class _ProductDialogState extends State<_ProductDialog> {
                     Wrap(spacing: 18, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
                       _chk('hidden', 'مخفی کردن در کاردکس'),
                       _chk('restaurant', 'کالای رستورانی،فروشگاهی'),
+                      _chk('scale', 'انتقال به حافظه ترازو'),
                       _chk('autoPrice', 'محاسبه اتوماتیک فی'),
                       _chk('noNegCheck', 'عدم کنترل کاردکس منفی'),
                       _btn(

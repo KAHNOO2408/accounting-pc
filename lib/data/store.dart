@@ -19,6 +19,7 @@ import 'storage.dart';
 import 'woo.dart';
 import 'custom_reports.dart';
 import 'journal.dart' show buildJournal;
+import 'scale.dart';
 
 class MonthTotals {
   int income = 0;
@@ -125,6 +126,13 @@ class AppStore extends ChangeNotifier {
   List<DrawCampaign> draws = [];
   List<InternalMessage> messages = [];
   List<InvoiceOffset> offsets = [];
+
+  /// «ترازو» (weighted barcodes) settings.
+  ScaleConfig scale = ScaleConfig();
+
+  /// «دفترچه تلفن» and «لیست تماس های اخیر».
+  List<Contact> contacts = [];
+  List<CallLog> calls = [];
   List<WooOrder> wooOrders = [];
 
   /// «حقوق و دستمزد».
@@ -322,6 +330,9 @@ class AppStore extends ChangeNotifier {
     draws = list('draws').map(DrawCampaign.fromJson).toList();
     messages = list('messages').map(InternalMessage.fromJson).toList();
     offsets = list('offsets').map(InvoiceOffset.fromJson).toList();
+    contacts = list('contacts').map(Contact.fromJson).toList();
+    calls = list('calls').map(CallLog.fromJson).toList();
+    scale = j['scale'] is Map<String, dynamic> ? ScaleConfig.fromJson(j['scale'] as Map<String, dynamic>) : ScaleConfig();
     reservations = list('reservations').map(Reservation.fromJson).toList();
     restTabs = list('restTabs').map(RestTab.fromJson).toList();
     restConfig = j['restConfig'] is Map<String, dynamic> ? RestConfig.fromJson(j['restConfig'] as Map<String, dynamic>) : RestConfig();
@@ -568,6 +579,9 @@ class AppStore extends ChangeNotifier {
         'draws': draws.map((e) => e.toJson()).toList(),
         'messages': messages.map((e) => e.toJson()).toList(),
         'offsets': offsets.map((e) => e.toJson()).toList(),
+        'scale': scale.toJson(),
+        'contacts': contacts.map((e) => e.toJson()).toList(),
+        'calls': calls.map((e) => e.toJson()).toList(),
         'reservations': reservations.map((e) => e.toJson()).toList(),
         'restTabs': restTabs.map((e) => e.toJson()).toList(),
         'restConfig': restConfig.toJson(),
@@ -2993,6 +3007,31 @@ class AppStore extends ChangeNotifier {
       m.readBy.add(userId);
     }
     _commit();
+  }
+
+  // ---------------------------------------------------------------- تماس ها
+
+  static String _tail(String n) {
+    final d = normalizeDigits(n).replaceAll(RegExp(r'\D'), '');
+    return d.length > 10 ? d.substring(d.length - 10) : d;
+  }
+
+  /// The person (or contact) a phone number belongs to.
+  (Person?, Contact?) whoCalls(String number) {
+    final t = _tail(number);
+    if (t.length < 5) return (null, null);
+    final p = people.where((p) => p.phone.split(RegExp(r'[,،\s-]+')).any((x) => _tail(x) == t)).firstOrNull;
+    if (p != null) return (p, null);
+    return (null, contacts.where((c) => _tail(c.phone) == t).firstOrNull);
+  }
+
+  /// «تماس جدید»: records an incoming call and returns who it is.
+  CallLog logCall(String number, {String note = ''}) {
+    final c = CallLog(number: normalizeDigits(number.trim()), date: DateTime.now(), personId: whoCalls(number).$1?.id, note: note);
+    calls.insert(0, c);
+    if (calls.length > 500) calls.removeRange(500, calls.length);
+    _commit();
+    return c;
   }
 
   // ---------------------------------------------------------------- پاکسازی
