@@ -64,6 +64,7 @@ class _TxnDialogState extends State<TxnDialog> {
   String? _account;
   String? _toAccount;
   String? _category;
+  String? _cc;
   String? _person;
   DateTime? _due;
   final _amount = TextEditingController();
@@ -90,6 +91,7 @@ class _TxnDialogState extends State<TxnDialog> {
       _account = e.accountId;
       _toAccount = e.toAccountId;
       _category = e.categoryId;
+      _cc = e.costCenterId;
       _person = e.personId;
       _due = e.dueDate;
       _amount.text = groupDigits(e.amount);
@@ -170,6 +172,7 @@ class _TxnDialogState extends State<TxnDialog> {
       ..accountId = _account
       ..toAccountId = _type == TxnType.transfer ? _toAccount : null
       ..categoryId = _type.hasCategory ? _category : null
+      ..costCenterId = _type.hasCategory ? _cc : null
       ..personId = _person
       ..dueDate = (_type == TxnType.lend || _type == TxnType.borrow) ? _due : null
       ..note = _note.text.trim();
@@ -382,6 +385,18 @@ class _TxnDialogState extends State<TxnDialog> {
                       icon: const Icon(Icons.add_rounded),
                     ),
                   ],
+                ),
+              ],
+              if (_type.hasCategory && store.costCenters.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                FieldDropdown<String?>(
+                  label: 'مرکز هزینه (رکورد)',
+                  value: _cc,
+                  items: [
+                    const DropdownMenuItem<String?>(value: null, child: Text('—')),
+                    for (final c in store.costCenters) DropdownMenuItem<String?>(value: c.id, child: Text('${c.code}  ${c.name}')),
+                  ],
+                  onChanged: (v) => setState(() => _cc = v),
                 ),
               ],
               if (_type != TxnType.transfer) ...[

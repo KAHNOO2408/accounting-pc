@@ -103,6 +103,10 @@ class AppStore extends ChangeNotifier {
 
   /// «دفترچه اقساط».
   List<InstallmentPlan> installmentPlans = [];
+
+  /// «مراکز رکورد (هزینه)».
+  List<CostCenter> costCenters = [];
+  List<CostCenterGroup> costCenterGroups = [];
   List<WooOrder> wooOrders = [];
 
   /// «حقوق و دستمزد».
@@ -282,6 +286,8 @@ class AppStore extends ChangeNotifier {
     restTables = list('restTables').map(RestTable.fromJson).toList();
     balanceDeals = list('balanceDeals').map(BalanceDeal.fromJson).toList();
     installmentPlans = list('installmentPlans').map(InstallmentPlan.fromJson).toList();
+    costCenters = list('costCenters').map(CostCenter.fromJson).toList();
+    costCenterGroups = list('costCenterGroups').map(CostCenterGroup.fromJson).toList();
     reservations = list('reservations').map(Reservation.fromJson).toList();
     restTabs = list('restTabs').map(RestTab.fromJson).toList();
     restConfig = j['restConfig'] is Map<String, dynamic> ? RestConfig.fromJson(j['restConfig'] as Map<String, dynamic>) : RestConfig();
@@ -512,6 +518,8 @@ class AppStore extends ChangeNotifier {
         'restTables': restTables.map((e) => e.toJson()).toList(),
         'balanceDeals': balanceDeals.map((e) => e.toJson()).toList(),
         'installmentPlans': installmentPlans.map((e) => e.toJson()).toList(),
+        'costCenters': costCenters.map((e) => e.toJson()).toList(),
+        'costCenterGroups': costCenterGroups.map((e) => e.toJson()).toList(),
         'reservations': reservations.map((e) => e.toJson()).toList(),
         'restTabs': restTabs.map((e) => e.toJson()).toList(),
         'restConfig': restConfig.toJson(),
@@ -2786,6 +2794,36 @@ class AppStore extends ChangeNotifier {
 
   /// Opening cost per unit of a product (used for opening stock value).
   int openingCost(Product p) => p.openingCost > 0 ? p.openingCost : p.buyPrice;
+
+  // ---------------------------------------------------------------- مراکز هزینه
+
+  int nextCostCenterCode() => costCenters.fold<int>(1, (n, c) => c.code >= n ? c.code + 1 : n);
+
+  /// Rows charged to cost centers: (center id, date, title, debit, credit).
+  /// Expense transactions are debits, income transactions credits; voucher
+  /// rows keep their own side.
+  List<(String, DateTime, String, int, int)> costCenterRows({DateTime? from, DateTime? to}) {
+    bool inRange(DateTime d) => (from == null || !d.isBefore(from)) && (to == null || !d.isAfter(to));
+    final out = <(String, DateTime, String, int, int)>[];
+    for (final t in txns) {
+      final c = t.costCenterId;
+      if (c == null || !inRange(t.date)) continue;
+      final title = '${t.type.label}${category(t.categoryId) == null ? '' : ' — ${category(t.categoryId)!.name}'}${t.note.isEmpty ? '' : ' — ${t.note}'}';
+      if (t.type == TxnType.income) {
+        out.add((c, t.date, title, 0, t.amount));
+      } else {
+        out.add((c, t.date, title, t.amount, 0));
+      }
+    }
+    for (final v in vouchers) {
+      if (!inRange(v.date)) continue;
+      for (final l in v.lines.where((l) => l.costCenterId != null)) {
+        out.add((l.costCenterId!, v.date, 'سند ${v.number} — ${findMoeen(l.moeen)?.name ?? l.moeen}${l.desc.isEmpty ? '' : ' — ${l.desc}'}', l.debit, l.credit));
+      }
+    }
+    out.sort((a, b) => a.$2.compareTo(b.$2));
+    return out;
+  }
 
   // ---------------------------------------------------------------- دفترچه اقساط
 

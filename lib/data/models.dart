@@ -248,7 +248,10 @@ class VoucherLine {
   String? currencyId;
   double fx;
 
-  VoucherLine({required this.moeen, this.tafsiliId, this.desc = '', this.debit = 0, this.credit = 0, this.currencyId, this.fx = 0});
+  /// «مرکز هزینه (رکورد)» of the row.
+  String? costCenterId;
+
+  VoucherLine({required this.moeen, this.tafsiliId, this.desc = '', this.debit = 0, this.credit = 0, this.currencyId, this.fx = 0, this.costCenterId});
 
   VoucherLine copy() => VoucherLine.fromJson(toJson());
 
@@ -260,9 +263,11 @@ class VoucherLine {
         'credit': credit,
         if (currencyId != null) 'currencyId': currencyId,
         if (fx != 0) 'fx': fx,
+        if (costCenterId != null) 'costCenterId': costCenterId,
       };
 
   factory VoucherLine.fromJson(Map<String, dynamic> j) => VoucherLine(
+        costCenterId: _sn(j['costCenterId']),
         moeen: _s(j['moeen']),
         tafsiliId: _sn(j['tafsiliId']),
         desc: _s(j['desc']),
@@ -513,6 +518,9 @@ class Txn {
   String? loanId;
   int createdAt;
 
+  /// «مرکز هزینه (رکورد)».
+  String? costCenterId;
+
   Txn({
     required this.id,
     required this.type,
@@ -546,6 +554,7 @@ class Txn {
         'chequeId': chequeId,
         'invoiceId': invoiceId,
         'loanId': loanId,
+        if (costCenterId != null) 'costCenterId': costCenterId,
         'createdAt': createdAt,
       };
 
@@ -564,7 +573,7 @@ class Txn {
         invoiceId: _sn(j['invoiceId']),
         loanId: _sn(j['loanId']),
         createdAt: _i(j['createdAt']),
-      );
+      )..costCenterId = _sn(j['costCenterId']);
 
   /// Effect of this transaction on a given account's balance.
   int effectOn(String accId) {
@@ -2247,3 +2256,23 @@ class CenterGroup {
 
 /// «وضعیت سفارش» of a pro-forma (order).
 const orderStatuses = ['در انتظار', 'در حال انجام', 'خاتمه یافته', 'بلوکه شده', 'منتفی شده'];
+
+/// «مرکز هزینه (رکورد)» and its group.
+class CostCenter {
+  String id;
+  int code;
+  String name;
+  String? groupId;
+  String note;
+  CostCenter({required this.id, this.code = 0, required this.name, this.groupId, this.note = ''});
+  Map<String, dynamic> toJson() => {'id': id, 'code': code, 'name': name, 'groupId': groupId, 'note': note};
+  factory CostCenter.fromJson(Map<String, dynamic> j) => CostCenter(id: _s(j['id']), code: _i(j['code']), name: _s(j['name']), groupId: _sn(j['groupId']), note: _s(j['note']));
+}
+
+class CostCenterGroup {
+  String id;
+  String name;
+  CostCenterGroup({required this.id, required this.name});
+  Map<String, dynamic> toJson() => {'id': id, 'name': name};
+  factory CostCenterGroup.fromJson(Map<String, dynamic> j) => CostCenterGroup(id: _s(j['id']), name: _s(j['name']));
+}

@@ -24,6 +24,7 @@ import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
+import 'dialogs/cost_center_dialogs.dart';
 import 'dialogs/serial_dialogs.dart';
 import 'dialogs/installment_dialogs.dart';
 import 'dialogs/extra_reports.dart';
@@ -457,6 +458,7 @@ final List<_Tab> _tabs = [
       _Item('معرفی دفاتر مالی', Icons.library_add_outlined, _green, run: (c, _) => showBooksManager(c)),
       _Item('مرکز اسناد', Icons.home_work_outlined, _amber, run: (c, _) => showDocCentersDialog(c)),
       _Item('مرکز دفاتر', Icons.domain_outlined, _slate, run: (c, _) => showBookCenters(c)),
+      _Item('مراکز رکورد (هزینه)', Icons.workspaces_outline, _slate, run: (c, _) => showCostCenters(c)),
       _Item('بازاریابان', Icons.campaign_outlined, _green, run: (c, _) => showMarketersWindow(c)),
       _Item('گروه‌های یارانه', Icons.group_work_outlined, _green, run: (c, _) => showSubsidyGroups(c)),
       _Item('مدل تخفیفات و اشانتیون', Icons.redeem_outlined, _violet, run: (c, _) => showDiscountModels(c)),

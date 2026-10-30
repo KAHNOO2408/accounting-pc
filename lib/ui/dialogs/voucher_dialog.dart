@@ -507,6 +507,7 @@ class _LineDialogState extends State<_LineDialog> {
   String? _kol;
   String? _moeen;
   String? _tafsili;
+  String? _cc;
   final _desc = TextEditingController();
   final _debit = TextEditingController();
   final _credit = TextEditingController();
@@ -520,6 +521,7 @@ class _LineDialogState extends State<_LineDialog> {
       _moeen = l.moeen;
       _kol = findMoeen(l.moeen)?.kolCode;
       _tafsili = l.tafsiliId;
+      _cc = l.costCenterId;
       _desc.text = l.desc;
       if (l.debit > 0) _debit.text = groupDigits(l.debit);
       if (l.credit > 0) _credit.text = groupDigits(l.credit);
@@ -557,7 +559,7 @@ class _LineDialogState extends State<_LineDialog> {
     }
     Navigator.pop(
       context,
-      VoucherLine(moeen: _moeen!, tafsiliId: m!.hasEntity ? _tafsili : null, desc: _desc.text.trim(), debit: d, credit: c),
+      VoucherLine(moeen: _moeen!, tafsiliId: m!.hasEntity ? _tafsili : null, desc: _desc.text.trim(), debit: d, credit: c, costCenterId: _cc),
     );
   }
 
@@ -628,6 +630,18 @@ class _LineDialogState extends State<_LineDialog> {
                   padding: const EdgeInsets.only(top: 4),
                   child: Text('هنوز تفصیلی برای این حساب تعریف نشده', style: th.textTheme.labelSmall?.copyWith(color: th.colorScheme.error)),
                 ),
+            ],
+            if (store.costCenters.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              FieldDropdown<String?>(
+                label: 'مرکز هزینه (رکورد)',
+                value: _cc,
+                items: [
+                  const DropdownMenuItem<String?>(value: null, child: Text('—')),
+                  for (final c in store.costCenters) DropdownMenuItem<String?>(value: c.id, child: Text('${c.code}  ${c.name}')),
+                ],
+                onChanged: (v) => setState(() => _cc = v),
+              ),
             ],
             const SizedBox(height: 12),
             TextField(controller: _desc, decoration: const InputDecoration(labelText: 'شرح')),

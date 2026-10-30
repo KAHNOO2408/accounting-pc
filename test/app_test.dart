@@ -2422,4 +2422,24 @@ void main() {
     expect(AppStore.open(s.storage).invoices.firstWhere((i) => i.id == sale.id).lines.single.serials, ['A2']);
     expect(InvoiceLine.fromJson(buy.lines.last.toJson()).variant, 'آبی / M');
   });
+
+  test('cost centers collect expense txns and voucher rows', () {
+    final s = _tempStore();
+    final c = CostCenter(id: newId(), code: s.nextCostCenterCode(), name: 'Shop');
+    s.costCenters.add(c);
+    s.upsertTxn(Txn(id: newId(), type: TxnType.expense, amount: 700, date: DateTime(2026, 10, 1), accountId: s.activeAccounts.first.id)..costCenterId = c.id);
+    s.upsertTxn(Txn(id: newId(), type: TxnType.income, amount: 200, date: DateTime(2026, 10, 2), accountId: s.activeAccounts.first.id)..costCenterId = c.id);
+    s.saveVoucher(Voucher(id: newId(), number: s.nextVoucherNumber(), fixedNumber: s.nextFixedNumber(), date: DateTime(2026, 10, 3), lines: [
+      VoucherLine(moeen: '5005', debit: 50, costCenterId: c.id),
+      VoucherLine(moeen: '1010', credit: 50),
+    ]));
+    final rows = s.costCenterRows();
+    expect(rows.length, 3);
+    expect(rows.fold<int>(0, (a, r) => a + r.$4), 750);
+    expect(rows.fold<int>(0, (a, r) => a + r.$5), 200);
+    expect(s.costCenterRows(from: DateTime(2026, 10, 2)).length, 2);
+    final again = AppStore.open(s.storage);
+    expect(again.costCenterRows().length, 3);
+    expect(again.costCenters.single.code, 1);
+  });
 }
