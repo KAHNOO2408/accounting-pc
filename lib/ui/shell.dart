@@ -24,6 +24,7 @@ import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
+import 'dialogs/woo_dialogs.dart';
 import 'dialogs/orders_centers_dialogs.dart';
 import 'dialogs/voucher_dialog.dart';
 import 'dialogs/txn_dialog.dart';
@@ -250,6 +251,10 @@ final List<_Tab> _tabs = [
           shortcut: 'Ctrl+F7', activator: _k(LogicalKeyboardKey.f7, ctrl: true), run: _page(AppPage.proformas)),
       _Item('سفارشات', Icons.assignment_outlined, _cyan, run: (c, _) => showOrders(c)),
       _Item('تعیین سفارش روزانه', Icons.today_outlined, _cyan, run: (c, _) => showDailyQuota(c)),
+    ]),
+    _Group('فروشگاه اینترنتی', [
+      _Item('لیست فاکتورهای ووکامرس', Icons.shopping_cart_checkout_rounded, _violet, run: (c, _) => showWooOrders(c)),
+      _Item('تنظیمات ووکامرس', Icons.settings_ethernet_rounded, _violet, run: (c, _) => showWooSettings(c)),
     ]),
     _Group('امانی', [
       _Item('دریافت امانی', Icons.move_to_inbox_outlined, _violet, run: (c, _) => showConsignEditor(c, ConsignDir.received)),

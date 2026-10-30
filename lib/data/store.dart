@@ -16,6 +16,7 @@ import 'models.dart';
 import 'payroll.dart';
 import 'report_layout.dart';
 import 'storage.dart';
+import 'woo.dart';
 
 class MonthTotals {
   int income = 0;
@@ -75,6 +76,10 @@ class AppStore extends ChangeNotifier {
   List<BookCenter> bookCenters = [];
   List<CenterGroup> centerGroups = [];
   Set<String> hiddenButtons = {};
+
+  /// «ووکامرس»: connection settings and the fetched site orders.
+  WooConfig woo = WooConfig();
+  List<WooOrder> wooOrders = [];
 
   /// «حقوق و دستمزد».
   List<Employee> employees = [];
@@ -242,6 +247,8 @@ class AppStore extends ChangeNotifier {
     centerGroups = list('centerGroups').map(CenterGroup.fromJson).toList();
     final hb = j['hiddenButtons'];
     hiddenButtons = hb is List ? {for (final x in hb) '$x'} : {};
+    woo = j['woo'] is Map<String, dynamic> ? WooConfig.fromJson(j['woo'] as Map<String, dynamic>) : WooConfig();
+    wooOrders = list('wooOrders').map(WooOrder.fromJson).toList();
     employees = list('employees').map(Employee.fromJson).toList();
     payPeriods = list('payPeriods').map(PayPeriod.fromJson).toList();
     payslips = list('payslips').map(Payslip.fromJson).toList();
@@ -458,6 +465,8 @@ class AppStore extends ChangeNotifier {
         'bookCenters': bookCenters.map((e) => e.toJson()).toList(),
         'centerGroups': centerGroups.map((e) => e.toJson()).toList(),
         'hiddenButtons': hiddenButtons.toList(),
+        'woo': woo.toJson(),
+        'wooOrders': wooOrders.map((e) => e.toJson()).toList(),
         'employees': employees.map((e) => e.toJson()).toList(),
         'payPeriods': payPeriods.map((e) => e.toJson()).toList(),
         'payslips': payslips.map((e) => e.toJson()).toList(),
@@ -2229,6 +2238,9 @@ class AppStore extends ChangeNotifier {
 
   void removeInvoice(String id) {
     final inv = invoices.where((i) => i.id == id).firstOrNull;
+    for (final o in wooOrders) {
+      if (o.invoiceId == id) o.invoiceId = null;
+    }
     if (inv != null && !inv.proforma) {
       final who = person(inv.personId)?.name ?? 'متفرقه';
       _recycle('inv:$id', number: docMeta['inv:$id']?.number ?? inv.number, date: inv.date,

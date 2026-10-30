@@ -16,6 +16,7 @@ import 'package:taraz/data/kardex.dart';
 import 'package:taraz/data/discounts.dart';
 import 'package:taraz/data/marketing.dart';
 import 'package:taraz/data/payroll.dart';
+import 'package:taraz/data/woo.dart';
 import 'package:taraz/ui/dialogs/payroll_dialogs.dart';
 import 'package:taraz/ui/dialogs/orders_centers_dialogs.dart';
 import 'package:taraz/data/models.dart';
@@ -2130,5 +2131,51 @@ void main() {
     s.setHiddenButtons({'سفارشات'});
     expect(s.canUse('سفارشات'), isFalse);
     expect(AppStore.open(s.storage).hiddenButtons, {'سفارشات'});
+  });
+
+  test('woocommerce orders become sale invoices', () {
+    final s = _tempStore();
+    final acc = s.activeAccounts.first;
+    final pr = Product(id: newId(), name: 'Mug', code: 'MUG-1');
+    s.upsertProduct(pr);
+    final old = Person(id: newId(), name: 'Old name', phone: '0912 123 4567');
+    s.upsertPerson(old);
+    s.woo = WooConfig(url: 'shop.test/', key: 'ck', secret: 'cs', factor: 10, payAccounts: {'zarinpal': acc.id});
+    expect(wooUri(s.woo, 'orders', {'page': '1'}).toString(), 'https://shop.test/wp-json/wc/v3/orders?page=1');
+    final api = {
+      'id': 77,
+      'number': '77',
+      'status': 'processing',
+      'date_created': '2026-10-29T10:00:00',
+      'total': '23000',
+      'shipping_total': '5000',
+      'discount_total': '2000',
+      'total_tax': '0',
+      'payment_method': 'zarinpal',
+      'payment_method_title': 'زرین پال',
+      'billing': {'first_name': 'Ali', 'last_name': 'R', 'phone': '+98۹۱۲۱۲۳۴۵۶۷', 'city': 'Tehran', 'address_1': 'St 1'},
+      'shipping': {'first_name': '', 'last_name': ''},
+      'line_items': [
+        {'name': 'Mug', 'sku': 'MUG-1', 'quantity': 2, 'price': 5000, 'subtotal': '10000', 'total': '9000'},
+        {'name': 'Gift wrap', 'sku': '', 'quantity': 1, 'price': 10000, 'subtotal': '10000', 'total': '9000'},
+      ],
+    };
+    final o = WooOrder.fromApi(api);
+    expect(o.items.length, 2);
+    expect(o.recipient, 'Ali R');
+    expect(mergeWooOrders(s, [o]), 1);
+    expect(mergeWooOrders(s, [WooOrder.fromApi(api)]), 0);
+    final inv = wooToInvoice(s, s.wooOrders.single);
+    expect(inv.personId, old.id); // matched by phone
+    expect(inv.lines.first.productId, pr.id);
+    expect(inv.lines.last.productId, isNull);
+    expect(inv.total, 230000); // toman ×10
+    expect(inv.extra, 50000);
+    expect(inv.discount, 20000);
+    expect(s.personBalance(old.id), 0); // paid through the mapped account
+    expect(s.wooOrders.single.invoiceId, inv.id);
+    expect(AppStore.open(s.storage).wooOrders.single.invoiceId, inv.id);
+    s.removeInvoice(inv.id);
+    expect(s.wooOrders.single.invoiceId, isNull);
   });
 }
