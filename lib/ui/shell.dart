@@ -534,6 +534,7 @@ final List<_Tab> _tabs = [
       _Item('درباره ما', Icons.info_outline_rounded, _blue, run: (c, _) => showAboutTaraz(c)),
       _Item('اطلاعات نسخه خریداری شده', Icons.verified_outlined, _blue, run: (c, _) => showAboutTaraz(c, license: true)),
       _Item('اتصال به سرور (شبکه)', Icons.lan_outlined, _slate, run: (c, _) => showServerSettings(c)),
+      _Item('تنظیم پرینترها', Icons.print_outlined, _slate, run: (c, _) => showPrinterSettings(c)),
       _Item('ارتباط از راه دور', Icons.support_agent_rounded, _slate, run: (c, _) => showRemoteSupport(c)),
     ]),
   ]),

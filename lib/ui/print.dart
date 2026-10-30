@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import '../core/format.dart';
@@ -178,6 +179,32 @@ ${footer == null ? '' : '<tfoot><tr>${[for (var i = 0; i < footer.length; i++) c
   f.writeAsStringSync(html, flush: true);
   openFile(f.path);
   return f.path;
+}
+
+/// Printers of the system (Windows), for «پرینتر آشپزخانه» / «پرینتر حواله انبار».
+Future<List<String>> systemPrinters() async {
+  if (!Platform.isWindows) return [];
+  try {
+    final r = await Process.run('powershell', ['-NoProfile', '-Command', 'Get-Printer | Select-Object -ExpandProperty Name'], stdoutEncoding: utf8);
+    return '${r.stdout}'.split(RegExp(r'\r?\n')).map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+  } catch (_) {
+    return [];
+  }
+}
+
+/// Prints plain text straight to [printer] without a dialog (Windows Notepad /pt).
+Future<bool> printTextTo(String printer, String text, {String fileName = 'slip'}) async {
+  if (!Platform.isWindows || printer.isEmpty) return false;
+  try {
+    final dir = Directory('${Storage.userFolder.path}${Storage.sep}prints');
+    if (!dir.existsSync()) dir.createSync(recursive: true);
+    final f = File('${dir.path}${Storage.sep}$fileName.txt');
+    f.writeAsBytesSync([0xEF, 0xBB, 0xBF, ...utf8.encode(text)], flush: true);
+    final r = await Process.run('notepad.exe', ['/pt', f.path, printer]);
+    return r.exitCode == 0;
+  } catch (_) {
+    return false;
+  }
 }
 
 /// Prints a small slip — a customer receipt, a repair label or a kitchen

@@ -133,6 +133,9 @@ class AppStore extends ChangeNotifier {
   /// «دفترچه تلفن» and «لیست تماس های اخیر».
   List<Contact> contacts = [];
   List<CallLog> calls = [];
+
+  /// «پرینتر های آشپزخانه» / «پرینتر های حواله انبار»: role → Windows printer name.
+  Map<String, String> printers = {};
   List<WooOrder> wooOrders = [];
 
   /// «حقوق و دستمزد».
@@ -332,6 +335,7 @@ class AppStore extends ChangeNotifier {
     offsets = list('offsets').map(InvoiceOffset.fromJson).toList();
     contacts = list('contacts').map(Contact.fromJson).toList();
     calls = list('calls').map(CallLog.fromJson).toList();
+    printers = j['printers'] is Map ? {for (final e in (j['printers'] as Map).entries) '${e.key}': '${e.value}'} : {};
     scale = j['scale'] is Map<String, dynamic> ? ScaleConfig.fromJson(j['scale'] as Map<String, dynamic>) : ScaleConfig();
     reservations = list('reservations').map(Reservation.fromJson).toList();
     restTabs = list('restTabs').map(RestTab.fromJson).toList();
@@ -582,6 +586,7 @@ class AppStore extends ChangeNotifier {
         'scale': scale.toJson(),
         'contacts': contacts.map((e) => e.toJson()).toList(),
         'calls': calls.map((e) => e.toJson()).toList(),
+        'printers': printers,
         'reservations': reservations.map((e) => e.toJson()).toList(),
         'restTabs': restTabs.map((e) => e.toJson()).toList(),
         'restConfig': restConfig.toJson(),
@@ -3763,4 +3768,24 @@ class ProfitReport {
   int get grossProfit => netSales - cogs;
   int get netProfit =>
       grossProfit + saleExtra - purchaseExtra + purchaseInvoiceDiscounts + discountsReceived - discountsGiven + otherIncome - expenses - stockLoss;
+}
+
+/// Plain-text slip for a 80mm printer (42 columns).
+String textSlip(String title, List<(String, String)> fields, List<List<String>> rows, {String footer = ''}) {
+  final b = StringBuffer()
+    ..writeln(title)
+    ..writeln('-' * 32);
+  for (final (k, v) in fields) {
+    b.writeln('$k: $v');
+  }
+  if (rows.isNotEmpty) b.writeln('-' * 32);
+  for (final r in rows) {
+    b.writeln(r.where((c) => c.isNotEmpty).join('  '));
+  }
+  if (footer.isNotEmpty) {
+    b
+      ..writeln('-' * 32)
+      ..writeln(footer);
+  }
+  return b.toString();
 }

@@ -12,6 +12,7 @@ import '../../data/sms.dart' show autoInvoiceSms;
 import '../../data/storage.dart';
 import '../../data/store.dart';
 import '../print_designer.dart';
+import '../print.dart' show printTextTo;
 import '../theme.dart';
 import '../widgets/common.dart';
 import 'composite_dialogs.dart';
@@ -1349,6 +1350,26 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                   }, icon: Icons.sms_outlined),
                   const SizedBox(width: 6),
                   _btn('تسویه امانی', _settleConsign, icon: Icons.assignment_turned_in_outlined),
+                  if ((StoreScope.of(context).printers['warehouse'] ?? '').isNotEmpty) ...[
+                    const SizedBox(width: 6),
+                    _btn('حواله به پرینتر انبار', () async {
+                      final inv = await _save(close: false, settle: false, draft: true);
+                      if (inv == null || !mounted) return;
+                      final s = StoreScope.read(context);
+                      final ok = await printTextTo(
+                        s.printers['warehouse']!,
+                        textSlip('حواله انبار — ${inv.kind.label} ${inv.number}', [
+                          ('تاریخ', jFormat(inv.date)),
+                          ('طرف حساب', s.person(inv.personId)?.name ?? 'متفرقه'),
+                        ], [
+                          for (final l in inv.lines.where((l) => l.productId != null))
+                            [s.product(l.productId)?.name ?? '', '${fmtQty(l.shownQty)} ${s.product(l.productId)?.unitName(l.unitNo) ?? ''}', l.variant],
+                        ]),
+                        fileName: 'havale',
+                      );
+                      if (mounted) toast(context, ok ? 'حواله به پرینتر انبار ارسال شد' : 'چاپ نشد؛ نام پرینتر را بررسی کنید', error: !ok);
+                    }, icon: Icons.print_outlined),
+                  ],
                   const SizedBox(width: 6),
                   PopupMenuButton<bool>(
                     tooltip: 'اعمال تخفیف',

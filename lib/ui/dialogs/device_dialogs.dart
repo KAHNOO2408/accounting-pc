@@ -12,7 +12,7 @@ import '../../data/scale.dart';
 import '../../data/storage.dart';
 import '../../data/store.dart';
 import '../../data/tax_report.dart';
-import '../print.dart' show openFile, printTable;
+import '../print.dart' show openFile, printTable, printTextTo, systemPrinters;
 import '../widgets/common.dart';
 import '../widgets/sakan.dart';
 
@@ -464,4 +464,78 @@ Future<void> showServerSettings(BuildContext context) {
       ),
     ),
   );
+}
+
+// ================================================================ پرینترها
+
+/// «پرینتر های آشپزخانه» / «پرینتر های حواله انبار»: slips go straight to these printers.
+Future<void> showPrinterSettings(BuildContext context) => showDialog<void>(context: context, builder: (_) => const _Printers());
+
+class _Printers extends StatefulWidget {
+  const _Printers();
+
+  @override
+  State<_Printers> createState() => _PrintersState();
+}
+
+class _PrintersState extends State<_Printers> {
+  List<String>? _list;
+
+  @override
+  void initState() {
+    super.initState();
+    systemPrinters().then((v) {
+      if (mounted) setState(() => _list = v);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = StoreScope.of(context);
+    Widget row(String role, String label) {
+      final cur = s.printers[role] ?? '';
+      final items = {...?_list, if (cur.isNotEmpty) cur}.toList();
+      return Row(children: [
+        SizedBox(width: 170, child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700))),
+        Expanded(
+          child: DropdownButton<String>(
+            isExpanded: true,
+            value: cur,
+            items: [const DropdownMenuItem(value: '', child: Text('— چاپ معمولی با پنجره چاپ —')), for (final p in items) DropdownMenuItem(value: p, child: Text(p))],
+            onChanged: (v) => setState(() {
+              if (v == null || v.isEmpty) {
+                s.printers.remove(role);
+              } else {
+                s.printers[role] = v;
+              }
+              s.updateSettings((_) {});
+            }),
+          ),
+        ),
+        TextButton(
+          onPressed: cur.isEmpty
+              ? null
+              : () async {
+                  final ok = await printTextTo(cur, textSlip('چاپ آزمایشی $label', [('تاریخ', jFormat(DateTime.now()))], const []), fileName: 'test');
+                  if (context.mounted) toast(context, ok ? 'ارسال شد' : 'چاپ نشد', error: !ok);
+                },
+          child: const Text('چاپ آزمایشی'),
+        ),
+      ]);
+    }
+
+    return FormDialog(
+      title: 'تنظیم پرینترها',
+      width: 640,
+      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('بستن'))],
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        if (_list == null) const LinearProgressIndicator(),
+        if (_list != null && _list!.isEmpty) const Text('پرینتری پیدا نشد (فقط در ویندوز).'),
+        row('kitchen', 'پرینتر آشپزخانه'),
+        row('warehouse', 'پرینتر حواله انبار'),
+        const SizedBox(height: 8),
+        const Text('فیش آشپزخانه و حواله انبار بدون باز شدن پنجره چاپ مستقیم به این پرینترها فرستاده می‌شوند.', style: TextStyle(fontSize: 12)),
+      ]),
+    );
+  }
 }

@@ -4,7 +4,7 @@ import '../../core/format.dart';
 import '../../core/jalali.dart';
 import '../../data/models.dart';
 import '../../data/store.dart';
-import '../print.dart' show printInvoice, printSlip;
+import '../print.dart' show printInvoice, printSlip, printTextTo;
 import '../widgets/common.dart';
 import '../widgets/sakan.dart';
 import 'invoice_editor.dart' show fmtQty, pickPersonId;
@@ -47,6 +47,18 @@ class _RestaurantState extends State<_Restaurant> {
     final rows = s.takeKitchenRows(t);
     if (rows.isEmpty) return toast(context, 'ردیف جدیدی برای آشپزخانه نیست');
     final table = s.restTables.where((x) => x.id == t.tableId).firstOrNull;
+    final printer = s.printers['kitchen'] ?? '';
+    if (printer.isNotEmpty) {
+      final text = textSlip(
+        'فیش آشپزخانه',
+        [('نوع', t.mode.label), if (table != null) ('میز', table.title), ('ساعت', _hm(DateTime.now())), if (t.note.isNotEmpty) ('هشدار', t.note)],
+        [for (final (l, d) in rows) [s.product(l.productId)?.name ?? '', d < 0 ? 'لغو ${fmtQty(-d)}' : fmtQty(d), l.note]],
+      );
+      for (var k = 0; k < s.restConfig.kitchenCopies; k++) {
+        printTextTo(printer, text, fileName: 'kitchen');
+      }
+      return;
+    }
     printSlip(
       store: s,
       title: 'فیش آشپزخانه',
