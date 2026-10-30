@@ -5,6 +5,7 @@ export 'production.dart';
 export 'guarantee.dart';
 export 'service.dart';
 export 'restaurant.dart';
+export 'balance_deal.dart';
 
 String newId() {
   final r = Random();
@@ -335,6 +336,7 @@ class Voucher {
         'fx' => 'سند ارزی',
         'subsidy' => 'سهم یارانه',
         'costAdjust' => 'تعدیل قیمت تمام شده کالا',
+        'balance' => 'خرید بالانس',
         'revaluation' => 'تسعیر نرخ ارز',
         'staffLoan' => 'پرداخت وام پرسنل',
         _ => 'سند دستی',

@@ -24,6 +24,7 @@ import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
+import 'dialogs/balance_dialogs.dart';
 import 'dialogs/restaurant_dialogs.dart';
 import 'dialogs/service_dialogs.dart';
 import 'dialogs/guarantee_dialogs.dart';
@@ -252,6 +253,11 @@ final List<_Tab> _tabs = [
       _Item('ضایعات یا مصرف کالا', Icons.delete_sweep_outlined, _red,
           shortcut: 'Ctrl+7', activator: _k(LogicalKeyboardKey.digit7, ctrl: true), run: (c, _) => showWasteDialog(c)),
       _Item('تبدیل کالا', Icons.autorenew_rounded, _amber, run: (c, _) => showConvertDialog(c)),
+    ]),
+    _Group('بالانس', [
+      _Item('خرید بالانس', Icons.local_shipping_outlined, _blue, run: (c, _) => showBalanceEditor(c)),
+      _Item('برگشت از خرید بالانس', Icons.assignment_return_outlined, _red, run: (c, _) => showBalanceEditor(c, isReturn: true)),
+      _Item('لیست خرید بالانس', Icons.list_alt_rounded, _blue, run: (c, _) => showBalanceDeals(c)),
     ]),
     _Group('پیش فاکتور', [
       _Item('پیش فاکتور', Icons.note_add_outlined, _cyan,

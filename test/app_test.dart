@@ -2317,4 +2317,33 @@ void main() {
     final fname = 1 + 10 + 2 + 2 + 12 + 8;
     expect(rec.sublist(fname, fname + 4), [0xF6, 0xFE, 0xA8, 0x9F]);
   });
+
+  test('balance purchase posts buyer, seller and brokerage income', () {
+    final s = _tempStore();
+    final seller = Person(id: newId(), name: 'Seller');
+    final buyer = Person(id: newId(), name: 'Buyer');
+    s.upsertPerson(seller);
+    s.upsertPerson(buyer);
+    final d = BalanceDeal(id: newId(), number: s.nextBalanceNumber(false), date: DateTime(2026, 10, 2), sellerId: seller.id, buyerId: buyer.id,
+        lines: [BalanceLine(title: 'Cement', qty: 10, buyPrice: 1000, sellPrice: 1200)], sellerDiscount: 500);
+    s.saveBalanceDeal(d);
+    expect(d.margin, 2500);
+    expect(s.personBalance(buyer.id), 12000);
+    expect(s.personBalance(seller.id), -9500);
+    final j = buildJournal(s);
+    expect(j.where((p) => p.moeen == '4025').fold<int>(0, (a, p) => a + p.credit - p.debit), 2500);
+    // editing keeps one voucher
+    d.lines.first.qty = 20;
+    s.saveBalanceDeal(d);
+    expect(s.vouchers.where((v) => v.kind == 'balance').length, 1);
+    expect(s.personBalance(buyer.id), 24000);
+    final r = BalanceDeal(id: newId(), number: s.nextBalanceNumber(true), date: DateTime(2026, 10, 3), isReturn: true, sellerId: seller.id, buyerId: buyer.id,
+        lines: [BalanceLine(title: 'Cement', qty: 5, buyPrice: 1000, sellPrice: 1200)]);
+    s.saveBalanceDeal(r);
+    expect(s.personBalance(buyer.id), 18000);
+    expect(s.personBalance(seller.id), -19500 + 5000);
+    s.removeBalanceDeal(r.id);
+    expect(s.personBalance(buyer.id), 24000);
+    expect(AppStore.open(s.storage).balanceDeals.single.lines.first.qty, 20);
+  });
 }

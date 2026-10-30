@@ -97,6 +97,9 @@ class AppStore extends ChangeNotifier {
   List<Reservation> reservations = [];
   List<RestTab> restTabs = [];
   RestConfig restConfig = RestConfig();
+
+  /// «خرید بالانس».
+  List<BalanceDeal> balanceDeals = [];
   List<WooOrder> wooOrders = [];
 
   /// «حقوق و دستمزد».
@@ -274,6 +277,7 @@ class AppStore extends ChangeNotifier {
     warranties = list('warranties').map(Warranty.fromJson).toList();
     receptions = list('receptions').map(Reception.fromJson).toList();
     restTables = list('restTables').map(RestTable.fromJson).toList();
+    balanceDeals = list('balanceDeals').map(BalanceDeal.fromJson).toList();
     reservations = list('reservations').map(Reservation.fromJson).toList();
     restTabs = list('restTabs').map(RestTab.fromJson).toList();
     restConfig = j['restConfig'] is Map<String, dynamic> ? RestConfig.fromJson(j['restConfig'] as Map<String, dynamic>) : RestConfig();
@@ -502,6 +506,7 @@ class AppStore extends ChangeNotifier {
         'warranties': warranties.map((e) => e.toJson()).toList(),
         'receptions': receptions.map((e) => e.toJson()).toList(),
         'restTables': restTables.map((e) => e.toJson()).toList(),
+        'balanceDeals': balanceDeals.map((e) => e.toJson()).toList(),
         'reservations': reservations.map((e) => e.toJson()).toList(),
         'restTabs': restTabs.map((e) => e.toJson()).toList(),
         'restConfig': restConfig.toJson(),
@@ -2776,6 +2781,55 @@ class AppStore extends ChangeNotifier {
 
   /// Opening cost per unit of a product (used for opening stock value).
   int openingCost(Product p) => p.openingCost > 0 ? p.openingCost : p.buyPrice;
+
+  // ---------------------------------------------------------------- خرید بالانس
+
+  int nextBalanceNumber(bool isReturn) => balanceDeals.where((d) => d.isReturn == isReturn).fold<int>(1, (n, d) => d.number >= n ? d.number + 1 : n);
+
+  /// Saves a deal and (re)writes its voucher: Dr buyer / Cr seller / Cr margin.
+  void saveBalanceDeal(BalanceDeal d) {
+    final old = vouchers.where((v) => v.id == d.voucherId).firstOrNull;
+    vouchers.removeWhere((v) => v.id == d.voucherId);
+    final desc = '${d.label} ${d.number}${d.note.isEmpty ? '' : ' — ${d.note}'}';
+    final sign = d.isReturn ? -1 : 1;
+    final lines = <VoucherLine>[];
+    void add(String m, String? t, int amount) {
+      if (amount == 0) return;
+      lines.add(VoucherLine(moeen: m, tafsiliId: t, desc: desc, debit: amount > 0 ? amount : 0, credit: amount < 0 ? -amount : 0));
+    }
+
+    add(mDebtorsTrade, d.buyerId, sign * d.sellTotal);
+    add(mDebtorsTrade, d.sellerId, -sign * d.buyTotal);
+    add(d.incomeAcc, null, -sign * d.margin);
+    final v = Voucher(
+      id: old?.id ?? newId(),
+      number: old?.number ?? nextVoucherNumber(),
+      fixedNumber: old?.fixedNumber ?? nextFixedNumber(),
+      date: d.date,
+      desc: desc,
+      kind: 'balance',
+      meta: {'deal': d.id},
+      lines: lines,
+    );
+    vouchers.add(v);
+    d.voucherId = v.id;
+    final i = balanceDeals.indexWhere((x) => x.id == d.id);
+    if (i >= 0) {
+      balanceDeals[i] = d;
+    } else {
+      balanceDeals.add(d);
+      _log('ثبت', desc, docDate: d.date);
+    }
+    _commit();
+  }
+
+  void removeBalanceDeal(String id) {
+    final d = balanceDeals.where((x) => x.id == id).firstOrNull;
+    if (d == null) return;
+    vouchers.removeWhere((v) => v.id == d.voucherId);
+    balanceDeals.remove(d);
+    _commit();
+  }
 
   // ---------------------------------------------------------------- رستوران
 
