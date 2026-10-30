@@ -19,6 +19,7 @@ import 'storage.dart';
 import 'woo.dart';
 import 'custom_reports.dart';
 import 'journal.dart' show buildJournal;
+import 'merge.dart';
 import 'scale.dart';
 
 class MonthTotals {
@@ -230,6 +231,7 @@ class AppStore extends ChangeNotifier {
       store._persist();
     } else {
       store._fromJson(data);
+      store._base = jsonEncode(data);
       if (store._needsSave) {
         s.backupBefore('sakan-codes');
         store._persist();
@@ -630,21 +632,34 @@ class AppStore extends ChangeNotifier {
     });
   }
 
+  /// The data as last read from / written to disk (base of the network merge).
+  String? _base;
+
   void _persist() {
-    // another computer on the network saved first: take its data, do not overwrite
-    if (storage.changedExternally()) {
-      final d = storage.read();
-      if (d != null) {
-        _fromJson(d);
-        lastError = 'اطلاعات همزمان در کامپیوتر دیگری (${storage.lastWriter.split(' ').first}) تغییر کرده بود؛ اطلاعات تازه بارگذاری شد و آخرین تغییر شما ذخیره نشد. لطفا دوباره ثبت کنید.';
-        return;
-      }
-    }
+    final networked = Storage.networked || storage.changedExternally();
+    final locked = networked && storage.lock();
     try {
-      storage.save(toJson());
+      var data = toJson();
+      // another computer saved meanwhile: merge record by record, keep both
+      if (storage.changedExternally()) {
+        final remote = storage.read();
+        if (remote != null && _base != null) {
+          final base = jsonDecode(_base!) as Map<String, dynamic>;
+          data = mergeMaps(base, jsonDecode(jsonEncode(data)) as Map<String, dynamic>, remote);
+          renumberCollisions(data, base, remote);
+          _fromJson(data);
+        } else if (remote != null) {
+          data = remote;
+          _fromJson(remote);
+        }
+      }
+      storage.save(data);
+      _base = jsonEncode(data);
       lastError = null;
     } catch (e) {
       lastError = 'خطا در ذخیره اطلاعات: $e';
+    } finally {
+      if (locked) storage.unlock();
     }
   }
 
@@ -660,6 +675,7 @@ class AppStore extends ChangeNotifier {
     final d = storage.read();
     if (d == null) return false;
     _fromJson(d);
+    _base = jsonEncode(d);
     notifyListeners();
     return true;
   }

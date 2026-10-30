@@ -79,6 +79,36 @@ class Storage {
   /// Another computer saved the data after we last read or wrote it.
   bool changedExternally() => _stamp.isNotEmpty && _currentStamp() != _stamp;
 
+  /// Exclusive write lock between computers (data.lock). Stale locks (older
+  /// than 15 s) are taken over. Returns false if the lock was not obtained.
+  bool lock({Duration wait = const Duration(seconds: 4)}) {
+    final f = File('${dir.path}${sep}data.lock');
+    final end = DateTime.now().add(wait);
+    while (true) {
+      try {
+        f.createSync(exclusive: true);
+        f.writeAsStringSync(Platform.localHostname);
+        return true;
+      } catch (_) {
+        try {
+          if (f.existsSync() && DateTime.now().difference(f.lastModifiedSync()).inSeconds > 15) {
+            f.deleteSync();
+            continue;
+          }
+        } catch (_) {}
+        if (DateTime.now().isAfter(end)) return false;
+        sleep(const Duration(milliseconds: 60));
+      }
+    }
+  }
+
+  void unlock() {
+    try {
+      final f = File('${dir.path}${sep}data.lock');
+      if (f.existsSync()) f.deleteSync();
+    } catch (_) {}
+  }
+
   /// Name of the computer that saved last (written next to the data).
   File get _writerFile => File('${dir.path}${sep}last-writer.txt');
   String get lastWriter {

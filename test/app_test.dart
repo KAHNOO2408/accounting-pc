@@ -22,6 +22,7 @@ import 'package:taraz/data/custom_reports.dart';
 import 'package:taraz/data/scale.dart';
 import 'package:taraz/data/tax_report.dart';
 import 'package:taraz/data/tools.dart';
+import 'package:taraz/data/merge.dart';
 import 'package:taraz/data/insurance_disk.dart';
 import 'package:taraz/core/iran_system.dart';
 import 'package:taraz/ui/dialogs/payroll_dialogs.dart';
@@ -2599,7 +2600,7 @@ void main() {
     expect(AppStore.open(s.storage).person(p.id)!.info['nationalId'], '0012345678');
   });
 
-  test('network mode: a save from another computer is detected and loaded', () {
+  test('network mode: concurrent saves are merged record by record', () {
     final dir = Directory.systemTemp.createTempSync('taraz_net');
     final a = AppStore.open(Storage(dir));
     final b = AppStore.open(Storage(dir));
@@ -2608,17 +2609,33 @@ void main() {
     expect(b.syncFromDisk(), isTrue);
     expect(b.people.any((p) => p.name == 'From A'), isTrue);
     expect(b.syncFromDisk(), isFalse);
-    // A saves again; B's next change is refused and B reloads A's data
+    // both save without seeing each other: nothing is lost
     a.upsertPerson(Person(id: newId(), name: 'A2'));
     b.upsertPerson(Person(id: newId(), name: 'From B'));
-    expect(b.lastError, isNotNull);
-    expect(b.people.any((p) => p.name == 'A2'), isTrue);
-    expect(b.people.any((p) => p.name == 'From B'), isFalse);
-    b.upsertPerson(Person(id: newId(), name: 'From B'));
     expect(b.lastError, isNull);
+    expect(b.people.map((p) => p.name).toSet().containsAll({'A2', 'From B', 'From A'}), isTrue);
     expect(a.syncFromDisk(), isTrue);
     expect(a.people.any((p) => p.name == 'From B'), isTrue);
+    // same invoice number given on both computers: the later one is renumbered
+    final pr = Product(id: newId(), name: 'P');
+    a.upsertProduct(pr);
+    b.syncFromDisk();
+    final n = a.nextInvoiceNumber(InvoiceKind.sale);
+    expect(b.nextInvoiceNumber(InvoiceKind.sale), n);
+    a.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: n, date: DateTime(2026, 10, 1), lines: [InvoiceLine(productId: pr.id, qty: 1, unitPrice: 10)]));
+    b.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: n, date: DateTime(2026, 10, 1), lines: [InvoiceLine(productId: pr.id, qty: 2, unitPrice: 10)]));
+    final nums = b.invoices.where((i) => i.kind == InvoiceKind.sale).map((i) => i.number).toList()..sort();
+    expect(nums, [n, n + 1]);
+    // edit on one side and delete on the other: the edit wins; plain deletes apply
+    final p = a.people.firstWhere((p) => p.name == 'A2');
+    a.syncFromDisk();
+    b.removePerson(b.people.firstWhere((x) => x.name == 'From A').id);
+    a.upsertPerson(p..phone = '0912');
+    expect(a.people.any((x) => x.name == 'From A'), isFalse);
+    expect(a.people.firstWhere((x) => x.name == 'A2').phone, '0912');
+    expect(merge3({'x': 1, 'y': 1}, {'x': 2, 'y': 1}, {'x': 1, 'y': 3}), {'x': 2, 'y': 3});
   });
+
 
   test('price formulas, standard barcodes, combined voucher, guarantor', () {
     final s = _tempStore();

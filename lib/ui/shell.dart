@@ -593,7 +593,7 @@ class _ShellState extends State<Shell> {
     });
     // «شبکه»: pick up what other computers saved
     if (Storage.networked) {
-      _syncTimer = Timer.periodic(const Duration(seconds: 8), (_) {
+      _syncTimer = Timer.periodic(const Duration(seconds: 3), (_) {
         if (mounted) StoreScope.read(context).syncFromDisk();
       });
     }
