@@ -2015,4 +2015,27 @@ void main() {
     s.updateSettings((x) => x.saleOptions = o);
     expect(AppStore.open(s.storage).settings.saleOptions.minPct, 10);
   });
+
+  test('ارز: currencies, foreign entries, revaluation', () {
+    final s = _tempStore();
+    final usd = Currency(id: newId(), name: 'دلار', sign: r'$', rate: 60000);
+    expect(s.saveCurrency(usd), isNull);
+    expect(s.saveCurrency(Currency(id: newId(), name: 'دلار')), isNotNull);
+    final p = Person(id: newId(), name: 'Supplier', currencyId: usd.id);
+    s.upsertPerson(p);
+    s.saveVoucher(Voucher(id: newId(), number: 1, fixedNumber: 1, date: DateTime(2026, 9, 1), kind: 'fx', lines: [
+      VoucherLine(moeen: mDebtorsFx, tafsiliId: p.id, debit: 6000000, currencyId: usd.id, fx: 100),
+      VoucherLine(moeen: mCapital, credit: 6000000),
+    ]));
+    expect(s.fxBalances().values.single, (100.0, 6000000));
+    final v = s.revalue(DateTime(2026, 10, 1), {usd.id: 70000})!;
+    expect(v.totalDebit, v.totalCredit);
+    expect(v.lines.firstWhere((l) => l.moeen == mFxGain).credit, 1000000);
+    expect(s.fxBalances().values.single, (100.0, 7000000));
+    expect(s.currency(usd.id)!.rate, 70000);
+    expect(s.removeCurrency(usd.id), isNotNull);
+    final again = AppStore.open(s.storage);
+    expect(again.person(p.id)!.currencyId, usd.id);
+    expect(again.vouchers.first.lines.first.fx, 100);
+  });
 }

@@ -14,6 +14,7 @@ import '../report/report_render.dart';
 import '../shell.dart';
 import '../widgets/common.dart';
 import 'consign_dialogs.dart';
+import 'fx_dialogs.dart';
 import 'bank_dialogs.dart';
 import 'misc_dialogs.dart';
 import 'product_dialog.dart';
@@ -1441,7 +1442,7 @@ class _LedgerState extends State<_Ledger> {
       const PopupMenuItem(value: 'fx', child: Text('گزارش از گردش ارزی')),
     ]);
     if (!mounted || sub == null) return;
-    if (sub == 'fx') return showComingSoon(context, 'گزارش از گردش ارزی');
+    if (sub == 'fx') return showFxTurnover(context, tafsiliId: widget.acc.person?.id ?? widget.acc.account?.id);
     if (top == 'design') return _design(s, all, shown, create: sub == 'new');
     _print(s, all, shown, carried: sub == 'carried');
   }

@@ -62,6 +62,9 @@ class AppStore extends ChangeNotifier {
   /// «امانی» documents.
   List<Consignment> consignments = [];
 
+  /// «ارزهای سیستم».
+  List<Currency> currencies = [];
+
   /// «حقوق و دستمزد».
   List<Employee> employees = [];
   List<PayPeriod> payPeriods = [];
@@ -220,6 +223,7 @@ class AppStore extends ChangeNotifier {
     smsLog = list('smsLog').map(SmsLogEntry.fromJson).toList();
     units = list('units').map(CountUnit.fromJson).toList();
     consignments = list('consignments').map(Consignment.fromJson).toList();
+    currencies = list('currencies').map(Currency.fromJson).toList();
     employees = list('employees').map(Employee.fromJson).toList();
     payPeriods = list('payPeriods').map(PayPeriod.fromJson).toList();
     payslips = list('payslips').map(Payslip.fromJson).toList();
@@ -429,6 +433,7 @@ class AppStore extends ChangeNotifier {
         'smsLog': smsLog.map((e) => e.toJson()).toList(),
         'units': units.map((e) => e.toJson()).toList(),
         'consignments': consignments.map((e) => e.toJson()).toList(),
+        'currencies': currencies.map((e) => e.toJson()).toList(),
         'employees': employees.map((e) => e.toJson()).toList(),
         'payPeriods': payPeriods.map((e) => e.toJson()).toList(),
         'payslips': payslips.map((e) => e.toJson()).toList(),
@@ -1195,6 +1200,87 @@ class AppStore extends ChangeNotifier {
   void removeConsignReturn(String consignId, String returnId) {
     consignment(consignId)?.returns.removeWhere((r) => r.id == returnId);
     _commit();
+  }
+
+  // ---------------------------------------------------------------- ارز
+
+  Currency? currency(String? id) => currencies.where((c) => c.id == id).firstOrNull;
+
+  String? saveCurrency(Currency c) {
+    if (c.name.trim().isEmpty) return 'نام ارز را وارد کنید';
+    if (currencies.any((x) => x.id != c.id && x.name == c.name.trim())) return 'ارز «${c.name}» تکراری است';
+    c.name = c.name.trim();
+    if (c.isDefault) {
+      for (final x in currencies) {
+        x.isDefault = false;
+      }
+    }
+    final i = currencies.indexWhere((x) => x.id == c.id);
+    if (i >= 0) {
+      currencies[i] = c;
+    } else {
+      currencies.add(c);
+    }
+    _commit();
+    return null;
+  }
+
+  String? removeCurrency(String id) {
+    if (people.any((p) => p.currencyId == id) || vouchers.any((v) => v.lines.any((l) => l.currencyId == id))) {
+      return 'این ارز در حساب‌ها یا اسناد استفاده شده و حذف نمی‌شود';
+    }
+    currencies.removeWhere((c) => c.id == id);
+    _commit();
+    return null;
+  }
+
+  /// Foreign balances: key «moeen|tafsili|currency» → (fx amount, book value in system currency), up to [to].
+  Map<String, (double, int)> fxBalances({DateTime? to}) {
+    final out = <String, (double, int)>{};
+    for (final v in vouchers) {
+      if (to != null && v.date.isAfter(to)) continue;
+      for (final l in v.lines) {
+        if (l.currencyId == null) continue;
+        final k = '${l.moeen}|${l.tafsiliId ?? ''}|${l.currencyId}';
+        final o = out[k] ?? (0.0, 0);
+        out[k] = (o.$1 + l.fx, o.$2 + l.debit - l.credit);
+      }
+    }
+    return out;
+  }
+
+  /// «تسعیر نرخ ارز»: one voucher bringing every foreign balance to [rates]
+  /// (currency id → new rate); differences go to [gainAcc] / [lossAcc].
+  Voucher? revalue(DateTime date, Map<String, int> rates, {String gainAcc = mFxGain, String lossAcc = mFxLoss}) {
+    final lines = <VoucherLine>[];
+    var net = 0;
+    fxBalances(to: date).forEach((k, b) {
+      final p = k.split('|');
+      final rate = rates[p[2]];
+      if (rate == null || b.$1 == 0) return;
+      final diff = (b.$1 * rate).round() - b.$2;
+      if (diff == 0) return;
+      final cur = currency(p[2]);
+      lines.add(VoucherLine(
+        moeen: p[0],
+        tafsiliId: p[1].isEmpty ? null : p[1],
+        desc: 'تسعیر ${cur?.name ?? ''} به نرخ ${groupDigits(rate)}',
+        debit: diff > 0 ? diff : 0,
+        credit: diff < 0 ? -diff : 0,
+        currencyId: p[2],
+      ));
+      net += diff;
+    });
+    if (lines.isEmpty) return null;
+    if (net > 0) lines.add(VoucherLine(moeen: gainAcc, desc: 'درآمد ناشی از نوسانات نرخ ارز', credit: net));
+    if (net < 0) lines.add(VoucherLine(moeen: lossAcc, desc: 'هزینه ناشی از نوسانات نرخ ارز', debit: -net));
+    final v = Voucher(id: newId(), number: nextVoucherNumber(), fixedNumber: nextFixedNumber(), date: date, desc: 'تسعیر نرخ ارز', lines: lines, kind: 'revaluation');
+    for (final e in rates.entries) {
+      final c = currency(e.key);
+      if (c != null) c.rate = e.value;
+    }
+    saveVoucher(v);
+    return v;
   }
 
   // ---------------------------------------------------------------- حقوق و دستمزد

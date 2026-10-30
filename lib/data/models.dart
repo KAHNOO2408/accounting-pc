@@ -169,6 +169,9 @@ class Person {
   bool marketer;
   double marketerPct;
 
+  /// «تفصیلی اشخاص ارزی»: the currency of this person's account (null = system currency).
+  String? currencyId;
+
   Person({
     required this.id,
     required this.name,
@@ -178,6 +181,7 @@ class Person {
     this.code = 0,
     this.marketer = false,
     this.marketerPct = 0,
+    this.currencyId,
   });
 
   Map<String, dynamic> toJson() => {
@@ -189,6 +193,7 @@ class Person {
         'code': code,
         if (marketer) 'marketer': true,
         if (marketerPct != 0) 'marketerPct': marketerPct,
+        if (currencyId != null) 'currencyId': currencyId,
       };
 
   factory Person.fromJson(Map<String, dynamic> j) => Person(
@@ -200,6 +205,7 @@ class Person {
         code: _i(j['code']),
         marketer: j['marketer'] == true,
         marketerPct: _dbl(j['marketerPct']),
+        currencyId: _sn(j['currencyId']),
       );
 }
 
@@ -226,12 +232,23 @@ class VoucherLine {
   int debit;
   int credit;
 
-  VoucherLine({required this.moeen, this.tafsiliId, this.desc = '', this.debit = 0, this.credit = 0});
+  /// «عملیات ارزی»: the row in a foreign currency ([fx] signed like debit − credit).
+  String? currencyId;
+  double fx;
+
+  VoucherLine({required this.moeen, this.tafsiliId, this.desc = '', this.debit = 0, this.credit = 0, this.currencyId, this.fx = 0});
 
   VoucherLine copy() => VoucherLine.fromJson(toJson());
 
-  Map<String, dynamic> toJson() =>
-      {'moeen': moeen, 'tafsiliId': tafsiliId, 'desc': desc, 'debit': debit, 'credit': credit};
+  Map<String, dynamic> toJson() => {
+        'moeen': moeen,
+        'tafsiliId': tafsiliId,
+        'desc': desc,
+        'debit': debit,
+        'credit': credit,
+        if (currencyId != null) 'currencyId': currencyId,
+        if (fx != 0) 'fx': fx,
+      };
 
   factory VoucherLine.fromJson(Map<String, dynamic> j) => VoucherLine(
         moeen: _s(j['moeen']),
@@ -239,6 +256,33 @@ class VoucherLine {
         desc: _s(j['desc']),
         debit: _i(j['debit']),
         credit: _i(j['credit']),
+        currencyId: _sn(j['currencyId']),
+        fx: _dbl(j['fx']),
+      );
+}
+
+/// «ارزهای سیستم» (Sakan: نام ارز، علامت، فی ارز، تعداد رقم اعشار، پیش فرض).
+class Currency {
+  String id;
+  String name;
+  String sign;
+  int rate; // فی ارز به ارز سیستم
+  int decimals;
+  bool isDefault;
+  String taxCode; // نوع ارز برای فایل مالیاتی
+  Currency({required this.id, required this.name, this.sign = '', this.rate = 0, this.decimals = 2, this.isDefault = false, this.taxCode = ''});
+
+  Map<String, dynamic> toJson() =>
+      {'id': id, 'name': name, 'sign': sign, 'rate': rate, 'decimals': decimals, 'isDefault': isDefault, 'taxCode': taxCode};
+
+  factory Currency.fromJson(Map<String, dynamic> j) => Currency(
+        id: _s(j['id']),
+        name: _s(j['name']),
+        sign: _s(j['sign']),
+        rate: _i(j['rate']),
+        decimals: _i(j['decimals'], 2),
+        isDefault: j['isDefault'] == true,
+        taxCode: _s(j['taxCode']),
       );
 }
 
@@ -278,6 +322,8 @@ class Voucher {
         'bankWithdraw' => 'برداشت بانکی',
         'bankTransfer' => 'دریافت پرداخت بین حسابها',
         'payroll' => 'سند حقوق',
+        'fx' => 'سند ارزی',
+        'revaluation' => 'تسعیر نرخ ارز',
         'staffLoan' => 'پرداخت وام پرسنل',
         _ => 'سند دستی',
       };

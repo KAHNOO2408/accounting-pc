@@ -7,6 +7,7 @@ import '../data/models.dart';
 import '../data/store.dart';
 import 'auth/auth_screens.dart';
 import 'dialogs/consign_dialogs.dart';
+import 'dialogs/fx_dialogs.dart';
 import 'dialogs/invoice_options_dialog.dart';
 import 'dialogs/marketing_dialogs.dart';
 import 'dialogs/payroll_dialogs.dart';
@@ -176,7 +177,10 @@ final List<_Tab> _tabs = [
     _Group('تسعیر نرخ', [
       const _Item('اعمال کاهش در قیمت تمام شده کالا', Icons.trending_down_rounded, _red),
       const _Item('اعمال افزایش در قیمت تمام شده کالا', Icons.trending_up_rounded, _green),
-      const _Item('تسعیر نرخ ارز', Icons.currency_exchange_rounded, _amber),
+      _Item('تسعیر نرخ ارز', Icons.currency_exchange_rounded, _amber, run: (c, _) => showRevaluationDialog(c)),
+      _Item('سند ارزی', Icons.receipt_long_outlined, _amber, run: (c, _) => showFxVoucherDialog(c)),
+      _Item('گزارش از گردش ارزی', Icons.query_stats_rounded, _amber, run: (c, _) => showFxTurnover(c)),
+      _Item('جمع صندوق های ارزی', Icons.savings_outlined, _amber, run: (c, _) => showFxCashTotals(c)),
     ]),
     _Group('سایر اسناد', [
       _Item('تخفیف از خرید', Icons.local_offer_outlined, _cyan,
@@ -385,7 +389,7 @@ final List<_Tab> _tabs = [
       _Item('گزارشات کالا و انبار', Icons.inventory_2_outlined, _amber, run: _page(AppPage.products)),
       _Item('جدول اشخاص', Icons.people_alt_outlined, _violet, run: (c, _) => showAccountSelector(c)),
       _Item('جدول سرمایه‌داران', Icons.diamond_outlined, _violet, run: (c, _) => showAccountSelector(c, category: 'صاحبان سهام')),
-      const _Item('جدول اشخاص ارزی', Icons.currency_exchange_rounded, _slate),
+      _Item('جدول اشخاص ارزی', Icons.currency_exchange_rounded, _cyan, run: (c, _) => showFxPeople(c)),
       _Item('مدیریت گزارشات', Icons.dashboard_customize_outlined, _cyan, run: (c, _) => showReportFiles(c)),
       _Item('گزارش از گروه مراکز دفتر', Icons.account_tree_outlined, _amber, run: (c, _) => showCenterGroupReport(c)),
     ]),
@@ -407,7 +411,7 @@ final List<_Tab> _tabs = [
       const _Item('گروه‌های یارانه', Icons.group_work_outlined, _slate),
       const _Item('تخفیف عمومی', Icons.percent_rounded, _slate),
       _Item('واحدهای شمارش', Icons.straighten_rounded, _amber, run: (c, _) => showUnitsWindow(c)),
-      const _Item('لیست ارزها', Icons.attach_money_rounded, _slate),
+      _Item('لیست ارزها', Icons.attach_money_rounded, _green, run: (c, _) => showCurrenciesWindow(c)),
       _Item('لیست انبارها', Icons.warehouse_outlined, _amber, run: (c, _) => showWarehousesWindow(c)),
       _Item('تصویر پس زمینه', Icons.wallpaper_rounded, _cyan, run: (c, _) => showBackgroundDialog(c)),
       _Item('ارسال پیام', Icons.sms_outlined, _green,

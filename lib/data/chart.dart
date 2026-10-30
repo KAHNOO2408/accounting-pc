@@ -97,6 +97,11 @@ const mInsuranceExpense = '5013'; // هزینه بیمه سهم کارفرما (
 const mInsurancePayable = '2041'; // بیمه پرداختنی (تراز)
 const mSalaryTaxPayable = '2042'; // مالیات حقوق پرداختنی (تراز)
 const mStaff = '1135'; // پرسنل
+const mFxGain = '4026'; // درآمد ناشی از نوسانات نرخ ارز (تراز)
+const mFxLoss = '5008'; // هزینه ناشی از نوسانات نرخ ارز (تراز)
+
+/// Ledgers kept in a foreign currency (Sakan's «ارزی» books).
+const fxLedgers = [mCashFx, mBankFx, mDebtorsFx, '5090', '6060', '6050', '7060', '7070'];
 const mVatPayable = '2043'; // مالیات و عوارض ارزش افزوده فروش (تراز)
 const mVatReceivable = '1166'; // مالیات و عوارض ارزش افزوده خرید (تراز)
 
@@ -175,6 +180,7 @@ const List<Kol> chart = [
     Moeen(mPurchaseDiscount, 'تخفیف از خرید', TafsiliKind.none, '400100'),
     Moeen(mIncome, 'درآمدها', TafsiliKind.incomeCat, '400200'),
     Moeen(mOtherIncome, 'سایر درآمدها'),
+    Moeen(mFxGain, 'درآمد ناشی از نوسانات نرخ ارز'),
     Moeen('4030', 'درآمد پیمان در دست اجرا', TafsiliKind.none, '400300'),
     Moeen('4040', 'فروش موجودی کالای متفرقه', TafsiliKind.none, '400400'),
     Moeen(mServiceSales, 'فروش خدمات', TafsiliKind.none, '400500'),
@@ -185,6 +191,7 @@ const List<Kol> chart = [
   Kol('50', 'هزینه ها و قیمت تمام شده', Side.expense, [
     Moeen(mExpense, 'هزینه ها', TafsiliKind.expenseCat, '500050'),
     Moeen(mOtherExpense, 'سایر هزینه ها'),
+    Moeen(mFxLoss, 'هزینه ناشی از نوسانات نرخ ارز'),
     Moeen('5010', 'هزینه های توزیع و فروش', TafsiliKind.none, '500100'),
     Moeen(mSalaryExpense, 'هزینه حقوق و دستمزد'),
     Moeen(mInsuranceExpense, 'هزینه بیمه سهم کارفرما'),
