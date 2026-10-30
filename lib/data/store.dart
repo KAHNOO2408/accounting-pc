@@ -3020,7 +3020,7 @@ class AppStore extends ChangeNotifier {
   (Person?, Contact?) whoCalls(String number) {
     final t = _tail(number);
     if (t.length < 5) return (null, null);
-    final p = people.where((p) => p.phone.split(RegExp(r'[,،\s-]+')).any((x) => _tail(x) == t)).firstOrNull;
+    final p = people.where((p) => p.phone.split(RegExp(r'[,،/;]')).any((x) => _tail(x) == t)).firstOrNull;
     if (p != null) return (p, null);
     return (null, contacts.where((c) => _tail(c.phone) == t).firstOrNull);
   }

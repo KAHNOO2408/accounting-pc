@@ -510,9 +510,7 @@ class _ProductDialogState extends State<_ProductDialog> {
                       _f('barcode', width: 200, ltr: true),
                       const SizedBox(width: 6),
                       _btn('بارکدهای فرعی', _subBarcodes),
-                      const SizedBox(width: 6),
-                      _lbl('کد ترازو (PLU):', width: 110),
-                      _f('plu', width: 90, ltr: true),
+
                       const SizedBox(width: 14),
                       _lbl('وزن کیلو گرم:'),
                       _n('weight', width: 100, decimal: true),
@@ -538,6 +536,7 @@ class _ProductDialogState extends State<_ProductDialog> {
                       _chk('hidden', 'مخفی کردن در کاردکس'),
                       _chk('restaurant', 'کالای رستورانی،فروشگاهی'),
                       _chk('scale', 'انتقال به حافظه ترازو'),
+                      Row(mainAxisSize: MainAxisSize.min, children: [_lbl('کد ترازو (PLU):', width: 100), _f('plu', width: 80, ltr: true)]),
                       _chk('autoPrice', 'محاسبه اتوماتیک فی'),
                       _chk('noNegCheck', 'عدم کنترل کاردکس منفی'),
                       _btn(
