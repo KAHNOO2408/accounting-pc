@@ -13,6 +13,7 @@ import 'package:taraz/data/mrt_import.dart';
 import 'package:taraz/data/chart.dart';
 import 'package:taraz/data/journal.dart';
 import 'package:taraz/data/kardex.dart';
+import 'package:taraz/data/discounts.dart';
 import 'package:taraz/data/marketing.dart';
 import 'package:taraz/data/payroll.dart';
 import 'package:taraz/ui/dialogs/payroll_dialogs.dart';
@@ -2037,5 +2038,56 @@ void main() {
     final again = AppStore.open(s.storage);
     expect(again.person(p.id)!.currencyId, usd.id);
     expect(again.vouchers.first.lines.first.fx, 100);
+  });
+
+  test('مدل تخفیفات، تخفیف عمومی و یارانه', () {
+    final s = _tempStore();
+    final pr = Product(id: newId(), name: 'Cable', sellPrice: 1000);
+    final gift = Product(id: newId(), name: 'Sticker');
+    s.upsertProduct(pr);
+    s.upsertProduct(gift);
+    // 10+ units: 5% off; 20+: 10% off and a gift
+    final m = DiscountModel(id: newId(), name: 'Tiered', productId: pr.id, tiers: [
+      DiscountTier(from: 10, to: 19, pct: 5),
+      DiscountTier(from: 20, pct: 10, giftProductId: gift.id, giftQty: 1),
+    ]);
+    s.saveDiscountModel(m);
+    final t = DateTime(2026, 10, 30, 12);
+    expect(s.bestModel(InvoiceLine(productId: pr.id, qty: 5, unitPrice: 1000), t), isNull);
+    expect(s.bestModel(InvoiceLine(productId: pr.id, qty: 12, unitPrice: 1000), t)!.$2, 600);
+    final r = s.bestModel(InvoiceLine(productId: pr.id, qty: 20, unitPrice: 1000), t)!;
+    expect(r.$2, 2000);
+    expect(r.$4, gift.id);
+    // progressive: 10% on the 10 units above 10
+    m.progressive = true;
+    m.tiers = [DiscountTier(from: 10, pct: 10)];
+    expect(s.bestModel(InvoiceLine(productId: pr.id, qty: 20, unitPrice: 1000), t)!.$2, 1000);
+    // weekday / date limits
+    m.weekdays = {DateTime.monday};
+    expect(s.bestModel(InvoiceLine(productId: pr.id, qty: 20, unitPrice: 1000), t), isNull); // 30 Oct 2026 is a Friday
+    expect(DiscountModel.fromJson(m.toJson()).weekdays, {DateTime.monday});
+
+    s.saveAmountDiscounts([AmountDiscount(id: newId(), name: 'Big', fromAmount: 100000, pct: 3)]);
+    expect(s.amountDiscountFor(50000, null), isNull);
+    expect(s.amountDiscountFor(200000, null)!.$1, 3);
+
+    // subsidy: 40% of the row is paid by the insurer
+    final buyer = Person(id: newId(), name: 'Buyer');
+    final ins = Person(id: newId(), name: 'Insurer');
+    s.upsertPerson(buyer);
+    s.upsertPerson(ins);
+    s.saveSubsidyGroup(SubsidyGroup(id: newId(), name: 'Drugs', pct: 40, personId: ins.id));
+    final inv = Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: t, personId: buyer.id, info: {'subsidyAcc': ins.id},
+        lines: [InvoiceLine(productId: pr.id, qty: 10, unitPrice: 1000, subsidyPct: 40)]);
+    s.saveInvoice(inv);
+    expect(inv.subsidyTotal, 4000);
+    expect(s.personBalance(buyer.id), 6000);
+    expect(s.personBalance(ins.id), 4000);
+    s.saveInvoice(inv);
+    expect(s.vouchers.where((v) => v.kind == 'subsidy').length, 1);
+    final j = buildJournal(s);
+    expect(j.fold<int>(0, (a, p) => a + p.debit), j.fold<int>(0, (a, p) => a + p.credit));
+    s.removeInvoice(inv.id);
+    expect(s.vouchers.where((v) => v.kind == 'subsidy'), isEmpty);
   });
 }

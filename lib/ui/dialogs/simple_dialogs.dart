@@ -4,6 +4,7 @@ import '../../core/format.dart';
 import '../../data/models.dart';
 import '../../data/store.dart';
 import '../widgets/common.dart';
+import 'discount_dialogs.dart';
 
 // ============================================================== Account
 
@@ -280,6 +281,9 @@ class _PersonDialogState extends State<_PersonDialog> {
     return FormDialog(
       title: widget.edit == null ? 'طرف حساب جدید' : 'ویرایش طرف حساب',
       width: 460,
+      leading: widget.edit == null
+          ? null
+          : TextButton(onPressed: () => showAmountDiscounts(context, personId: widget.edit!.id), child: const Text('جدول تخفیفات شخصی')),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
         FilledButton(onPressed: _save, child: const Text('ذخیره')),

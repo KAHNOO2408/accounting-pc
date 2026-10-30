@@ -177,6 +177,9 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   /// «عوارض و مالیات بر اقلام اعمال شود».
   bool _vat = false;
 
+  /// «سهم یارانه»: subsidy account of the invoice (null = no subsidy).
+  String? _subsidyAcc;
+
   bool get _isEdit => widget.edit != null;
 
   /// «تنظیمات فاکتور» of this invoice side.
@@ -245,6 +248,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       _receiver = e.info['receiver'] ?? '';
       _saleDate = DateTime.tryParse(e.info['saleDate'] ?? '') ?? e.date;
       _vat = e.lines.any((l) => l.taxPct != 0 || l.dutyPct != 0);
+      _subsidyAcc = e.subsidyPersonId;
       for (final l in e.lines) {
         (l.productId == null ? _services : _lines).add(_Line.from(l));
       }
@@ -385,6 +389,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     final q = await showQtyDialog(context, product: p, personId: _person, warehouseId: l.warehouseId, initial: l.baseQty, buy: _buy);
     if (q != null && mounted) setState(() => l.qty.text = fmtQty(q / l.factor));
     if (!_buy && mounted) await _pickPrice(l, p);
+    if (mounted && !_buy && StoreScope.read(context).discountModels.any((m) => m.autoApply && m.active)) _applyModels(quiet: true);
     if (mounted && identical(l, _lines.last)) _addLine();
   }
 
@@ -492,6 +497,89 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
         if (l.p > 0) l.price.text = groupDigits((l.p * (1 + pct / 100)).round());
       }
     });
+  }
+
+  /// «اعمال مدل های تخفیفات و جوایز»: row discounts, free units and gifts
+  /// from the discount models, then «تخفیف عمومی / فردی» on the invoice.
+  void _applyModels({bool quiet = false}) {
+    if (_buy) {
+      if (!quiet) toast(context, 'مدل تخفیفات برای فاکتور فروش است', error: true);
+      return;
+    }
+    final s = StoreScope.read(context);
+    final type = s.person(_person)?.priceType ?? 0;
+    final now = DateTime(_date.year, _date.month, _date.day, DateTime.now().hour, DateTime.now().minute);
+    final notes = <String>[];
+    setState(() {
+      // previous gift rows are rebuilt
+      _lines.removeWhere((l) {
+        final gift = l.title.text.startsWith('اشانتیون: ') && l.p == 0;
+        if (gift) l.dispose();
+        return gift;
+      });
+      final gifts = <_Line>[];
+      for (final l in _lines.where((l) => l.productId != null && !l.isEmpty)) {
+        final r = s.bestModel(l.toLine()..discount = 0, now, priceType: type);
+        if (r == null) continue;
+        final freeValue = (r.$3 * l.p / l.factor).round();
+        l.discount.text = groupDigits(r.$2 + freeValue);
+        notes.add('${l.title.text}: ${r.$1.name}');
+        if (r.$4 != null && r.$5 > 0) {
+          final gp = s.product(r.$4);
+          if (gp != null) {
+            final g = _Line()
+              ..productId = gp.id
+              ..warehouseId = l.warehouseId;
+            g.title.text = 'اشانتیون: ${gp.name}';
+            g.qty.text = fmtQty(r.$5);
+            g.price.text = '0';
+            _listen(g);
+            gifts.add(g);
+          }
+        }
+      }
+      if (_lines.isNotEmpty && _lines.last.isEmpty) {
+        final last = _lines.removeLast();
+        _lines.addAll(gifts);
+        _lines.add(last);
+      } else {
+        _lines.addAll(gifts);
+      }
+      final ad = s.amountDiscountFor(_subtotal, _person);
+      if (ad != null) {
+        _discount = (_subtotal * ad.$1 / 100).round();
+        notes.add('${ad.$2}: ${fmtQty(ad.$1)}٪ از جمع فاکتور');
+      }
+    });
+    if (!quiet) toast(context, notes.isEmpty ? 'مدل تخفیفی برای این فاکتور پیدا نشد' : 'اعمال شد — ${notes.join('،  ')}');
+  }
+
+  Future<void> _subsidy() async {
+    final s = StoreScope.read(context);
+    final r = await showDialog<String>(
+      context: context,
+      builder: (ctx) => FormDialog(
+        title: 'انتخاب حساب یارانه',
+        width: 440,
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, '-'), child: const Text('بدون یارانه')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('انصراف F10')),
+        ],
+        child: Column(children: [
+          for (final g in s.subsidyGroups.where((g) => g.personId != null))
+            ListTile(
+              dense: true,
+              title: Text(s.person(g.personId)?.name ?? ''),
+              subtitle: Text('گروه یارانه ${g.name} — ${fmtQty(g.pct)}٪'),
+              selected: g.personId == _subsidyAcc,
+              onTap: () => Navigator.pop(ctx, g.personId),
+            ),
+          if (s.subsidyGroups.every((g) => g.personId == null)) const Padding(padding: EdgeInsets.all(12), child: Text('در «گروه های یارانه» حساب یارانه تعیین نشده است')),
+        ]),
+      ),
+    );
+    if (r == null || !mounted) return;
+    setState(() => _subsidyAcc = r == '-' ? null : r);
   }
 
   Future<void> _applyDiscount({required bool percent}) async {
@@ -756,7 +844,8 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
         for (final l in lines)
           l.toLine()
             ..taxPct = _vatPct(store, l).$1
-            ..dutyPct = _vatPct(store, l).$2,
+            ..dutyPct = _vatPct(store, l).$2
+            ..subsidyPct = _subsidyAcc == null || _buy ? 0 : (store.subsidyGroupOf(store.product(l.productId))?.pct ?? 0),
       ]
       ..marketers = _kind == InvoiceKind.sale || _kind == InvoiceKind.saleReturn ? _marketers : []
       ..discount = _discount
@@ -775,6 +864,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
         'shipSeller': _shipSeller == 0 ? '' : '$_shipSeller',
         'shipAcc': _shipSeller == 0 || _buy ? '' : (_shipAcc ?? ''),
         'distributor': _distributor ?? '',
+        'subsidyAcc': _buy ? '' : (_subsidyAcc ?? ''),
         'vatGross': _vat && !_opt.vatAfterDiscount ? '1' : '',
       }..removeWhere((_, v) => v.isEmpty));
     if (!_legacy) {
@@ -1142,7 +1232,12 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                   _lbl(_buy ? 'تاریخ خرید:' : 'تاریخ فروش:'),
                   _dateBox(_saleDate, (d) => setState(() => _saleDate = d)),
                   const SizedBox(width: 8),
-                  _btn('اعمال مدل های تخفیفات و جوایز', () => showComingSoon(context, 'اعمال مدل های تخفیفات و جوایز')),
+                  _btn('اعمال مدل های تخفیفات و جوایز', _applyModels),
+                  if (!_buy) ...[
+                    const SizedBox(width: 6),
+                    _btn(_subsidyAcc == null ? 'یارانه' : 'یارانه: ${StoreScope.of(context).person(_subsidyAcc)?.name ?? ''}', _subsidy,
+                        color: _subsidyAcc == null ? null : const Color(0xFFD7F2D7)),
+                  ],
                   const SizedBox(width: 6),
                   _btn(_marketers.isEmpty ? 'انتخاب تیم بازاریابی' : 'تیم بازاریابی (${_marketers.length})', _team, key: 'F3'),
                   if (person != null) ...[

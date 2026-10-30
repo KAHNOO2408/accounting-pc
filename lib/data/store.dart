@@ -10,6 +10,7 @@ import '../core/xlsx.dart';
 import '../core/zip_backup.dart';
 import 'books.dart';
 import 'chart.dart';
+import 'discounts.dart';
 import 'marketing.dart';
 import 'models.dart';
 import 'payroll.dart';
@@ -64,6 +65,11 @@ class AppStore extends ChangeNotifier {
 
   /// «ارزهای سیستم».
   List<Currency> currencies = [];
+
+  /// «مدل تخفیفات و اشانتیون»، «تخفیف های عمومی / فردی»، «گروه های یارانه».
+  List<DiscountModel> discountModels = [];
+  List<AmountDiscount> amountDiscounts = [];
+  List<SubsidyGroup> subsidyGroups = [];
 
   /// «حقوق و دستمزد».
   List<Employee> employees = [];
@@ -224,6 +230,9 @@ class AppStore extends ChangeNotifier {
     units = list('units').map(CountUnit.fromJson).toList();
     consignments = list('consignments').map(Consignment.fromJson).toList();
     currencies = list('currencies').map(Currency.fromJson).toList();
+    discountModels = list('discountModels').map(DiscountModel.fromJson).toList();
+    amountDiscounts = list('amountDiscounts').map(AmountDiscount.fromJson).toList();
+    subsidyGroups = list('subsidyGroups').map(SubsidyGroup.fromJson).toList();
     employees = list('employees').map(Employee.fromJson).toList();
     payPeriods = list('payPeriods').map(PayPeriod.fromJson).toList();
     payslips = list('payslips').map(Payslip.fromJson).toList();
@@ -434,6 +443,9 @@ class AppStore extends ChangeNotifier {
         'units': units.map((e) => e.toJson()).toList(),
         'consignments': consignments.map((e) => e.toJson()).toList(),
         'currencies': currencies.map((e) => e.toJson()).toList(),
+        'discountModels': discountModels.map((e) => e.toJson()).toList(),
+        'amountDiscounts': amountDiscounts.map((e) => e.toJson()).toList(),
+        'subsidyGroups': subsidyGroups.map((e) => e.toJson()).toList(),
         'employees': employees.map((e) => e.toJson()).toList(),
         'payPeriods': payPeriods.map((e) => e.toJson()).toList(),
         'payslips': payslips.map((e) => e.toJson()).toList(),
@@ -1200,6 +1212,90 @@ class AppStore extends ChangeNotifier {
   void removeConsignReturn(String consignId, String returnId) {
     consignment(consignId)?.returns.removeWhere((r) => r.id == returnId);
     _commit();
+  }
+
+  // ---------------------------------------------------------------- تخفیفات و یارانه
+
+  void saveDiscountModel(DiscountModel m) {
+    final i = discountModels.indexWhere((x) => x.id == m.id);
+    if (i >= 0) {
+      discountModels[i] = m;
+    } else {
+      discountModels.add(m);
+    }
+    _commit();
+  }
+
+  void removeDiscountModel(String id) {
+    discountModels.removeWhere((m) => m.id == id);
+    _commit();
+  }
+
+  void saveAmountDiscounts(List<AmountDiscount> list, {String? personId}) {
+    amountDiscounts
+      ..removeWhere((d) => d.personId == personId)
+      ..addAll(list.map((d) => d..personId = personId));
+    _commit();
+  }
+
+  void saveSubsidyGroup(SubsidyGroup g) {
+    if (g.isDefault) {
+      for (final x in subsidyGroups) {
+        x.isDefault = false;
+      }
+    }
+    final i = subsidyGroups.indexWhere((x) => x.id == g.id);
+    if (i >= 0) {
+      subsidyGroups[i] = g;
+    } else {
+      subsidyGroups.add(g);
+    }
+    _commit();
+  }
+
+  String? removeSubsidyGroup(String id) {
+    if (products.any((p) => p.info['subsidyGroup'] == id)) return 'این گروه به کالاها تخصیص داده شده است';
+    subsidyGroups.removeWhere((g) => g.id == id);
+    _commit();
+    return null;
+  }
+
+  SubsidyGroup? subsidyGroupOf(Product? p) {
+    final id = p?.info['subsidyGroup'];
+    return subsidyGroups.where((g) => g.id == id).firstOrNull;
+  }
+
+  /// The best model for a sale row at [t]: (model, off, free units, gift, gift qty).
+  (DiscountModel, int, double, String?, double)? bestModel(InvoiceLine l, DateTime t, {int priceType = 0}) {
+    final p = product(l.productId);
+    if (p == null) return null;
+    (DiscountModel, int, double, String?, double)? best;
+    for (final m in discountModels) {
+      if (m.productId != null && m.productId != l.productId) continue;
+      if (!m.appliesAt(t, priceType: priceType)) continue;
+      final measure = switch (m.base) {
+        DiscountBase.amount => l.gross.toDouble(),
+        DiscountBase.unit2 => p.hasUnit(2) ? l.qty / p.unitFactor(2) : 0.0,
+        DiscountBase.unit3 => p.hasUnit(3) ? l.qty / p.unitFactor(3) : 0.0,
+        DiscountBase.unit1 => l.qty,
+      };
+      final r = m.evaluate(measure: measure, baseQty: l.qty, unitPrice: l.unitPrice, gross: l.gross);
+      final value = r.$1 + (r.$2 * l.unitPrice).round();
+      if (r.$1 == 0 && r.$2 == 0 && r.$3 == null) continue;
+      if (best == null || value > best.$2 + (best.$3 * l.unitPrice).round()) best = (m, r.$1, r.$2, r.$3, r.$4);
+    }
+    return best;
+  }
+
+  /// Invoice-level percent from «تخفیف های عمومی» and the buyer's «تخفیفات فردی» (the larger).
+  (double, String)? amountDiscountFor(int amount, String? personId) {
+    (double, String)? best;
+    for (final d in amountDiscounts) {
+      if (d.personId != null && d.personId != personId) continue;
+      if (!d.contains(amount)) continue;
+      if (best == null || d.pct > best.$1) best = (d.pct, d.personId != null ? 'تخفیف فردی' : (d.name.isEmpty ? 'تخفیف عمومی' : d.name));
+    }
+    return best;
   }
 
   // ---------------------------------------------------------------- ارز
@@ -1997,6 +2093,27 @@ class AppStore extends ChangeNotifier {
       invoiceId: inv.id,
       createdAt: inv.createdAt,
     ));
+    // «سهم یارانه»: moved from the buyer to the subsidy account
+    final oldSub = vouchers.where((v) => v.kind == 'subsidy' && v.meta['invoice'] == inv.id).firstOrNull;
+    vouchers.removeWhere((v) => v.kind == 'subsidy' && v.meta['invoice'] == inv.id);
+    final sub = inv.subsidyTotal;
+    final subP = inv.subsidyPersonId;
+    if (sub != 0 && subP != null && inv.personId != null && !inv.kind.buySide) {
+      final ret = inv.kind == InvoiceKind.saleReturn;
+      vouchers.add(Voucher(
+        id: oldSub?.id ?? newId(),
+        number: oldSub?.number ?? nextVoucherNumber(),
+        fixedNumber: oldSub?.fixedNumber ?? nextFixedNumber(),
+        date: inv.date,
+        desc: 'سهم یارانه $title',
+        kind: 'subsidy',
+        meta: {'invoice': inv.id},
+        lines: [
+          VoucherLine(moeen: mDebtorsTrade, tafsiliId: subP, desc: 'سهم یارانه $title', debit: ret ? 0 : sub, credit: ret ? sub : 0),
+          VoucherLine(moeen: mDebtorsTrade, tafsiliId: inv.personId, desc: 'سهم یارانه $title', debit: ret ? sub : 0, credit: ret ? 0 : sub),
+        ],
+      ));
+    }
     if (inv.paid > 0 && inv.accountId != null) {
       txns.add(Txn(
         id: newId(),
@@ -2097,12 +2214,12 @@ class AppStore extends ChangeNotifier {
       _recycle('inv:$id', number: docMeta['inv:$id']?.number ?? inv.number, date: inv.date,
           desc: '${inv.kind.label} ${inv.number}  ${inv.lines.length} قلم کالا  $who', amount: inv.total, payload: {
         'doc': inv.toJson(),
-        'vouchers': [for (final v in vouchers.where((v) => v.kind == 'settle' && v.meta['invoice'] == id)) v.toJson()],
+        'vouchers': [for (final v in vouchers.where((v) => (v.kind == 'settle' || v.kind == 'subsidy') && v.meta['invoice'] == id)) v.toJson()],
         'txns': [for (final t in txns.where((t) => t.invoiceId == id)) t.toJson()],
       });
     }
     if (inv != null) _log('حذف', '${inv.kind.label} ${inv.number}', docDate: inv.date, docNo: inv.number);
-    vouchers.removeWhere((v) => v.kind == 'settle' && v.meta['invoice'] == id);
+    vouchers.removeWhere((v) => (v.kind == 'settle' || v.kind == 'subsidy') && v.meta['invoice'] == id);
     invoices.removeWhere((i) => i.id == id);
     docMeta.remove('inv:$id');
     txns.removeWhere((t) => t.invoiceId == id);

@@ -10,6 +10,8 @@ import '../../core/jalali.dart';
 import '../../data/models.dart';
 import '../../data/store.dart';
 import '../widgets/common.dart';
+import 'bulk_products_dialog.dart';
+import 'discount_dialogs.dart';
 import 'invoice_editor.dart' show fmtQty, parseQty;
 import 'misc_dialogs.dart';
 
@@ -32,6 +34,7 @@ class _ProductDialogState extends State<_ProductDialog> {
   final _c = <String, TextEditingController>{};
   final _flags = <String, bool>{};
   int _defUnit = 1;
+  String? _subGroup;
   bool _en = false; // نام کالا: Fa / En
   String _image = '';
   String? _err;
@@ -58,6 +61,7 @@ class _ProductDialogState extends State<_ProductDialog> {
     c('ratio2').text = (e?.ratio2 ?? 0) == 0 ? '' : fmtQty(e!.ratio2);
     c('ratio3').text = (e?.ratio3 ?? 0) == 0 ? '' : fmtQty(e!.ratio3);
     _defUnit = e?.defaultUnit ?? 1;
+    _subGroup = e?.info['subsidyGroup'];
     String money(int v) => v == 0 ? '0' : groupDigits(v);
     c('buy').text = money(e?.buyPrice ?? 0);
     c('sell').text = money(e?.sellPrice ?? 0);
@@ -128,6 +132,7 @@ class _ProductDialogState extends State<_ProductDialog> {
       info[k] = _flags[k] == true ? '1' : '';
     }
     info['lang'] = _en ? 'en' : '';
+    info['subsidyGroup'] = _subGroup ?? '';
     info['image'] = _image;
     info.removeWhere((_, v) => v.isEmpty || v == '0');
     p.info = info;
@@ -529,8 +534,14 @@ class _ProductDialogState extends State<_ProductDialog> {
                       _chk('restaurant', 'کالای رستورانی،فروشگاهی'),
                       _chk('autoPrice', 'محاسبه اتوماتیک فی'),
                       _chk('noNegCheck', 'عدم کنترل کاردکس منفی'),
-                      _btn('تعیین گروه های یارانه', () => showComingSoon(context, 'تعیین گروه های یارانه')),
-                      _btn('تعریف لیستی کالا', () => showComingSoon(context, 'تعریف لیستی کالا')),
+                      _btn(
+                          _subGroup == null
+                              ? 'تعیین گروه های یارانه'
+                              : 'گروه یارانه: ${StoreScope.of(context).subsidyGroups.where((g) => g.id == _subGroup).firstOrNull?.name ?? ''}', () async {
+                        final r = await pickSubsidyGroup(context, current: _subGroup);
+                        if (r != null) setState(() => _subGroup = r.isEmpty ? null : r);
+                      }),
+                      _btn('تعریف لیستی کالا', () => showBulkProducts(context)),
                     ]),
                   ]),
                   if (_err != null) Text(_err!, style: TextStyle(color: th.colorScheme.error, fontWeight: FontWeight.w700)),

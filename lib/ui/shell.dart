@@ -7,6 +7,7 @@ import '../data/models.dart';
 import '../data/store.dart';
 import 'auth/auth_screens.dart';
 import 'dialogs/consign_dialogs.dart';
+import 'dialogs/discount_dialogs.dart';
 import 'dialogs/fx_dialogs.dart';
 import 'dialogs/invoice_options_dialog.dart';
 import 'dialogs/marketing_dialogs.dart';
@@ -408,8 +409,9 @@ final List<_Tab> _tabs = [
       _Item('مرکز اسناد', Icons.home_work_outlined, _amber, run: (c, _) => showDocCentersDialog(c)),
       const _Item('مرکز دفاتر', Icons.domain_outlined, _slate),
       _Item('بازاریابان', Icons.campaign_outlined, _green, run: (c, _) => showMarketersWindow(c)),
-      const _Item('گروه‌های یارانه', Icons.group_work_outlined, _slate),
-      const _Item('تخفیف عمومی', Icons.percent_rounded, _slate),
+      _Item('گروه‌های یارانه', Icons.group_work_outlined, _green, run: (c, _) => showSubsidyGroups(c)),
+      _Item('مدل تخفیفات و اشانتیون', Icons.redeem_outlined, _violet, run: (c, _) => showDiscountModels(c)),
+      _Item('تخفیف عمومی', Icons.percent_rounded, _cyan, run: (c, _) => showAmountDiscounts(c)),
       _Item('واحدهای شمارش', Icons.straighten_rounded, _amber, run: (c, _) => showUnitsWindow(c)),
       _Item('لیست ارزها', Icons.attach_money_rounded, _green, run: (c, _) => showCurrenciesWindow(c)),
       _Item('لیست انبارها', Icons.warehouse_outlined, _amber, run: (c, _) => showWarehousesWindow(c)),

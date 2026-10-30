@@ -172,6 +172,9 @@ class Person {
   /// «تفصیلی اشخاص ارزی»: the currency of this person's account (null = system currency).
   String? currencyId;
 
+  /// Buyer type for discount models: 1 خرده فروشی، 2 عمده فروشی، 3 ویژه (0 = نامشخص).
+  int priceType;
+
   Person({
     required this.id,
     required this.name,
@@ -182,6 +185,7 @@ class Person {
     this.marketer = false,
     this.marketerPct = 0,
     this.currencyId,
+    this.priceType = 0,
   });
 
   Map<String, dynamic> toJson() => {
@@ -194,6 +198,7 @@ class Person {
         if (marketer) 'marketer': true,
         if (marketerPct != 0) 'marketerPct': marketerPct,
         if (currencyId != null) 'currencyId': currencyId,
+        if (priceType != 0) 'priceType': priceType,
       };
 
   factory Person.fromJson(Map<String, dynamic> j) => Person(
@@ -206,6 +211,7 @@ class Person {
         marketer: j['marketer'] == true,
         marketerPct: _dbl(j['marketerPct']),
         currencyId: _sn(j['currencyId']),
+        priceType: _i(j['priceType']),
       );
 }
 
@@ -323,6 +329,7 @@ class Voucher {
         'bankTransfer' => 'دریافت پرداخت بین حسابها',
         'payroll' => 'سند حقوق',
         'fx' => 'سند ارزی',
+        'subsidy' => 'سهم یارانه',
         'revaluation' => 'تسعیر نرخ ارز',
         'staffLoan' => 'پرداخت وام پرسنل',
         _ => 'سند دستی',
@@ -785,7 +792,11 @@ class InvoiceLine {
   double taxPct;
   double dutyPct;
 
+  /// «سهم یارانه» percent of the row.
+  double subsidyPct;
+
   InvoiceLine({
+    this.subsidyPct = 0,
     this.consignRef,
     this.taxPct = 0,
     this.dutyPct = 0,
@@ -847,12 +858,14 @@ class InvoiceLine {
         if (consignRef != null) 'consignRef': consignRef,
         if (taxPct != 0) 'taxPct': taxPct,
         if (dutyPct != 0) 'dutyPct': dutyPct,
+        if (subsidyPct != 0) 'subsidyPct': subsidyPct,
       };
 
   factory InvoiceLine.fromJson(Map<String, dynamic> j) => InvoiceLine(
         consignRef: _sn(j['consignRef']),
         taxPct: _dbl(j['taxPct']),
         dutyPct: _dbl(j['dutyPct']),
+        subsidyPct: _dbl(j['subsidyPct']),
         unitNo: _i(j['unitNo'], 1),
         unitQty: _dbl(j['unitQty']),
         unitFi: _i(j['unitFi']),
@@ -939,6 +952,11 @@ class Invoice {
   int get taxTotal => lines.fold(0, (s, l) => s + taxOf(l));
   int get dutyTotal => lines.fold(0, (s, l) => s + dutyOf(l));
   int get vatTotal => taxTotal + dutyTotal;
+
+  /// «سهم یارانه» of a row and the invoice, paid by the subsidy account in info['subsidyAcc'].
+  int subsidyOf(InvoiceLine l) => l.subsidyPct == 0 ? 0 : (netOf(l) * l.subsidyPct / 100).round();
+  int get subsidyTotal => lines.fold(0, (s, l) => s + subsidyOf(l));
+  String? get subsidyPersonId => (info['subsidyAcc'] ?? '').isEmpty ? null : info['subsidyAcc'];
 
   int get total => subtotal - discount + extra + vatTotal;
   int get remaining => total - paid;
