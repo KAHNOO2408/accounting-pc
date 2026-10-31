@@ -455,6 +455,122 @@ const _guaranteeMap = {
   'dateshamsi': 'تاریخ',
 };
 
+/// «تراز آزمایشی» (TarazeAzmayeshi).
+const _trialMap = {
+  'bookid': 'کد حساب',
+  'bid': 'کد حساب',
+  'bookname': 'نام حساب',
+  'bname': 'نام حساب',
+  'startbed': 'بدهکار ابتدای دوره',
+  'startbes': 'بستانکار ابتدای دوره',
+  'pbed': 'گردش بدهکار',
+  'pbes': 'گردش بستانکار',
+  'increment': 'گردش بدهکار',
+  'decrement': 'گردش بستانکار',
+  'fullbed': 'بدهکار انتهای دوره',
+  'fullbes': 'بستانکار انتهای دوره',
+  'ffbed': 'مانده بدهکار',
+  'ffbes': 'مانده بستانکار',
+  'ffbedsod': 'مانده سود و زیانی بدهکار',
+  'ffbessod': 'مانده سود و زیانی بستانکار',
+  'typ': 'تشخیص',
+  'startdatesh': 'از تاریخ',
+  'enddatesh': 'تا تاریخ',
+  'daftarname': 'نام دفتر مالی',
+  'reportheader': 'نام فروشگاه',
+  'companyname': 'نام فروشگاه',
+  'dateshamsi': 'تاریخ',
+};
+
+/// «موجودی کالا» (MojodiKala / MojodiAnbar / AnbarBeTafkikKala …).
+const _stockMap = {
+  'bid': 'کد کالا',
+  'codekala': 'کد کالا',
+  'frasiname': 'نام کالا',
+  'kalaname': 'نام کالا',
+  'vahed1': 'واحد',
+  'vahedname1': 'واحد',
+  'vahed2': 'واحد دوم',
+  'vahed3': 'واحد سوم',
+  'mojoditedad1': 'موجودی',
+  'mojoditedad': 'موجودی',
+  'jamtedad': 'موجودی',
+  'fulltedad': 'موجودی',
+  'mojoditedad2': 'موجودی واحد دوم',
+  'mojoditedad3': 'موجودی واحد سوم',
+  'mojodirial': 'ارزش موجودی',
+  'jamkolstore': 'ارزش موجودی',
+  'jamkolfull': 'ارزش موجودی',
+  'fi': 'فی',
+  'ghimatcardex': 'فی',
+  'buyprice1': 'فی',
+  'buyprice2': 'فی',
+  'sellprice1': 'بهای فروش',
+  'fimasrafkonande': 'بهای مصرف کننده',
+  'minimum': 'حداقل موجودی',
+  'maximum': 'حداکثر موجودی',
+  'storename': 'نام انبار',
+  'aname': 'نام انبار',
+  'buytedad': 'خرید',
+  'buyfirsttedad': 'خرید',
+  'buykhalestedad': 'خرید',
+  'rejectbuytedad': 'برگشت از خرید',
+  'selltedad': 'فروش',
+  'rejectselltedad': 'برگشت از فروش',
+  'reportheader': 'نام فروشگاه',
+  'companyname': 'نام فروشگاه',
+  'dateshamsi': 'تاریخ',
+};
+
+/// «لیست حقوق / بیمه / مالیات» (SalaryBime, SalaryMaliatDisk, SSalary_Karmand, SalaryPersonelInfo …).
+const _salaryListMap = {
+  'nme': 'نام',
+  'familynme': 'نام خانوادگی',
+  'fullname': 'نام و نام خانوادگی',
+  'fathername': 'نام پدر',
+  'melinum': 'کد ملی',
+  'mellinum': 'کد ملی',
+  'shsh': 'شماره شناسنامه',
+  'empbimenumber': 'شماره بیمه',
+  'bimenumber': 'شماره بیمه',
+  'personelcode': 'کد پرسنلی',
+  'jobname': 'شغل',
+  'empsemat': 'شغل',
+  'sex': 'جنسیت',
+  'meliat': 'ملیت',
+  'country': 'ملیت',
+  'empdteestekhdam_shamsi': 'تاریخ استخدام',
+  'enfesaldte_shamsi': 'تاریخ ترک کار',
+  'c1': 'روزهای کارکرد',
+  'c2': 'دستمزد روزانه',
+  'c3': 'حقوق ماهیانه',
+  'c26': 'دستمزد مشمول بیمه',
+  'c27': 'جمع حقوق و مزایا',
+  'c28': 'دستمزد غیر مشمول بیمه',
+  'bimesahmbimeshode': 'بیمه سهم بیمه شده',
+  'bimesahmkarfarma': 'بیمه سهم کارفرما',
+  'bimekarfarma': 'بیمه سهم کارفرما',
+  'bimebikarisahmkarfarma': 'بیمه بیکاری',
+  'jambime': 'جمع بیمه',
+  's17': 'حقوق ماهیانه',
+  's18': 'مزایای مستمر',
+  's19': 'اضافه کار',
+  's32': 'مشمول مالیات',
+  's34': 'مالیات',
+  'maliat': 'مالیات',
+  'hesabnumber': 'شماره حساب',
+  'kargahname': 'نام کارگاه',
+  'kargahnumber': 'شماره کارگاه',
+  'karfarmaname': 'نام کارفرما',
+  'addresskargah': 'آدرس کارگاه',
+  'bimename': 'نام مرکز بیمه',
+  'gname': 'دوره',
+  'price': 'خالص پرداختی',
+  'reportheader': 'نام فروشگاه',
+  'companyname': 'نام فروشگاه',
+  'dateshamsi': 'تاریخ',
+};
+
 /// Field of a column for the non-invoice documents ('' = none).
 String _docField(PrintDocType type, String src, String col, {bool sum = false}) {
   final s = src.toLowerCase();
@@ -476,16 +592,64 @@ String _docField(PrintDocType type, String src, String col, {bool sum = false}) 
       return _payslipMap[col] ?? '';
     case PrintDocType.cheque:
       if (sum && (col.endsWith('money'))) return 'جمع مبلغ';
+      if (col == 'count') return 'تعداد';
+      if (col.endsWith('arzsign')) return 'واحد پول';
+      if (col == 'sandoghname') return 'صندوق';
       return _chequeMap[col] ?? '';
     case PrintDocType.guarantee:
       if (sum && col.endsWith('money')) return 'جمع مبلغ';
       return _guaranteeMap[col] ?? '';
+    case PrintDocType.trialBalance:
+      final ft = _trialMap[col] ?? '';
+      if (!sum || ft.isEmpty) return ft;
+      return switch (ft) {
+        'بدهکار ابتدای دوره' || 'بستانکار ابتدای دوره' || 'گردش بدهکار' || 'گردش بستانکار' || 'مانده بدهکار' || 'مانده بستانکار' || 'بدهکار انتهای دوره' || 'بستانکار انتهای دوره' => 'جمع $ft',
+        'مانده سود و زیانی بدهکار' => 'مانده سود و زیان بدهکار',
+        'مانده سود و زیانی بستانکار' => 'مانده سود و زیان بستانکار',
+        _ => '',
+      };
+    case PrintDocType.stock:
+      final fk = _stockMap[col] ?? '';
+      if (!sum) return fk;
+      return fk == 'ارزش موجودی' ? 'جمع ارزش موجودی' : (fk.startsWith('موجودی') ? 'جمع موجودی' : '');
+    case PrintDocType.salaryList:
+      final fl = _salaryListMap[col] ?? '';
+      if (!sum) return fl;
+      return switch (fl) {
+        'جمع حقوق و مزایا' || 'جمع کسورات' => fl,
+        'جمع بیمه' => 'جمع کل بیمه',
+        'خالص پرداختی' => 'جمع خالص پرداختی',
+        'مالیات' => 'جمع مالیات',
+        'مشمول مالیات' => 'جمع مشمول مالیات',
+        'دستمزد مشمول بیمه' => 'جمع دستمزد مشمول بیمه',
+        'بیمه سهم بیمه شده' || 'بیمه سهم کارفرما' || 'بیمه بیکاری' => 'جمع $fl',
+        _ => '',
+      };
     default:
       return '';
   }
 }
 
-bool _isDocType(PrintDocType t) => t == PrintDocType.voucher || t == PrintDocType.payslip || t == PrintDocType.cheque || t == PrintDocType.guarantee;
+bool _isDocType(PrintDocType t) =>
+    t == PrintDocType.voucher ||
+    t == PrintDocType.payslip ||
+    t == PrintDocType.cheque ||
+    t == PrintDocType.guarantee ||
+    t == PrintDocType.trialBalance ||
+    t == PrintDocType.stock ||
+    t == PrintDocType.salaryList;
+
+/// Sakan's computed totals of the trial balance: (Σbed − Σbes ± |…|)/2.
+String _trialFormula(String e) {
+  if (!e.contains('Abs(')) return '';
+  final pl = e.contains('sod');
+  final t = e.replaceAll(' ', '');
+  if (t.startsWith('(((')) return pl ? '{مانده سود و زیان بدهکار}' : '{مانده خالص بدهکار}';
+  if (t.startsWith('(Abs(')) return pl ? '{مانده سود و زیان بستانکار}' : '{مانده خالص بستانکار}';
+  if (RegExp(r'^Sum\([^)]*ffbed').hasMatch(t)) return '{جمع مانده بدهکار}';
+  if (RegExp(r'^Sum\([^)]*ffbes').hasMatch(t)) return '{جمع مانده بستانکار}';
+  return '';
+}
 
 Map<String, String> _lower(Map<String, String> m) => {for (final e in m.entries) e.key.toLowerCase(): e.value};
 final _invoiceLc = _lower(_invoiceMap);
@@ -504,6 +668,7 @@ String mapSakanExpression(String expr, PrintDocType type) {
   if (e == 'Today' || e == 'Time') return '';
   final ledger = type == PrintDocType.ledger;
   if (_isDocType(type)) {
+    if (type == PrintDocType.trialBalance && e.contains('Abs(')) return _trialFormula(e);
     if (e.startsWith('Farsi.BeHorof(') || e.contains('ToWords')) return type == PrintDocType.cheque ? '' : '{مبلغ به حروف}';
     e = e.replaceAll(RegExp(r'^\((double|decimal|int|long|string)\)\s*'), '');
     final sm = RegExp(r'^Sum\(([^()]+)\)$').firstMatch(e);

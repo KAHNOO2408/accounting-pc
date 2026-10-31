@@ -2904,14 +2904,14 @@ void main() {
     expect(bal(j, mStock), 700);
     expect(bal(j, mDebtorsTrade, ali.id), 300);
 
-    // «جابجایی دفتر تفصیلی»: Ali moves to «سایر اشخاص» and back
+    // «جابجایی دفتر تفصیلی»: Ali moves to «صاحبان سهام» and back
     expect(s.moveTafsili(mDebtorsTrade, {ali.id}, mCash), isNotNull); // other kind of ledger
-    expect(s.moveTafsili(mDebtorsTrade, {ali.id}, mDebtorsOther), isNull);
+    expect(s.moveTafsili(mDebtorsTrade, {ali.id}, mPartners), isNull);
     j = buildJournal(s);
     expect(bal(j, mDebtorsTrade, ali.id), 0);
-    expect(bal(j, mDebtorsOther, ali.id), 300);
+    expect(bal(j, mPartners, ali.id), 300);
     expect(AppStore.open(s.storage).tafsiliMoves, isNotEmpty);
-    expect(s.moveTafsili(mDebtorsOther, {ali.id}, mDebtorsTrade), isNull);
+    expect(s.moveTafsili(mPartners, {ali.id}, mDebtorsTrade), isNull);
     expect(s.tafsiliMoves, isEmpty);
 
     // «حصه بلند مدت موجودی کالا»: 30% of the 700 stock ledger
@@ -2941,5 +2941,42 @@ void main() {
     expect(s.peopleSorted.any((p) => p.id == ali.id), isTrue);
     s.setPrivateKinds('u1', {});
     expect(s.peopleSorted.any((p) => p.id == mine.id), isTrue);
+  });
+
+  test('Sakan trial balance, stock and salary list prints', () {
+    final ft = rl.fieldsFor(PrintDocType.trialBalance);
+    String m(String e, PrintDocType t) => mapSakanExpression(e, t);
+    expect(m('TarazeAzmayeshi.bookname', PrintDocType.trialBalance), '{نام حساب}');
+    expect(m('Sum(DataTarazeAzmayeshi,TarazeAzmayeshi.pbed)', PrintDocType.trialBalance), '{جمع گردش بدهکار}');
+    expect(m('(((Sum(DataTarazeAzmayeshi,TarazeAzmayeshi.ffbed) - Sum(DataTarazeAzmayeshi,TarazeAzmayeshi.ffbes))) + (Abs((Sum(DataTarazeAzmayeshi,TarazeAzmayeshi.ffbed) - Sum(DataTarazeAzmayeshi,TarazeAzmayeshi.ffbes)))))/2', PrintDocType.trialBalance),
+        '{مانده خالص بدهکار}');
+    expect(m('MojodiKala.mojodirial', PrintDocType.stock), '{ارزش موجودی}');
+    expect(m('Sum(MojodiKala.mojodirial)', PrintDocType.stock), '{جمع ارزش موجودی}');
+    expect(m('(double)Sum(MojodiKala.mojoditedad2)', PrintDocType.stock), '{جمع موجودی}');
+    expect(m('SalaryBime.empbimeNumber', PrintDocType.salaryList), '{شماره بیمه}');
+    expect(m('Sum(SalaryBime.bimeSahmKarfarma)', PrintDocType.salaryList), '{جمع بیمه سهم کارفرما}');
+    expect(m('CheqGet.cheqarzsign', PrintDocType.cheque), '{واحد پول}');
+    for (final t in [PrintDocType.trialBalance, PrintDocType.stock, PrintDocType.salaryList]) {
+      final l = rl.defaultLayoutFor(t);
+      final fields = rl.fieldsFor(t).toSet();
+      for (final it in l.items) {
+        for (final mm in RegExp(r'\{([^{}]+)\}').allMatches(it.text)) {
+          expect(fields.contains(mm[1]) || mm[1] == 'صفحه', isTrue, reason: '${t.name}: ${mm[1]}');
+        }
+      }
+    }
+    expect(ft, contains('مانده خالص بدهکار'));
+
+    final s = _tempStore();
+    final pr = Product(id: newId(), name: 'Nut', unit: 'عدد', unit2: 'کارتن', ratio2: 10);
+    s.upsertProduct(pr);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.purchase, number: 1, date: DateTime(2026, 4, 1), lines: [InvoiceLine(productId: pr.id, qty: 20, unitPrice: 50)]));
+    final st = stockReportData(s, [pr]);
+    expect(st.rows.single['موجودی'], '20');
+    expect(st.rows.single['موجودی واحد دوم'], '2');
+    expect(st.fields['جمع ارزش موجودی'], '1,000');
+    final tb = sampleDocData(s, PrintDocType.trialBalance);
+    expect(tb.fields['جمع مانده بدهکار'], tb.fields['جمع مانده بستانکار']);
+    expect(sampleDocData(s, PrintDocType.salaryList).rows, isNotEmpty);
   });
 }

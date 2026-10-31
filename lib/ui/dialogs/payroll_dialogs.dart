@@ -11,7 +11,7 @@ import '../../data/payroll.dart';
 import '../../data/store.dart';
 import '../print.dart' show openFile, printTable;
 import '../print_designer.dart' show showLayoutPicker;
-import '../report/doc_reports.dart' show payslipReportData;
+import '../report/doc_reports.dart' show payslipReportData, salaryListReportData;
 import '../widgets/common.dart';
 import '../widgets/sakan.dart';
 import 'invoice_editor.dart' show fmtQty, parseQty;
@@ -493,6 +493,10 @@ class _PeriodsTabState extends State<_PeriodsTab> {
         sakanBtn('کارکرد / فیش', sel == null || p == null ? null : () => showPayslipDialog(context, p, sel), icon: Icons.edit_note_rounded),
         sakanBtn('چاپ فیش', sel == null || p == null ? null : () => printPayslip(s, p, sel), icon: Icons.print_outlined),
         sakanBtn('چاپ همه فیش‌ها', p == null || emps.isEmpty ? null : () => printPayslips(s, p, emps), icon: Icons.print_outlined),
+        sakanBtn('چاپ لیست حقوق / بیمه / مالیات', p == null || emps.isEmpty
+            ? null
+            : () => showLayoutPicker(context, type: PrintDocType.salaryList, data: (st) => salaryListReportData(st, p), fileName: 'list-hoghogh-${p.year}-${p.month}'),
+            icon: Icons.list_alt_rounded),
         sakanBtn(hasVoucher ? 'صدور مجدد سند حقوق' : 'صدور سند حقوق', p == null || emps.isEmpty
             ? null
             : () {

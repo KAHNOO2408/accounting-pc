@@ -2078,6 +2078,7 @@ class AppStore extends ChangeNotifier {
     if (f == null || t == null) return 'دفتر معین نامعتبر است';
     if (from == to) return 'دفتر معین مقصد با مبدا یکی است';
     if (!t.hasEntity) return 'دفتر معین مقصد «${t.name}» دفتر تفصیلی ندارد';
+    if (t.kind != f.kind) return 'دفتر تفصیلی فقط به دفتر معین هم نوع منتقل می شود';
     for (final id in tafsiliIds) {
       // a ledger moved before keeps its original key
       final orig = tafsiliMoves.entries.where((e) => e.value == from && e.key.endsWith('|$id')).firstOrNull?.key ?? '$from|$id';

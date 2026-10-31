@@ -49,7 +49,7 @@ String defaultPrintTitle(Invoice inv, PrintDocType t) => switch (t) {
       PrintDocType.warehouse => inv.kind.stockSign > 0 ? 'رسید انبار' : 'حواله انبار',
       PrintDocType.barcode => 'برچسب بارکد',
       PrintDocType.ledger => 'گزارش حساب',
-      PrintDocType.voucher || PrintDocType.payslip || PrintDocType.cheque || PrintDocType.guarantee => t.label,
+      PrintDocType.voucher || PrintDocType.payslip || PrintDocType.cheque || PrintDocType.guarantee || PrintDocType.trialBalance || PrintDocType.stock || PrintDocType.salaryList => t.label,
       PrintDocType.invoice => inv.proforma ? 'پیش‌فاکتور فروش' : inv.kind.label,
     };
 
@@ -1160,6 +1160,9 @@ class _PrintForms extends StatelessWidget {
       ('فیش حقوقی', Icons.request_quote_outlined, AppColors.income, PrintDocType.payslip, ''),
       ('چک ها', Icons.money_outlined, AppColors.debt, PrintDocType.cheque, ''),
       ('اسناد انتظامی', Icons.verified_user_outlined, AppColors.loan, PrintDocType.guarantee, ''),
+      ('تراز آزمایشی', Icons.scale_outlined, th.colorScheme.primary, PrintDocType.trialBalance, ''),
+      ('گزارش موجودی کالا', Icons.inventory_outlined, AppColors.debt, PrintDocType.stock, ''),
+      ('لیست حقوق، بیمه و مالیات', Icons.groups_outlined, AppColors.income, PrintDocType.salaryList, ''),
     ];
     return FormDialog(
       title: 'طراحی فرم های چاپ',
@@ -1183,7 +1186,7 @@ class _PrintForms extends StatelessWidget {
                 variant: variant,
                 data: (st) => switch (type) {
                   PrintDocType.ledger => sampleLedgerData(st),
-                  PrintDocType.voucher || PrintDocType.payslip || PrintDocType.cheque || PrintDocType.guarantee => sampleDocData(st, type),
+                  PrintDocType.voucher || PrintDocType.payslip || PrintDocType.cheque || PrintDocType.guarantee || PrintDocType.trialBalance || PrintDocType.stock || PrintDocType.salaryList => sampleDocData(st, type),
                   _ => invoiceReportData(st, sampleInvoice(st, variant.isEmpty ? 'sale' : variant), type: type),
                 },
                 fileName: '${type.name}-sample',

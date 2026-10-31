@@ -8,6 +8,9 @@ import '../../data/journal.dart';
 import '../../data/store.dart';
 import '../dialogs/voucher_dialog.dart' show tafsiliOptions;
 import '../print.dart';
+import '../print_designer.dart' show showLayoutPicker;
+import '../report/doc_reports.dart' show trialReportData;
+import '../../data/models.dart' show PrintDocType;
 import '../theme.dart';
 import '../widgets/common.dart';
 
@@ -412,6 +415,13 @@ class TrialBalanceView extends StatelessWidget {
                     const Pill('تراز است', color: Colors.white, icon: Icons.check_rounded),
                   const SizedBox(width: 12),
                   OutlinedButton.icon(onPressed: doPrint, icon: const Icon(Icons.print_outlined, size: 18), label: const Text('چاپ (Ctrl+P)')),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: () => showLayoutPicker(context,
+                        type: PrintDocType.trialBalance, data: (st) => trialReportData(st, rows, level: _levelLabel, from: filter.from, to: filter.to), fileName: 'taraz-azmayeshi'),
+                    icon: const Icon(Icons.design_services_outlined, size: 18),
+                    label: const Text('چاپ با طرح'),
+                  ),
                   const SizedBox(width: 8),
                   IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded)),
                 ]),

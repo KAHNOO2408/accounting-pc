@@ -9,6 +9,7 @@ import '../../data/store.dart';
 import '../pages/vouchers_page.dart';
 import '../print.dart';
 import '../print_designer.dart';
+import '../report/doc_reports.dart' show stockReportData;
 import '../shell.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
@@ -381,6 +382,9 @@ class _StockListState extends State<_StockList> {
           _kb('تنظیم جمع تعداد کاردکس', () => _sumKardex(s, list)),
           _kb('اطلاعات کالا', _edit, color: _orange, icon: Icons.info_outline_rounded),
           _kb('رویت کاردکس', _kardex, icon: Icons.inventory_outlined),
+          _kb('چاپ موجودی کالا', () => showLayoutPicker(context,
+              type: PrintDocType.stock, data: (st) => stockReportData(st, _marks.isEmpty ? list : list.where((p) => _marks.contains(p.id)).toList()), fileName: 'mojodi-kala'),
+              icon: Icons.print_outlined),
           _kb('تایید', _ok, key: 'F9', icon: Icons.check_circle_rounded, color: const Color(0xFFD7F2D7)),
           _kb('انصراف', () => Navigator.pop(context), key: 'F10', icon: Icons.cancel_rounded, color: const Color(0xFFFBE0E0)),
         ]),

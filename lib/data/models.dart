@@ -1610,7 +1610,7 @@ class ChequeLeaf {
 // ---------------------------------------------------------------------------
 
 /// Kinds of printouts chosen from «تعیین نوع چاپ».
-enum PrintDocType { invoice, warehouse, barcode, ledger, voucher, payslip, cheque, guarantee }
+enum PrintDocType { invoice, warehouse, barcode, ledger, voucher, payslip, cheque, guarantee, trialBalance, stock, salaryList }
 
 extension PrintDocTypeX on PrintDocType {
   String get label => switch (this) {
@@ -1622,6 +1622,9 @@ extension PrintDocTypeX on PrintDocType {
         PrintDocType.payslip => 'چاپ فیش حقوقی',
         PrintDocType.cheque => 'چاپ چک ها',
         PrintDocType.guarantee => 'چاپ اسناد انتظامی',
+        PrintDocType.trialBalance => 'چاپ تراز آزمایشی',
+        PrintDocType.stock => 'چاپ گزارش موجودی کالا',
+        PrintDocType.salaryList => 'چاپ لیست حقوق، بیمه و مالیات',
       };
 }
 
