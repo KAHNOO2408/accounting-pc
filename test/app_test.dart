@@ -846,7 +846,7 @@ void main() {
       expect(tester.takeException(), isNull, reason: 'page: ${page.name}');
     }
 
-    for (final tab in ['خرید و فروش', 'عملیات کالا', 'مالی', 'مالی ویژه', 'هزینه و درآمد', 'حقوق و دستمزد', 'گزارشات', 'متفرقه', 'کنترل اسناد', 'خروج و پشتیبان']) {
+    for (final tab in ['خرید و فروش', 'عملیات کالا', 'فروشگاهی', 'رستورانی', 'صنعتی', 'سرویس و خدمات', 'مالی', 'مالی ویژه', 'هزینه و درآمد', 'پرسنلی', 'حقوق و دستمزد', 'گزارشات', 'پیامک', 'متفرقه', 'کنترل اسناد', 'خروج و پشتیبان']) {
       await tester.tap(find.text(tab).first);
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull, reason: tab);
@@ -1005,6 +1005,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('کاربران').first);
     await tester.pumpAndSettle();
+    await tester.tap(find.text('کاربران').last); // first entry of the button's menu
+    await tester.pumpAndSettle();
     expect(find.text('لیست کاربران'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await tester.tap(find.text('بازگشت (F10)').last);
@@ -1150,6 +1152,8 @@ void main() {
     await tester.tap(find.text('خرید و فروش').first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('جدول کالا').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('جدول کالا').last); // first entry of the button's menu
     await tester.pumpAndSettle();
     expect(find.text('لیست اقلام موجودی'), findsOneWidget);
     expect(find.text('7001'), findsOneWidget);

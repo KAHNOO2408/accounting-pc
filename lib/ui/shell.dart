@@ -126,7 +126,11 @@ class _Item {
   final ShortcutActivator? activator;
   final void Function(BuildContext context, _ShellState shell)? run;
 
-  const _Item(this.label, this.icon, this.color, {this.shortcut, this.activator, this.run});
+  /// Related windows opened from this button's menu (as Sakan opens them
+  /// from inside the main window), e.g. «قفل اسناد» under «لیست اسناد».
+  final List<_Item> more;
+
+  const _Item(this.label, this.icon, this.color, {this.shortcut, this.activator, this.run, this.more = const []});
 
   bool get soon => run == null;
 }
@@ -179,7 +183,7 @@ List<(String, List<String>)> ribbonCatalog() => [
           [
             ...{
               for (final g in t.groups)
-                for (final i in g.items) i.label,
+                for (final i in g.items) ...[i.label, for (final m in i.more) m.label],
             },
           ],
         ),
@@ -189,7 +193,11 @@ final List<_Tab> _tabs = [
   _Tab('اسناد', [
     _Group('اسناد', [
       _Item('لیست اسناد', Icons.list_alt_rounded, _blue,
-          shortcut: 'Alt+F1', activator: _k(LogicalKeyboardKey.f1, alt: true), run: _page(AppPage.vouchers)),
+          shortcut: 'Alt+F1', activator: _k(LogicalKeyboardKey.f1, alt: true), run: _page(AppPage.vouchers),
+        more: [
+          _Item('قفل اسناد', Icons.lock_clock_outlined, _red, run: (c, _) => showDocLock(c)),
+          _Item('فایل های موقت', Icons.drafts_outlined, _slate, run: (c, _) => showTempDocs(c)),
+        ]),
       _Item('سند حسابداری دستی', Icons.edit_note_rounded, _blue,
           shortcut: 'Alt+F2', activator: _k(LogicalKeyboardKey.f2, alt: true), run: (c, _) => showVoucherDialog(c)),
       _Item('سند افتتاحیه', Icons.flag_outlined, _amber, run: (c, _) => openOpeningVoucher(c)),
@@ -207,10 +215,12 @@ final List<_Tab> _tabs = [
     _Group('تسعیر نرخ', [
       _Item('اعمال کاهش در قیمت تمام شده کالا', Icons.trending_down_rounded, _red, run: (c, _) => showCostAdjust(c, increase: false)),
       _Item('اعمال افزایش در قیمت تمام شده کالا', Icons.trending_up_rounded, _green, run: (c, _) => showCostAdjust(c, increase: true)),
-      _Item('تسعیر نرخ ارز', Icons.currency_exchange_rounded, _amber, run: (c, _) => showRevaluationDialog(c)),
-      _Item('سند ارزی', Icons.receipt_long_outlined, _amber, run: (c, _) => showFxVoucherDialog(c)),
-      _Item('گزارش از گردش ارزی', Icons.query_stats_rounded, _amber, run: (c, _) => showFxTurnover(c)),
-      _Item('جمع صندوق های ارزی', Icons.savings_outlined, _amber, run: (c, _) => showFxCashTotals(c)),
+      _Item('تسعیر نرخ ارز', Icons.currency_exchange_rounded, _amber, run: (c, _) => showRevaluationDialog(c),
+        more: [
+          _Item('سند ارزی', Icons.receipt_long_outlined, _amber, run: (c, _) => showFxVoucherDialog(c)),
+          _Item('گزارش از گردش ارزی', Icons.query_stats_rounded, _amber, run: (c, _) => showFxTurnover(c)),
+          _Item('جمع صندوق های ارزی', Icons.savings_outlined, _amber, run: (c, _) => showFxCashTotals(c)),
+        ]),
     ]),
     _Group('سایر اسناد', [
       _Item('تخفیف از خرید', Icons.local_offer_outlined, _cyan,
@@ -227,7 +237,10 @@ final List<_Tab> _tabs = [
     _Group('مشاهده', [
       _Item('کاردکس کالا', Icons.inventory_outlined, _amber,
           shortcut: 'Ctrl+3', activator: _k(LogicalKeyboardKey.digit3, ctrl: true), run: (c, _) => pickAndShowKardex(c)),
-      _Item('جدول کالا', Icons.grid_on_rounded, _amber, run: (c, _) => showStockList(c)),
+      _Item('جدول کالا', Icons.grid_on_rounded, _amber, run: (c, _) => showStockList(c),
+        more: [
+          _Item('مدل تخفیفات و اشانتیون', Icons.redeem_outlined, _violet, run: (c, _) => showDiscountModels(c)),
+        ]),
       _Item('جدول اموال', Icons.chair_outlined, _violet, run: (c, _) => showAssetsTable(c)),
     ]),
     _Group('فروش', [
@@ -245,6 +258,10 @@ final List<_Tab> _tabs = [
           activator: _k(LogicalKeyboardKey.f5),
           run: (c, _) => showInvoiceEditor(c, kind: InvoiceKind.purchase)),
       _Item('خرید اموال و تجهیزات', Icons.chair_alt_outlined, _red, run: (c, _) => showAssetBuyDialog(c)),
+      _Item('فاکتور بالانس', Icons.local_shipping_outlined, _blue, run: (c, _) => showBalanceEditor(c),
+        more: [
+          _Item('لیست خرید بالانس', Icons.list_alt_rounded, _blue, run: (c, _) => showBalanceDeals(c)),
+        ]),
     ]),
     _Group('برگشت', [
       _Item('برگشت از فروش طی دوره جاری', Icons.assignment_return_outlined, _amber,
@@ -257,19 +274,10 @@ final List<_Tab> _tabs = [
           shortcut: 'Ctrl+F5',
           activator: _k(LogicalKeyboardKey.f5, ctrl: true),
           run: (c, _) => showInvoiceEditor(c, kind: InvoiceKind.purchaseReturn)),
+      _Item('برگشت بالانس', Icons.assignment_return_outlined, _red, run: (c, _) => showBalanceEditor(c, isReturn: true)),
     ]),
   ]),
   _Tab('عملیات کالا', [
-    _Group('سریال', [
-      _Item('لیست سریال ها', Icons.qr_code_2_rounded, _cyan, run: (c, _) => showSerialList(c)),
-      _Item('انتقال بین سریال', Icons.swap_horiz_rounded, _cyan, run: (c, _) => showSerialSwap(c)),
-    ]),
-    _Group('تولید', [
-      _Item('تولید حرفه ای', Icons.precision_manufacturing_outlined, _green, run: (c, _) => showProductions(c)),
-      _Item('فرمول های تولید', Icons.science_outlined, _green, run: (c, _) => showFormulas(c)),
-      _Item('سالن های تولید', Icons.factory_outlined, _green, run: (c, _) => showHalls(c)),
-      _Item('سرشکن انحراف جذب سربار', Icons.balance_outlined, _green, run: (c, _) => showOverheadVariance(c)),
-    ]),
     _Group('انبار', [
       _Item('انبارگردانی', Icons.fact_check_outlined, _amber,
           shortcut: 'Ctrl+9', activator: _k(LogicalKeyboardKey.digit9, ctrl: true), run: _page(AppPage.stockCount)),
@@ -281,48 +289,84 @@ final List<_Tab> _tabs = [
           shortcut: 'Ctrl+7', activator: _k(LogicalKeyboardKey.digit7, ctrl: true), run: (c, _) => showWasteDialog(c)),
       _Item('تبدیل کالا', Icons.autorenew_rounded, _amber, run: (c, _) => showConvertDialog(c)),
     ]),
-    _Group('فروشگاه', [
-      _Item('فاکتور فروشگاهی', Icons.point_of_sale_rounded, _green, run: (c, _) => showShopInvoice(c)),
-      _Item('فرمول های تغییر نرخ', Icons.price_change_outlined, _amber, run: (c, _) => showPriceFormulas(c)),
-      _Item('ساخت نام و بارکد استاندارد', Icons.qr_code_rounded, _amber, run: (c, _) => showStandardBarcodes(c)),
+    _Group('کالاهای امانی پرداختی', [
+      _Item('پرداخت کالای امانی', Icons.outbox_outlined, _violet, run: (c, _) => showConsignEditor(c, ConsignDir.given)),
+      _Item('پس گرفتن کالای امانی پرداختی', Icons.local_shipping_outlined, _violet, run: (c, _) => showConsignList(c, dir: ConsignDir.given)),
     ]),
-    _Group('بالانس', [
-      _Item('خرید بالانس', Icons.local_shipping_outlined, _blue, run: (c, _) => showBalanceEditor(c)),
-      _Item('برگشت از خرید بالانس', Icons.assignment_return_outlined, _red, run: (c, _) => showBalanceEditor(c, isReturn: true)),
-      _Item('لیست خرید بالانس', Icons.list_alt_rounded, _blue, run: (c, _) => showBalanceDeals(c)),
+    _Group('کالای امانی دریافتی', [
+      _Item('دریافت کالا بصورت امانی', Icons.move_to_inbox_outlined, _violet, run: (c, _) => showConsignEditor(c, ConsignDir.received)),
+      _Item('پس دادن کالای امانی دریافتی', Icons.inventory_outlined, _violet, run: (c, _) => showConsignList(c, dir: ConsignDir.received)),
+      _Item('گزارشات امانی', Icons.pending_actions_outlined, _violet, run: (c, _) => showConsignList(c, openOnly: true),
+        more: [
+          _Item('لیست امانی قرضی', Icons.swap_horiz_rounded, _violet, run: (c, _) => showConsignList(c, loan: true)),
+          _Item('امانی قرضی (خروج)', Icons.output_rounded, _violet, run: (c, _) => showConsignEditor(c, ConsignDir.given, loan: true)),
+          _Item('امانی قرضی (ورود)', Icons.input_rounded, _violet, run: (c, _) => showConsignEditor(c, ConsignDir.received, loan: true)),
+        ]),
+    ]),
+    _Group('سریال', [
+      _Item('لیست سریال ها', Icons.qr_code_2_rounded, _cyan, run: (c, _) => showSerialList(c)),
+      _Item('انتقال بین سریال ها', Icons.swap_horiz_rounded, _cyan, run: (c, _) => showSerialSwap(c)),
+    ]),
+    _Group('سفارشات', [
+      _Item('سفارشات', Icons.assignment_outlined, _cyan, run: (c, _) => showOrders(c),
+        more: [
+          _Item('تعیین سفارش روزانه', Icons.today_outlined, _cyan, run: (c, _) => showDailyQuota(c)),
+        ]),
     ]),
     _Group('پیش فاکتور', [
       _Item('پیش فاکتور', Icons.note_add_outlined, _cyan,
           shortcut: 'F7', activator: _k(LogicalKeyboardKey.f7), run: (c, _) => showInvoiceEditor(c, proforma: true)),
       _Item('لیست پیش فاکتور', Icons.library_books_outlined, _cyan,
           shortcut: 'Ctrl+F7', activator: _k(LogicalKeyboardKey.f7, ctrl: true), run: _page(AppPage.proformas)),
-      _Item('سفارشات', Icons.assignment_outlined, _cyan, run: (c, _) => showOrders(c)),
-      _Item('تعیین سفارش روزانه', Icons.today_outlined, _cyan, run: (c, _) => showDailyQuota(c)),
     ]),
-    _Group('رستوران', [
-      _Item('فاکتور رستورانی', Icons.restaurant_rounded, _red, run: (c, _) => showRestaurant(c)),
-      _Item('رزرو میز', Icons.event_seat_outlined, _red, run: (c, _) => showReservations(c)),
-      _Item('تعریف میز', Icons.table_restaurant_outlined, _red, run: (c, _) => showTables(c)),
-      _Item('تسویه پیک', Icons.delivery_dining_outlined, _red, run: (c, _) => showCourierSettle(c)),
+  ]),
+  _Tab('فروشگاهی', [
+    _Group('فروش فروشگاهی', [
+      _Item('فاکتور فروشگاهی', Icons.point_of_sale_rounded, _green, run: (c, _) => showShopInvoice(c)),
+      _Item('فرمول های تغییر نرخ', Icons.price_change_outlined, _amber, run: (c, _) => showPriceFormulas(c)),
+      _Item('کارت هواداری', Icons.loyalty_outlined, _violet, run: (c, _) => showLoyalty(c)),
+      _Item('قرعه کشی', Icons.casino_outlined, _violet, run: (c, _) => showDraws(c)),
     ]),
-    _Group('خدمات و گارانتی', [
-      _Item('پذیرش', Icons.handyman_outlined, _amber, run: (c, _) => showReceptionEditor(c)),
-      _Item('لیست پذیرش', Icons.build_outlined, _amber, run: (c, _) => showReceptions(c)),
-      _Item('لیست گارانتی', Icons.verified_outlined, _amber, run: (c, _) => showWarranties(c)),
+    _Group('بارکد', [
+      _Item('ساخت نام و بارکد استاندارد', Icons.qr_code_rounded, _amber, run: (c, _) => showStandardBarcodes(c)),
+    ]),
+    _Group('مدیریت ترازو', [
+      _Item('ساخت بارکد وزنی', Icons.scale_outlined, _amber, run: (c, _) => showScaleSettings(c)),
+      _Item('ترازو توزین صدر', Icons.scale_rounded, _amber, run: (c, _) => showSadrScale(c)),
     ]),
     _Group('فروشگاه اینترنتی', [
-      _Item('لیست فاکتورهای ووکامرس', Icons.shopping_cart_checkout_rounded, _violet, run: (c, _) => showWooOrders(c)),
-      _Item('تنظیمات ووکامرس', Icons.settings_ethernet_rounded, _violet, run: (c, _) => showWooSettings(c)),
+      _Item('وب سایت ووکامرس', Icons.shopping_cart_checkout_rounded, _violet, run: (c, _) => showWooOrders(c),
+        more: [
+          _Item('تنظیمات ووکامرس', Icons.settings_ethernet_rounded, _violet, run: (c, _) => showWooSettings(c)),
+        ]),
     ]),
-    _Group('امانی', [
-      _Item('دریافت امانی', Icons.move_to_inbox_outlined, _violet, run: (c, _) => showConsignEditor(c, ConsignDir.received)),
-      _Item('پرداخت امانی', Icons.outbox_outlined, _violet, run: (c, _) => showConsignEditor(c, ConsignDir.given)),
-      _Item('امانی دریافتنی', Icons.inventory_outlined, _violet, run: (c, _) => showConsignList(c, dir: ConsignDir.received)),
-      _Item('امانی پرداختنی', Icons.local_shipping_outlined, _violet, run: (c, _) => showConsignList(c, dir: ConsignDir.given)),
-      _Item('مانده امانی', Icons.pending_actions_outlined, _violet, run: (c, _) => showConsignList(c, openOnly: true)),
-      _Item('امانی قرضی (خروج)', Icons.output_rounded, _violet, run: (c, _) => showConsignEditor(c, ConsignDir.given, loan: true)),
-      _Item('امانی قرضی (ورود)', Icons.input_rounded, _violet, run: (c, _) => showConsignEditor(c, ConsignDir.received, loan: true)),
-      _Item('لیست امانی قرضی', Icons.swap_horiz_rounded, _violet, run: (c, _) => showConsignList(c, loan: true)),
+  ]),
+  _Tab('رستورانی', [
+    _Group('فروش رستورانی', [
+      _Item('فاکتور رستورانی', Icons.restaurant_rounded, _red, run: (c, _) => showRestaurant(c)),
+      _Item('رزرو میز', Icons.event_seat_outlined, _red, run: (c, _) => showReservations(c)),
+      _Item('مدیریت میزها', Icons.table_restaurant_outlined, _red, run: (c, _) => showTables(c)),
+      _Item('تسویه پیک', Icons.delivery_dining_outlined, _red, run: (c, _) => showCourierSettle(c)),
+    ]),
+  ]),
+  _Tab('صنعتی', [
+    _Group('تولید', [
+      _Item('تولید حرفه ای', Icons.precision_manufacturing_outlined, _green, run: (c, _) => showProductions(c)),
+      _Item('فرمول های تولید', Icons.science_outlined, _green, run: (c, _) => showFormulas(c)),
+      _Item('سالن های تولید', Icons.factory_outlined, _green, run: (c, _) => showHalls(c)),
+    ]),
+    _Group('انحرافات جذب', [
+      _Item('سرشکن انحراف جذب سربار', Icons.balance_outlined, _green, run: (c, _) => showOverheadVariance(c)),
+    ]),
+    _Group('پیمان', [
+      _Item('لیست قرارداد', Icons.handshake_outlined, _violet, run: (c, _) => showContracts(c)),
+    ]),
+  ]),
+  _Tab('سرویس و خدمات', [
+    _Group('عملیات ها', [
+      _Item('پذیرش', Icons.handyman_outlined, _amber, run: (c, _) => showReceptionEditor(c)),
+      _Item('لیست پذیرش', Icons.build_outlined, _amber, run: (c, _) => showReceptions(c)),
+      _Item('اعمال گارانتی', Icons.verified_outlined, _amber, run: (c, _) => showWarranties(c)),
     ]),
   ]),
   _Tab('مالی', [
@@ -400,10 +444,15 @@ final List<_Tab> _tabs = [
       _Item('دریافت پرداخت بین حساب‌ها', Icons.compare_arrows_rounded, _blue, run: (c, _) => showBankOpsDialog(c, BankOp.between)),
       _Item('جا به جایی چک', Icons.swap_horiz_rounded, _cyan, run: (c, _) => showChequeMoveDialog(c)),
       _Item('راس‌گیری چک', Icons.calculate_outlined, _cyan, run: (c, _) => showChequeAverageDialog(c)),
+      _Item('اصلاح وضعیت چک ها', Icons.rule_rounded, _red, run: (c, _) => showFixChequeStatus(c)),
+      _Item('تسویه فاکتور به فاکتور', Icons.compare_arrows_rounded, _amber, run: (c, _) => showInvoiceSettle(c),
+        more: [
+          _Item('لیست سندهای تسویه', Icons.list_alt_rounded, _amber, run: (c, _) => showSettleDocs(c)),
+        ]),
     ]),
     _Group('انتظامی', [
-      _Item('دریافت انتظامی', Icons.move_to_inbox_outlined, _violet, run: (c, _) => showGuaranteeEditor(c, received: true)),
-      _Item('صدور انتظامی', Icons.outbox_outlined, _violet, run: (c, _) => showGuaranteeEditor(c, received: false)),
+      _Item('دریافت اسناد انتظامی', Icons.move_to_inbox_outlined, _violet, run: (c, _) => showGuaranteeEditor(c, received: true)),
+      _Item('صدور اسناد انتظامی', Icons.outbox_outlined, _violet, run: (c, _) => showGuaranteeEditor(c, received: false)),
       _Item('انتظامی ها', Icons.verified_user_outlined, _violet, run: (c, _) => showGuarantees(c)),
     ]),
   ]),
@@ -429,129 +478,149 @@ final List<_Tab> _tabs = [
           run: (c, _) => showTxnDialog(c, type: TxnType.expense, title: 'پرداخت هزینه')),
     ]),
   ]),
-  _Tab('حقوق و دستمزد', [
+  _Tab('پرسنلی', [
     _Group('پرسنل', [
-      _Item('پرسنل', Icons.badge_outlined, _blue, run: (c, _) => showPayrollWindow(c, tab: 0)),
-      _Item('پرسنل جدید', Icons.person_add_alt_1_outlined, _blue, run: (c, _) => showEmployeeDialog(c)),
-    ]),
-    _Group('حقوق', [
-      _Item('کارکرد و فیش حقوقی', Icons.request_quote_outlined, _green, run: (c, _) => showPayrollWindow(c, tab: 1)),
+      _Item('معرفی پرسنل', Icons.badge_outlined, _blue, run: (c, _) => showPayrollWindow(c, tab: 0),
+        more: [
+          _Item('پرسنل جدید', Icons.person_add_alt_1_outlined, _blue, run: (c, _) => showEmployeeDialog(c)),
+        ]),
+      _Item('تردد', Icons.fingerprint_rounded, _blue, run: (c, _) => showAttendance(c)),
+      _Item('شیفت', Icons.schedule_rounded, _blue, run: (c, _) => showShifts(c)),
       _Item('مرخصی', Icons.beach_access_outlined, _cyan, run: (c, _) => showPayrollWindow(c, tab: 2)),
       _Item('ماموریت', Icons.flight_takeoff_rounded, _cyan, run: (c, _) => showPayrollWindow(c, tab: 3)),
-      _Item('وام پرسنل', Icons.account_balance_wallet_outlined, _amber, run: (c, _) => showPayrollWindow(c, tab: 4)),
-      _Item('حضور و غیاب', Icons.fingerprint_rounded, _blue, run: (c, _) => showAttendance(c)),
-      _Item('تعیین شیفت', Icons.schedule_rounded, _blue, run: (c, _) => showShifts(c)),
-      _Item('گروه حقوق', Icons.groups_outlined, _green, run: (c, _) => showPayGroups(c)),
+      _Item('وام', Icons.account_balance_wallet_outlined, _amber, run: (c, _) => showPayrollWindow(c, tab: 4)),
     ]),
+  ]),
+  _Tab('حقوق و دستمزد', [
     _Group('جداول پایه', [
-      _Item('فرم جداول پایه پرسنل', Icons.table_chart_outlined, _violet, run: (c, _) => showPayBaseTables(c)),
+      _Item('جداول پایه پرسنل', Icons.table_chart_outlined, _violet, run: (c, _) => showPayBaseTables(c),
+        more: [
+          _Item('جدول معافیت های مالیاتی', Icons.percent_rounded, _red, run: (c, _) => showPayTables(c, PayTableKind.taxExemption)),
+        ]),
       _Item('جدول حقوق', Icons.payments_outlined, _green, run: (c, _) => showPayTables(c, PayTableKind.salary)),
       _Item('جدول بیمه', Icons.health_and_safety_outlined, _blue, run: (c, _) => showPayTables(c, PayTableKind.insurance)),
       _Item('جدول مالیات', Icons.account_balance_outlined, _red, run: (c, _) => showPayTables(c, PayTableKind.tax)),
-      _Item('جدول معافیت های مالیاتی', Icons.percent_rounded, _red, run: (c, _) => showPayTables(c, PayTableKind.taxExemption)),
-      _Item('مزایای غیر نقدی غیر مستمر', Icons.card_giftcard_outlined, _amber, run: (c, _) => showPayOnce(c, exempt: false)),
-      _Item('هزینه های غیر مستمر معاف از مالیات', Icons.money_off_rounded, _amber, run: (c, _) => showPayOnce(c, exempt: true)),
-      _Item('مالیات بر درآمد', Icons.receipt_long_outlined, _red, run: (c, _) => showIncomeTax(c)),
+      _Item('جدول مزایای غیر نقدی غیر مستمر', Icons.card_giftcard_outlined, _amber, run: (c, _) => showPayOnce(c, exempt: false)),
+      _Item('هزینه های غیر مستمر پرداختی معاف از مالیات توسط مودی', Icons.money_off_rounded, _amber, run: (c, _) => showPayOnce(c, exempt: true)),
     ]),
-    _Group('گزارش و تنظیم', [
-      _Item('گزارشات حقوق، بیمه و مالیات', Icons.summarize_outlined, _violet, run: (c, _) => showPayrollWindow(c, tab: 5)),
-      _Item('تنظیمات بیمه و مالیات', Icons.tune_rounded, _slate, run: (c, _) => showPayrollWindow(c, tab: 6)),
+    _Group('عملیات', [
+      _Item('محاسبه حقوق و ثبت سند', Icons.request_quote_outlined, _green, run: (c, _) => showPayrollWindow(c, tab: 1)),
+      _Item('گروه حقوق', Icons.groups_outlined, _green, run: (c, _) => showPayGroups(c)),
+      _Item('مالیات بر درآمد', Icons.receipt_long_outlined, _red, run: (c, _) => showIncomeTax(c)),
+      _Item('گزارشات حقوق و دستمزد', Icons.summarize_outlined, _violet, run: (c, _) => showPayrollWindow(c, tab: 5)),
+      _Item('تنظیمات پرسنلی', Icons.tune_rounded, _slate, run: (c, _) => showPayrollWindow(c, tab: 6)),
     ]),
   ]),
   _Tab('گزارشات', [
     _Group('گزارشات استاندارد', [
-      _Item('ترازنامه', Icons.balance_rounded, _blue, run: _page(AppPage.balanceSheet)),
+      _Item('ترازنامه', Icons.balance_rounded, _blue, run: _page(AppPage.balanceSheet),
+        more: [
+          _Item('ترازنامه سفارشی', Icons.dashboard_customize_outlined, _blue, run: (c, _) => showCustomStatements(c, balanceSheet: true)),
+          _Item('تعیین حصه بلند مدت دفاتر موجودی کالا', Icons.inventory_rounded, _blue, run: (c, _) => showStockLongTerm(c)),
+        ]),
       _Item('تراز آزمایشی', Icons.scale_outlined, _blue, run: (c, _) => showTrialBalanceFilter(c)),
-      _Item('گزارش از وضعیت حساب', Icons.fact_check_outlined, _cyan, run: (c, _) => showAccountStatus(c)),
-      _Item('سند ترکیبی عملیات یک روز یا یک ماه', Icons.merge_rounded, _blue, run: (c, _) => showCombinedVoucher(c)),
-      _Item('نمودار سود و زیان', Icons.bar_chart_rounded, _green, run: (c, _) => showProfitChart(c)),
-      _Item('گزارش مطالبات', Icons.call_received_rounded, _green, run: (c, _) => showInstallmentPlans(c, receivable: true)),
-      _Item('گزارش تعهدات', Icons.call_made_rounded, _red, run: (c, _) => showInstallmentPlans(c, receivable: false)),
-      _Item('ترازنامه سفارشی', Icons.dashboard_customize_outlined, _blue, run: (c, _) => showCustomStatements(c, balanceSheet: true)),
-      _Item('صورتحساب سود/زیان سفارشی', Icons.dashboard_customize_outlined, _green, run: (c, _) => showCustomStatements(c, balanceSheet: false)),
       _Item('صورت خلاصه درآمد و هزینه', Icons.summarize_outlined, _amber, run: (c, _) => showIncomeExpenseSummary(c)),
-      _Item('گزارشات پویا نمودار', Icons.insights_rounded, _violet, run: (c, _) => showDynamicReport(c)),
-      _Item('گزارش تلفیقی صورت حساب سود و زیان', Icons.merge_type_rounded, _green, run: (c, _) => showConsolidatedProfit(c)),
       _Item('صورت حساب سود و زیان', Icons.query_stats_rounded, _green,
-          shortcut: 'Alt+F5', activator: _k(LogicalKeyboardKey.f5, alt: true), run: _page(AppPage.profit)),
+          shortcut: 'Alt+F5', activator: _k(LogicalKeyboardKey.f5, alt: true), run: _page(AppPage.profit),
+        more: [
+          _Item('صورتحساب سود/زیان سفارشی', Icons.dashboard_customize_outlined, _green, run: (c, _) => showCustomStatements(c, balanceSheet: false)),
+          _Item('گزارش تلفیقی صورت حساب سود و زیان', Icons.merge_type_rounded, _green, run: (c, _) => showConsolidatedProfit(c)),
+          _Item('نمودار سود و زیان', Icons.bar_chart_rounded, _green, run: (c, _) => showProfitChart(c)),
+        ]),
       _Item('دفتر کل', Icons.menu_book_rounded, _blue, run: (c, _) => showGeneralLedgerFilter(c)),
       _Item('دفاتر معین', Icons.book_outlined, _blue,
           run: (c, _) => showGeneralLedgerFilter(c, title: 'چاپ دفتر معین', level: TbLevel.moeen)),
       _Item('دفاتر تفصیلی', Icons.import_contacts_outlined, _violet,
-          run: (c, _) => showGeneralLedgerFilter(c, title: 'چاپ دفتر تفصیلی', level: TbLevel.tafsili)),
+          run: (c, _) => showGeneralLedgerFilter(c, title: 'چاپ دفتر تفصیلی', level: TbLevel.tafsili),
+        more: [
+          _Item('دفاتر تفصیلی در تفصیلی', Icons.account_tree_rounded, _amber, run: (c, _) => showSubTafsilis(c)),
+        ]),
       _Item('دفتر روزنامه', Icons.today_outlined, _blue, run: _page(AppPage.transactions)),
       _Item('گزارشات خرید', Icons.shopping_cart_outlined, _red,
           run: _page(AppPage.invoices, kind: InvoiceKind.purchase)),
-      _Item('گزارشات فروش', Icons.sell_outlined, _green, run: _page(AppPage.invoices, kind: InvoiceKind.sale)),
-      _Item('گزارشات مالی', Icons.bar_chart_rounded, _blue, run: _page(AppPage.reports)),
+      _Item('گزارشات فروش', Icons.sell_outlined, _green, run: _page(AppPage.invoices, kind: InvoiceKind.sale),
+        more: [
+          _Item('گزارش فروش به تفکیک شعبه', Icons.store_outlined, _blue, run: (c, _) => showBranchSales(c)),
+        ]),
+      _Item('گزارشات مالی', Icons.bar_chart_rounded, _blue, run: _page(AppPage.reports),
+        more: [
+          _Item('گزارش از وضعیت حساب', Icons.fact_check_outlined, _cyan, run: (c, _) => showAccountStatus(c)),
+          _Item('سند ترکیبی عملیات یک روز یا یک ماه', Icons.merge_rounded, _blue, run: (c, _) => showCombinedVoucher(c)),
+          _Item('گزارش مطالبات', Icons.call_received_rounded, _green, run: (c, _) => showInstallmentPlans(c, receivable: true)),
+          _Item('گزارش تعهدات', Icons.call_made_rounded, _red, run: (c, _) => showInstallmentPlans(c, receivable: false)),
+          _Item('گزارشات پویا نمودار', Icons.insights_rounded, _violet, run: (c, _) => showDynamicReport(c)),
+        ]),
       _Item('گزارشات کالا و انبار', Icons.inventory_2_outlined, _amber, run: _page(AppPage.products)),
-      _Item('جدول اشخاص', Icons.people_alt_outlined, _violet, run: (c, _) => showAccountSelector(c)),
+      _Item('جدول اشخاص', Icons.people_alt_outlined, _violet, run: (c, _) => showAccountSelector(c),
+        more: [
+          _Item('جابجایی دفتر تفصیلی', Icons.swap_vert_circle_outlined, _amber, run: (c, _) => showMoveTafsili(c)),
+        ]),
       _Item('جدول سرمایه‌داران', Icons.diamond_outlined, _violet, run: (c, _) => showAccountSelector(c, category: 'صاحبان سهام')),
       _Item('جدول اشخاص ارزی', Icons.currency_exchange_rounded, _cyan, run: (c, _) => showFxPeople(c)),
-      _Item('مدیریت گزارشات', Icons.dashboard_customize_outlined, _cyan, run: (c, _) => showReportFiles(c)),
+      _Item('مدیریت گزارشات', Icons.dashboard_customize_outlined, _cyan, run: (c, _) => showReportFiles(c),
+        more: [
+          _Item('انتقال گزارشات از سایر دفاتر', Icons.drive_file_move_outline, _violet, run: (c, _) => showImportReportsFromBook(c)),
+        ]),
       _Item('گزارش از گروه مراکز دفتر', Icons.account_tree_outlined, _amber, run: (c, _) => showCenterGroupReport(c)),
+    ]),
+    _Group('سازمان امور مالیاتی', [
+      _Item('تهیه فایل مالیاتی', Icons.receipt_long_outlined, _red, run: (c, _) => showTaxFile(c)),
+    ]),
+  ]),
+  _Tab('پیامک', [
+    _Group('ارسال پیامک', [
+      _Item('ارسال پیام', Icons.sms_outlined, _green,
+          shortcut: 'Ctrl+F11', activator: _k(LogicalKeyboardKey.f11, ctrl: true), run: (c, _) => showSmsWindow(c)),
+      _Item('پیامک خودکار و زمانبندی', Icons.schedule_send_rounded, _green, run: (c, _) => showSmsAutomation(c)),
     ]),
   ]),
   _Tab('متفرقه', [
     _Group('تنظیمات', [
-      _Item('تنظیمات', Icons.tune_rounded, _blue, run: _page(AppPage.settings)),
+      _Item('تنظیمات', Icons.tune_rounded, _blue, run: _page(AppPage.settings),
+        more: [
+          _Item('تنظیمات فاکتور فروش', Icons.point_of_sale_rounded, _green, run: (c, _) => showInvoiceOptionsDialog(c, buy: false)),
+          _Item('تنظیمات فاکتور خرید', Icons.shopping_cart_checkout_rounded, _red, run: (c, _) => showInvoiceOptionsDialog(c, buy: true)),
+        ]),
       _Item('طراحی فرم های چاپ', Icons.print_outlined, _violet, run: (c, _) => showPrintForms(c)),
-      _Item('تنظیمات فاکتور فروش', Icons.point_of_sale_rounded, _green, run: (c, _) => showInvoiceOptionsDialog(c, buy: false)),
-      _Item('تنظیمات فاکتور خرید', Icons.shopping_cart_checkout_rounded, _red, run: (c, _) => showInvoiceOptionsDialog(c, buy: true)),
+      _Item('تصویر پس زمینه', Icons.wallpaper_rounded, _cyan, run: (c, _) => showBackgroundDialog(c)),
       _Item('سطل بازیافت', Icons.delete_outline_rounded, _red, run: (c, _) => showRecycleBin(c)),
-      _Item('معرفی شعب', Icons.store_mall_directory_outlined, _blue, run: (c, _) => showBranches(c)),
-      _Item('انتخاب شعبه', Icons.storefront_outlined, _blue, run: (c, _) => showSelectBranch(c)),
-      _Item('گزارش فروش به تفکیک شعبه', Icons.store_outlined, _blue, run: (c, _) => showBranchSales(c)),
-      _Item('انتقال گزارشات از سایر دفاتر', Icons.drive_file_move_outline, _violet, run: (c, _) => showImportReportsFromBook(c)),
-      _Item('جابجایی دفتر تفصیلی', Icons.swap_vert_circle_outlined, _amber, run: (c, _) => showMoveTafsili(c)),
-      _Item('تصحیح وضعیت چک ها', Icons.rule_rounded, _red, run: (c, _) => showFixChequeStatus(c)),
-      _Item('تعیین حصه بلند مدت دفاتر موجودی کالا', Icons.inventory_rounded, _blue, run: (c, _) => showStockLongTerm(c)),
-      _Item('قفل اسناد', Icons.lock_clock_outlined, _red, run: (c, _) => showDocLock(c)),
-      _Item('دفاتر تفصیلی در تفصیلی', Icons.account_tree_rounded, _amber, run: (c, _) => showSubTafsilis(c)),
-      _Item('لیست قرارداد', Icons.handshake_outlined, _violet, run: (c, _) => showContracts(c)),
-      _Item('فایل های موقت', Icons.drafts_outlined, _slate, run: (c, _) => showTempDocs(c)),
-      _Item('تنظیمات پشتیبان گیری خودکار', Icons.backup_outlined, _green, run: (c, _) => showAutoBackupSettings(c)),
-      _Item('بازیابی دفاتر گم شده', Icons.restore_page_outlined, _green, run: (c, _) => showRecoverBooks(c)),
     ]),
     _Group('متفرقه', [
       _Item('کدبندی دفاتر کل و معین', Icons.account_tree_outlined, _blue, run: (c, _) => showChartCoding(c)),
-      _Item('معرفی دفاتر مالی', Icons.library_add_outlined, _green, run: (c, _) => showBooksManager(c)),
-      _Item('مرکز اسناد', Icons.home_work_outlined, _amber, run: (c, _) => showDocCentersDialog(c)),
+      _Item('معرفی دفاتر مالی', Icons.library_add_outlined, _green, run: (c, _) => showBooksManager(c),
+        more: [
+          _Item('بازیابی دفاتر گم شده', Icons.restore_page_outlined, _green, run: (c, _) => showRecoverBooks(c)),
+        ]),
       _Item('مرکز دفاتر', Icons.domain_outlined, _slate, run: (c, _) => showBookCenters(c)),
-      _Item('یادسپار تقویم', Icons.calendar_month_rounded, _blue, run: (c, _) => showCalendar(c)),
-      _Item('پیام های داخلی', Icons.forum_outlined, _blue, run: (c, _) => showMessages(c)),
-      _Item('کارت هواداری', Icons.loyalty_outlined, _violet, run: (c, _) => showLoyalty(c)),
-      _Item('قرعه کشی', Icons.casino_outlined, _violet, run: (c, _) => showDraws(c)),
-      _Item('پول شمار', Icons.payments_outlined, _green, run: (c, _) => showCashCounter(c)),
-      _Item('دفترچه تلفن', Icons.contact_phone_outlined, _blue, run: (c, _) => showPhoneBook(c)),
-      _Item('تماس جدید', Icons.phone_callback_rounded, _blue, run: (c, _) => showNewCall(c)),
-      _Item('ترازو و بارکد وزنی', Icons.scale_outlined, _amber, run: (c, _) => showScaleSettings(c)),
-      _Item('ایجاد فایل مالیاتی ویژه نرم افزار TTMS', Icons.receipt_long_outlined, _red, run: (c, _) => showTaxFile(c)),
-      _Item('ورود لیستی اطلاعات', Icons.playlist_add_rounded, _green, run: (c, _) => showListImport(c)),
-      _Item('ورود لیستی کالا', Icons.inventory_2_outlined, _green, run: (c, _) => showListImport(c, kind: ImportKind.products)),
-      _Item('ورود لیستی پرسنل', Icons.badge_outlined, _green, run: (c, _) => showListImport(c, kind: ImportKind.employees)),
-      _Item('ورود لیستی اموال', Icons.chair_alt_outlined, _green, run: (c, _) => showListImport(c, kind: ImportKind.assets)),
-      _Item('ورود مانده اول دوره دفاتر از اکسل', Icons.account_balance_wallet_outlined, _green, run: (c, _) => showListImport(c, kind: ImportKind.balances)),
-      _Item('انتقال اطلاعات از سکان', Icons.move_down_rounded, _violet, run: (c, _) => showSakanTransfer(c)),
-      _Item('مدیریت ساخت فایل ترازوی توزین صدر', Icons.scale_rounded, _amber, run: (c, _) => showSadrScale(c)),
-      _Item('تسویه فاکتور به فاکتور', Icons.compare_arrows_rounded, _amber, run: (c, _) => showInvoiceSettle(c)),
-      _Item('لیست سندهای تسویه', Icons.list_alt_rounded, _amber, run: (c, _) => showSettleDocs(c)),
-      _Item('حذف دفاتر بدون تراکنش', Icons.cleaning_services_outlined, _red, run: (c, _) => showCleanup(c)),
-      _Item('پیامک خودکار و زمانبندی', Icons.schedule_send_rounded, _green, run: (c, _) => showSmsAutomation(c)),
-      _Item('مراکز رکورد (هزینه)', Icons.workspaces_outline, _slate, run: (c, _) => showCostCenters(c)),
+      _Item('مرکز هزینه', Icons.workspaces_outline, _slate, run: (c, _) => showCostCenters(c)),
       _Item('بازاریابان', Icons.campaign_outlined, _green, run: (c, _) => showMarketersWindow(c)),
       _Item('گروه‌های یارانه', Icons.group_work_outlined, _green, run: (c, _) => showSubsidyGroups(c)),
-      _Item('مدل تخفیفات و اشانتیون', Icons.redeem_outlined, _violet, run: (c, _) => showDiscountModels(c)),
       _Item('تخفیف عمومی', Icons.percent_rounded, _cyan, run: (c, _) => showAmountDiscounts(c)),
       _Item('واحدهای شمارش', Icons.straighten_rounded, _amber, run: (c, _) => showUnitsWindow(c)),
       _Item('لیست ارزها', Icons.attach_money_rounded, _green, run: (c, _) => showCurrenciesWindow(c)),
       _Item('لیست انبارها', Icons.warehouse_outlined, _amber, run: (c, _) => showWarehousesWindow(c)),
-      _Item('تصویر پس زمینه', Icons.wallpaper_rounded, _cyan, run: (c, _) => showBackgroundDialog(c)),
-      _Item('ارسال پیام', Icons.sms_outlined, _green,
-          shortcut: 'Ctrl+F11', activator: _k(LogicalKeyboardKey.f11, ctrl: true), run: (c, _) => showSmsWindow(c)),
+      _Item('پول شمار', Icons.payments_outlined, _green, run: (c, _) => showCashCounter(c)),
+      _Item('دفترچه تلفن', Icons.contact_phone_outlined, _blue, run: (c, _) => showPhoneBook(c),
+        more: [
+          _Item('تماس جدید', Icons.phone_callback_rounded, _blue, run: (c, _) => showNewCall(c)),
+        ]),
+      _Item('یادسپار تقویم', Icons.calendar_month_rounded, _blue, run: (c, _) => showCalendar(c)),
+      _Item('پیام های داخلی', Icons.forum_outlined, _blue, run: (c, _) => showMessages(c)),
+      _Item('ورود لیستی اطلاعات', Icons.playlist_add_rounded, _green, run: (c, _) => showListImport(c),
+        more: [
+          _Item('ورود لیستی کالا', Icons.inventory_2_outlined, _green, run: (c, _) => showListImport(c, kind: ImportKind.products)),
+          _Item('ورود لیستی پرسنل', Icons.badge_outlined, _green, run: (c, _) => showListImport(c, kind: ImportKind.employees)),
+          _Item('ورود لیستی اموال', Icons.chair_alt_outlined, _green, run: (c, _) => showListImport(c, kind: ImportKind.assets)),
+          _Item('ورود مانده اول دوره دفاتر از اکسل', Icons.account_balance_wallet_outlined, _green, run: (c, _) => showListImport(c, kind: ImportKind.balances)),
+          _Item('انتقال اطلاعات از سکان', Icons.move_down_rounded, _violet, run: (c, _) => showSakanTransfer(c)),
+        ]),
     ]),
     _Group('کاربران', [
-      _Item('کاربران', Icons.manage_accounts_outlined, _blue, run: (c, _) => showUsersWindow(c)),
+      _Item('کاربران', Icons.manage_accounts_outlined, _blue, run: (c, _) => showUsersWindow(c),
+        more: [
+          _Item('معرفی شعب', Icons.store_mall_directory_outlined, _blue, run: (c, _) => showBranches(c)),
+          _Item('انتخاب شعبه', Icons.storefront_outlined, _blue, run: (c, _) => showSelectBranch(c)),
+        ]),
       _Item('ردپای کاربران', Icons.history_toggle_off_rounded, _violet, run: (c, _) => showAuditReport(c)),
       _Item('تنظیم دکمه‌ها', Icons.smart_button_outlined, _slate, run: (c, _) => showButtonSettings(c, ribbonCatalog())),
     ]),
@@ -571,6 +640,7 @@ final List<_Tab> _tabs = [
           run: (c, _) => toast(c, 'اسناد همیشه بر اساس تاریخ و ترتیب ثبت مرتب هستند')),
       _Item('نمایش اخطارهای ورودی', Icons.warning_amber_rounded, _amber, run: (c, _) => showIncomingWarnings(c)),
       _Item('مدیریت گروه مراکز دفتر', Icons.hub_outlined, _slate, run: (c, _) => showCenterGroups(c)),
+      _Item('حذف دفاتر بدون تراکنش', Icons.cleaning_services_outlined, _red, run: (c, _) => showCleanup(c)),
     ]),
   ]),
   _Tab('خروج و پشتیبان', [
@@ -586,6 +656,7 @@ final List<_Tab> _tabs = [
       _Item('اتصال به سرور (شبکه)', Icons.lan_outlined, _slate, run: (c, _) => showServerSettings(c)),
       _Item('تنظیم پرینترها', Icons.print_outlined, _slate, run: (c, _) => showPrinterSettings(c)),
       _Item('ارتباط از راه دور', Icons.support_agent_rounded, _slate, run: (c, _) => showRemoteSupport(c)),
+      _Item('تنظیمات پشتیبان گیری خودکار', Icons.backup_outlined, _green, run: (c, _) => showAutoBackupSettings(c)),
     ]),
   ]),
 ];
@@ -732,7 +803,7 @@ class _ShellState extends State<Shell> {
     };
     for (final t in _tabs) {
       for (final g in t.groups) {
-        for (final i in g.items) {
+        for (final i in [for (final x in g.items) ...[x, ...x.more]]) {
           if (i.activator != null && i.run != null) {
             bindings.putIfAbsent(i.activator!, () => () => _runItem(context, i));
           }
@@ -858,8 +929,10 @@ class _TitleBar extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+            // all of Sakan's tabs stay on one row (scaled down when narrow)
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.bottomStart,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -946,7 +1019,7 @@ class _TabChipState extends State<_TabChip> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 140),
-          padding: EdgeInsets.fromLTRB(14, 9, 14, attached ? 12 : 9),
+          padding: EdgeInsets.fromLTRB(10, 9, 10, attached ? 12 : 9),
           decoration: BoxDecoration(
             color: attached
                 ? top
@@ -1074,11 +1147,11 @@ class _RibbonGroup extends StatelessWidget {
     final natural = 10 + items.fold<double>(0, (a, i) => a + (i.label.length > 17 ? 100 : 84));
     final wrap = maxWidth != null && natural > maxWidth!;
     final Widget buttons = wrap
-        ? Wrap(children: [for (final i in items) _RibbonButton(item: i, onTap: () => onItem(i))])
+        ? Wrap(children: [for (final i in items) _RibbonButton(item: i, onTap: () => onItem(i), onRun: onItem)])
         : Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [for (final i in items) _RibbonButton(item: i, onTap: () => onItem(i))],
+            children: [for (final i in items) _RibbonButton(item: i, onTap: () => onItem(i), onRun: onItem)],
           );
     final box = Container(
       decoration: BoxDecoration(
@@ -1126,7 +1199,8 @@ class _RibbonGroup extends StatelessWidget {
 class _RibbonButton extends StatefulWidget {
   final _Item item;
   final VoidCallback onTap;
-  const _RibbonButton({required this.item, required this.onTap});
+  final ValueChanged<_Item> onRun;
+  const _RibbonButton({required this.item, required this.onTap, required this.onRun});
 
   @override
   State<_RibbonButton> createState() => _RibbonButtonState();
@@ -1134,6 +1208,40 @@ class _RibbonButton extends StatefulWidget {
 
 class _RibbonButtonState extends State<_RibbonButton> {
   bool _hover = false;
+
+  /// The button's own window first, then its related windows.
+  Future<void> _menu(BuildContext context) async {
+    final store = StoreScope.read(context);
+    final box = context.findRenderObject() as RenderBox;
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final at = box.localToGlobal(Offset(0, box.size.height), ancestor: overlay);
+    final i = widget.item;
+    final list = [i, for (final m in i.more) if (store.canUse(m.label)) m];
+    final picked = await showMenu<int>(
+      context: context,
+      position: RelativeRect.fromLTRB(at.dx, at.dy, overlay.size.width - at.dx - box.size.width, 0),
+      items: [
+        for (var k = 0; k < list.length; k++) ...[
+          if (k == 1) const PopupMenuDivider(),
+          PopupMenuItem<int>(
+            value: k,
+            child: Row(children: [
+              Icon(list[k].icon, size: 18, color: list[k].color),
+              const SizedBox(width: 10),
+              Text(list[k].label, style: TextStyle(fontWeight: k == 0 ? FontWeight.w800 : FontWeight.w500)),
+              if (list[k].shortcut != null) ...[const SizedBox(width: 12), Text(list[k].shortcut!, style: const TextStyle(fontSize: 11, color: Colors.black45))],
+            ]),
+          ),
+        ],
+      ],
+    );
+    if (picked == null || !context.mounted) return;
+    if (picked == 0) {
+      widget.onTap();
+    } else {
+      widget.onRun(list[picked]);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1150,7 +1258,7 @@ class _RibbonButtonState extends State<_RibbonButton> {
         onExit: (_) => setState(() => _hover = false),
         child: InkWell(
           borderRadius: BorderRadius.circular(10),
-          onTap: widget.onTap,
+          onTap: i.more.isEmpty ? widget.onTap : () => _menu(context),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 120),
             width: i.label.length > 17 ? 100 : 84,
@@ -1209,6 +1317,7 @@ class _RibbonButtonState extends State<_RibbonButton> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                if (i.more.isNotEmpty) Icon(Icons.arrow_drop_down_rounded, size: 14, color: th.hintColor),
                 if (i.shortcut != null)
                   Text(i.shortcut!,
                       textDirection: TextDirection.ltr,

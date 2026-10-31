@@ -81,6 +81,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text(item).first);
       await tester.pumpAndSettle();
+      // a button with related windows opens its menu first
+      if (find.byType(PopupMenuItem<int>).evaluate().isNotEmpty) {
+        await tester.tap(find.text(item).last);
+        await tester.pumpAndSettle();
+      }
       await shot(tester, name);
     }
 
@@ -97,7 +102,7 @@ void main() {
     await tester.pumpAndSettle();
     await shot(tester, '19-trial-balance');
 
-    await win('متفرقه', 'ارسال پیام', '20-sms-people');
+    await win('پیامک', 'ارسال پیام', '20-sms-people');
     await tester.tap(find.text('علی رضایی').first);
     await tester.pumpAndSettle();
     await shot(tester, '20-sms-people');
