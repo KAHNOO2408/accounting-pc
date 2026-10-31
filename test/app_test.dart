@@ -23,6 +23,7 @@ import 'package:taraz/data/scale.dart';
 import 'package:taraz/data/tax_report.dart';
 import 'package:taraz/data/tools.dart';
 import 'package:taraz/data/merge.dart';
+import 'package:taraz/data/list_import.dart';
 import 'package:taraz/ui/report/doc_reports.dart';
 import 'package:taraz/data/report_layout.dart' as rl;
 import 'package:taraz/data/insurance_disk.dart';
@@ -2766,5 +2767,78 @@ void main() {
     expect(unknown, {'777'});
     expect(s.invoices.firstWhere((i) => i.info['scaleRef'] == '1:501').total, 1000);
     expect(s.importScaleSales(rows).$1, 0); // not imported twice
+  });
+
+  test('list import: Sakan headers, check, insert and update', () {
+    final s = _tempStore();
+    // Sakan's own Excel export of products
+    final kala = [
+      ['ProductName', 'Barcode', 'FanyN'],
+      ['روغن ذرت 1800 میل', '6262227098626', 'عدد'],
+      ['', '', ''],
+    ];
+    expect(detectKind(kala.first), ImportKind.products);
+    final m = autoMap(ImportKind.products, kala.first);
+    expect(m, {'name': 0, 'barcode': 1, 'unit': 2});
+    var rows = mapRows(kala, m);
+    expect(rows.length, 1);
+    expect(s.applyImport(ImportKind.products, rows), (1, 0));
+    final p = s.products.firstWhere((x) => x.name.startsWith('روغن'));
+    expect(p.unit, 'عدد');
+    expect(p.info['barcode'], '6262227098626');
+    // price update by barcode
+    s.applyImport(ImportKind.products, [{'name': 'روغن ذرت 1800 میل', 'barcode': '6262227098626', 'sell': '۱۲۰,۰۰۰'}]);
+    expect(s.products.where((x) => x.name.startsWith('روغن')).length, 1);
+    expect(s.product(p.id)!.sellPrice, 120000);
+
+    // people with errors
+    final ppl = [
+      ['نام شخص', 'کد', 'کد ملی', 'همراه', 'مانده بدهکار', 'مانده بستانکار', 'نوع شخص'],
+      ['علی رضایی', '۱۰۱', '0012345678', '09120000000', '50000', '', 'حقیقی'],
+      ['', '102', '', '', '', '', ''],
+      ['شرکت نمونه', '103', '12', '', '', '20000', 'حقوقی'],
+    ];
+    expect(detectKind(ppl.first), ImportKind.people);
+    rows = mapRows(ppl, autoMap(ImportKind.people, ppl.first));
+    final errs = s.checkImport(ImportKind.people, rows);
+    expect(errs[0], '');
+    expect(errs[1], contains('نام شخص'));
+    expect(errs[2], contains('کد ملی'));
+    expect(s.applyImport(ImportKind.people, rows), (1, 0));
+    final ali = s.people.firstWhere((x) => x.name == 'علی رضایی');
+    expect(ali.code, 101);
+    expect(ali.opening, 50000);
+    expect(ali.info['nationalId'], '0012345678');
+    expect(ali.info['kind'], 'real');
+
+    // opening balances: person by code, ledger by moeen code
+    final bal = [
+      ['کد دفتر', 'نام دفتر', 'بدهکار', 'بستانکار'],
+      ['101', 'علی رضایی', '', '7000'],
+      ['3010', 'سرمایه', '', '1000000'],
+      ['999999', 'ناشناخته', '5', ''],
+    ];
+    rows = mapRows(bal, autoMap(ImportKind.balances, bal.first));
+    expect(s.checkImport(ImportKind.balances, rows)[2], contains('پیدا نشد'));
+    s.applyImport(ImportKind.balances, rows);
+    expect(s.person(ali.id)!.opening, -7000);
+    expect(s.settings.openingOther['3010'], -1000000);
+
+    // personnel and assets
+    expect(s.applyImport(ImportKind.employees, [{'firstName': 'مریم', 'lastName': 'احمدی', 'personnelCode': '7', 'birthDate': '1370/05/01', 'sex': 'زن'}]), (1, 0));
+    final e = s.employees.firstWhere((x) => x.personnelCode == '7');
+    expect(e.male, isFalse);
+    expect(Jalali.fromDateTime(e.birthDate!).year, 1370);
+    expect(s.applyImport(ImportKind.assets, [{'name': 'میز اداری', 'assetNo': 'A-1', 'location': 'دفتر'}]), (1, 0));
+    expect(s.assets.single.code, greaterThan(0));
+
+    // invoice rows by barcode
+    final (lines, missing) = s.importInvoiceRows([
+      {'product': '6262227098626', 'qty': '3'},
+      {'product': '000'},
+    ], by: 'barcode');
+    expect(lines.single.qty, 3);
+    expect(lines.single.unitPrice, 120000);
+    expect(missing, ['000']);
   });
 }

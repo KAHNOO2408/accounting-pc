@@ -235,7 +235,20 @@ String _texts(String xml) =>
 
 /// Reads the first worksheet of an .xlsx file as rows of cell text.
 /// Throws [FormatException] when the file is not a valid workbook.
-List<List<String>> readXlsx(List<int> bytes) {
+/// Names of the worksheets («شیت منتخب»), in workbook order.
+List<String> xlsxSheetNames(List<int> bytes) {
+  try {
+    final a = ZipDecoder().decodeBytes(bytes);
+    final f = a.findFile('xl/workbook.xml');
+    if (f == null) return const ['Sheet1'];
+    final wb = utf8.decode(f.content, allowMalformed: true);
+    return [for (final m in RegExp(r'<sheet\b[^>]*\bname="([^"]*)"').allMatches(wb)) _unx(m[1]!)];
+  } catch (_) {
+    return const [];
+  }
+}
+
+List<List<String>> readXlsx(List<int> bytes, {int sheet = 0}) {
   final Archive a;
   try {
     a = ZipDecoder().decodeBytes(bytes);
@@ -260,7 +273,8 @@ List<List<String>> readXlsx(List<int> bytes) {
   final wb = read('xl/workbook.xml');
   final rels = read('xl/_rels/workbook.xml.rels');
   if (wb != null && rels != null) {
-    final first = RegExp(r'<sheet\b[^>]*\br:id="([^"]+)"').firstMatch(wb)?[1];
+    final all = RegExp(r'<sheet\b[^>]*\br:id="([^"]+)"').allMatches(wb).toList();
+    final first = all.isEmpty ? null : all[sheet.clamp(0, all.length - 1)][1];
     if (first != null) {
       final rel = RegExp('<Relationship\\b[^>]*Id="${RegExp.escape(first)}"[^>]*>').firstMatch(rels)?[0] ??
           '';
@@ -270,11 +284,11 @@ List<List<String>> readXlsx(List<int> bytes) {
       }
     }
   }
-  final sheet = read(sheetPath) ?? read('xl/worksheets/sheet1.xml');
-  if (sheet == null) throw const FormatException('برگه‌ای در فایل اکسل پیدا نشد');
+  final sheetXml = read(sheetPath) ?? read('xl/worksheets/sheet1.xml');
+  if (sheetXml == null) throw const FormatException('برگه‌ای در فایل اکسل پیدا نشد');
 
   final out = <List<String>>[];
-  for (final rm in RegExp(r'<row\b([^>]*?)(?:/>|>([\s\S]*?)</row>)').allMatches(sheet)) {
+  for (final rm in RegExp(r'<row\b([^>]*?)(?:/>|>([\s\S]*?)</row>)').allMatches(sheetXml)) {
     final rowNo = int.tryParse(RegExp(r'\br="(\d+)"').firstMatch(rm[1]!)?[1] ?? '');
     if (rowNo != null) {
       while (out.length < rowNo - 1) {

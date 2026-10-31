@@ -24,6 +24,7 @@ import 'price_dialog.dart';
 import 'simple_dialogs.dart';
 import 'orders_centers_dialogs.dart' show showProductOrders, checkDailyQuota;
 import 'serial_dialogs.dart';
+import 'list_import_dialogs.dart' show showInvoiceRowsImport;
 import 'sms_dialogs.dart';
 import '../../data/serials.dart';
 import '../../data/scale.dart';
@@ -666,6 +667,20 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
         final n = _Line.from(l);
         _listen(n);
         (l.productId == null ? _services : _lines).insert((l.productId == null ? _services : _lines).length - 1, n);
+      }
+    });
+  }
+
+  /// «دریافت اطلاعات از اکسل»: invoice rows from a sheet.
+  Future<void> _importRows() async {
+    final lines = await showInvoiceRowsImport(context);
+    if (lines == null || lines.isEmpty || !mounted) return;
+    setState(() {
+      for (final l in lines) {
+        l.warehouseId ??= _opt.defaultWarehouseId;
+        final n = _Line.from(l);
+        _listen(n);
+        _lines.insert(_lines.isEmpty ? 0 : _lines.length - (_lines.last.isEmpty ? 1 : 0), n);
       }
     });
   }
@@ -1392,6 +1407,8 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                   _sum('جمع مالیات', groupDigits(_vatAmounts(store).$1), width: 100),
                   _sum('جمع وزن اقلام', fmtQty(_weight(store)), width: 90),
                   const SizedBox(width: 10),
+                  _btn('دریافت از اکسل', _importRows, icon: Icons.table_view_rounded),
+                  const SizedBox(width: 6),
                   _btn('حذف ردیف', _removeRow, icon: Icons.close_rounded, color: const Color(0xFFFFE5E5)),
                 ]),
               ),

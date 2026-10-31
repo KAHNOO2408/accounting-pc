@@ -27,6 +27,8 @@ import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
+import 'dialogs/list_import_dialogs.dart';
+import '../data/list_import.dart' show ImportKind;
 import 'dialogs/scale_dialogs.dart';
 import 'dialogs/settle_dialogs.dart';
 import 'dialogs/tools_dialogs.dart';
@@ -494,6 +496,12 @@ final List<_Tab> _tabs = [
       _Item('تماس جدید', Icons.phone_callback_rounded, _blue, run: (c, _) => showNewCall(c)),
       _Item('ترازو و بارکد وزنی', Icons.scale_outlined, _amber, run: (c, _) => showScaleSettings(c)),
       _Item('ایجاد فایل مالیاتی ویژه نرم افزار TTMS', Icons.receipt_long_outlined, _red, run: (c, _) => showTaxFile(c)),
+      _Item('ورود لیستی اطلاعات', Icons.playlist_add_rounded, _green, run: (c, _) => showListImport(c)),
+      _Item('ورود لیستی کالا', Icons.inventory_2_outlined, _green, run: (c, _) => showListImport(c, kind: ImportKind.products)),
+      _Item('ورود لیستی پرسنل', Icons.badge_outlined, _green, run: (c, _) => showListImport(c, kind: ImportKind.employees)),
+      _Item('ورود لیستی اموال', Icons.chair_alt_outlined, _green, run: (c, _) => showListImport(c, kind: ImportKind.assets)),
+      _Item('ورود مانده اول دوره دفاتر از اکسل', Icons.account_balance_wallet_outlined, _green, run: (c, _) => showListImport(c, kind: ImportKind.balances)),
+      _Item('انتقال اطلاعات از سکان', Icons.move_down_rounded, _violet, run: (c, _) => showSakanTransfer(c)),
       _Item('مدیریت ساخت فایل ترازوی توزین صدر', Icons.scale_rounded, _amber, run: (c, _) => showSadrScale(c)),
       _Item('تسویه فاکتور به فاکتور', Icons.compare_arrows_rounded, _amber, run: (c, _) => showInvoiceSettle(c)),
       _Item('لیست سندهای تسویه', Icons.list_alt_rounded, _amber, run: (c, _) => showSettleDocs(c)),
