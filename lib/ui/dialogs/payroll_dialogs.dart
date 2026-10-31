@@ -10,6 +10,8 @@ import '../../data/insurance_disk.dart';
 import '../../data/payroll.dart';
 import '../../data/store.dart';
 import '../print.dart' show openFile, printTable;
+import '../print_designer.dart' show showLayoutPicker;
+import '../report/doc_reports.dart' show payslipReportData;
 import '../widgets/common.dart';
 import '../widgets/sakan.dart';
 import 'invoice_editor.dart' show fmtQty, parseQty;
@@ -629,6 +631,10 @@ class _PayslipDialogState extends State<_PayslipDialog> {
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('انصراف')),
         OutlinedButton(onPressed: () => printPayslip(s, p, e), child: const Text('چاپ فیش')),
+        OutlinedButton(
+          onPressed: () => showLayoutPicker(context, type: PrintDocType.payslip, data: (st) => payslipReportData(st, p, e), fileName: 'fish-${e.personnelCode}-${p.year}-${p.month}'),
+          child: const Text('چاپ فیش با طرح'),
+        ),
         FilledButton(
           onPressed: () {
             s.savePayslip(_p);

@@ -315,6 +315,178 @@ const _ledgerMap = {
   'DateShamsi': 'تاریخ',
 };
 
+/// Extra Sakan invoice columns (fields added later).
+const _invoiceMap2 = {
+  'mellinum': 'کد ملی خریدار',
+  'corporatecode': 'کد اقتصادی خریدار',
+  'postal': 'کد پستی خریدار',
+  'usernamfamily': 'نام کاربر',
+  'jameyaranesystem': 'جمع یارانه',
+  'kolmablaghe': 'هزینه حمل',
+  'sahmfroshande': 'هزینه حمل بعهده فروشنده',
+  'sahemkharidar': 'هزینه حمل بعهده خریدار',
+  'jamhazinefroshande_system': 'هزینه حمل بعهده فروشنده',
+  'jamhazinekharidar_system': 'هزینه حمل بعهده خریدار',
+  'fdate': 'تاریخ',
+  'subscribename': 'نام خریدار',
+  'fulltakhfif': 'جمع تخفیف',
+  'shserial': 'سریال',
+};
+
+/// «سند حسابداری» (Sanadinfo, Sanadtibed / Sanadtibes, Sanadmtbed…, Sanadkmbed…).
+const _voucherMap = {
+  'docnum': 'شماره سند',
+  'docmabnanum': 'شماره ثابت',
+  'dte_shamsi': 'تاریخ سند',
+  'date_x0020_shamsi': 'تاریخ سند',
+  'sharhesanad': 'شرح سند',
+  'babatesanad': 'بابت',
+  'tafzilibname': 'نام تفصیلی',
+  'tafzilibid': 'کد تفصیلی',
+  'sharherecord': 'شرح ردیف',
+  'kolbname': 'نام کل',
+  'kolbid': 'کد کل',
+  'moeinbid': 'کد معین',
+  'moeinbname': 'نام معین',
+  'bed': 'بدهکار',
+  'bes': 'بستانکار',
+  'reportheader': 'نام فروشگاه',
+  'companyname': 'نام فروشگاه',
+  'dateshamsi': 'تاریخ',
+};
+
+/// «فیش حقوقی» (SalaryFishHoghogh, SSalary_*, SalaryMazaya / SalaryKosorat).
+const _payslipMap = {
+  'nme': 'نام و نام خانوادگی',
+  'personname': 'نام و نام خانوادگی',
+  'fathername': 'نام پدر',
+  'personelcode': 'کد پرسنلی',
+  'personelid': 'کد پرسنلی',
+  'melinum': 'کد ملی',
+  'empbimenumber': 'شماره بیمه',
+  'jobname': 'شغل',
+  'estekhdamtype': 'نوع استخدام',
+  'hesabnumber': 'شماره حساب',
+  'dorename': 'دوره',
+  'hoghoghmahiane': 'حقوق ماهیانه',
+  'ezafekari': 'اضافه کار',
+  'haghshift': 'حق شیفت',
+  'haghmamoriat': 'حق ماموریت',
+  'safar': 'حق ماموریت',
+  'padash': 'پاداش',
+  'eydi': 'عیدی',
+  'bazkharidayammorkhasi': 'بازخرید مرخصی',
+  'haghsanavat': 'حق سنوات',
+  'pardakhthayemoavaghe': 'پرداخت های معوقه',
+  'maliat': 'مالیات',
+  'bimesahmbimeshode': 'بیمه سهم بیمه شده',
+  'jarime': 'جریمه',
+  'vam': 'وام',
+  'mosaede': 'مساعده',
+  'kasrkar': 'کسر کار',
+  'gheybat': 'غیبت',
+  'morkhasibedonehoghogh': 'مرخصی بدون حقوق',
+  'ezafekarcount': 'ساعت اضافه کار',
+  'kasrkarcount': 'ساعت کسر کار',
+  'morkhasiwithoutsalarycount': 'روزهای مرخصی بدون حقوق',
+  'gheybatcount': 'روزهای غیبت',
+  'remainbook': 'مانده دفتر',
+  'bookremain': 'مانده دفتر',
+  'mablaghepardakhti': 'خالص پرداختی',
+  'mazayajam': 'جمع حقوق و مزایا',
+  'kosoratjam': 'جمع کسورات',
+  'mazayanme': 'عنوان',
+  'kosoratnme': 'عنوان',
+  'mazayaprice': 'مزایا',
+  'kosoratprice': 'کسورات',
+  'reportheader': 'نام فروشگاه',
+  'companyname': 'نام فروشگاه',
+  'dateshamsi': 'تاریخ',
+};
+
+/// «چک ها» (CheqGet / CheqPay / OuttedCheq / InnerCheqReport / CheqE …).
+const _chequeMap = {
+  'cheknumber': 'شماره چک',
+  'cheqnumber': 'شماره چک',
+  'chekmoney': 'مبلغ',
+  'cheqmoney': 'مبلغ',
+  'money': 'مبلغ',
+  'datechek_shamsi': 'سررسید',
+  'dte_shamsi': 'تاریخ صدور',
+  'bankname': 'بانک',
+  'daryaftkonande': 'دریافت کننده',
+  'daryaftkonandebname': 'دریافت کننده',
+  'pardakhtkonande': 'طرف حساب',
+  'pardakhtkonandebname': 'طرف حساب',
+  'bname': 'طرف حساب',
+  'cheqhuman': 'طرف حساب',
+  'babat': 'شرح',
+  'reportheader': 'نام فروشگاه',
+  'companyname': 'نام فروشگاه',
+  'dateshamsi': 'تاریخ',
+};
+
+/// «اسناد انتظامی» (SefteE / VasiqeE / ZemanatNameE / EntezamyReport …).
+const _guaranteeMap = {
+  'seftenumber': 'شماره سریال',
+  'vasiqenumber': 'شماره سریال',
+  'zemanatnamenumber': 'شماره سریال',
+  'snumber': 'شماره سریال',
+  'seftemoney': 'مبلغ',
+  'vasiqemoney': 'مبلغ',
+  'zemanatnamemoney': 'مبلغ',
+  'smoney': 'مبلغ',
+  'seftehuman': 'متعلق به',
+  'vasiqehuman': 'متعلق به',
+  'zemanatnamehuman': 'متعلق به',
+  'vasiqetype': 'نوع',
+  'type': 'نوع',
+  'sdate_shamsi': 'سررسید',
+  'seftedate_shamsi': 'سررسید',
+  'holdenplace': 'مکان نگهداری',
+  'seftehoidenplace': 'مکان نگهداری',
+  'dte_shamsi': 'تاریخ سند',
+  'docmabnanum': 'شماره سند',
+  'babat': 'بابت',
+  'tarafhesabentezamybname': 'طرف حساب',
+  'dbidname': 'طرف حساب',
+  'reportheader': 'نام فروشگاه',
+  'companyname': 'نام فروشگاه',
+  'dateshamsi': 'تاریخ',
+};
+
+/// Field of a column for the non-invoice documents ('' = none).
+String _docField(PrintDocType type, String src, String col, {bool sum = false}) {
+  final s = src.toLowerCase();
+  switch (type) {
+    case PrintDocType.voucher:
+      if (col == 'tafzilimoney' || col == 'kolmoney' || col == 'moeinmoney') {
+        final side = s.endsWith('bed') ? 'بدهکار' : (s.endsWith('bes') ? 'بستانکار' : '');
+        return sum && side.isNotEmpty ? 'جمع $side' : side;
+      }
+      if (sum && (col == 'bed' || col == 'bes')) return col == 'bed' ? 'جمع بدهکار' : 'جمع بستانکار';
+      return _voucherMap[col] ?? '';
+    case PrintDocType.payslip:
+      if ((s == 'ssalary_mazaya' || s == 'ssalary_kosorat') && (col == 'sharh' || col == 'price')) {
+        if (col == 'sharh') return 'عنوان';
+        return sum ? (s.endsWith('mazaya') ? 'جمع حقوق و مزایا' : 'جمع کسورات') : (s.endsWith('mazaya') ? 'مزایا' : 'کسورات');
+      }
+      if (s == 'ssalary_karmand' && col == 'price') return 'خالص پرداختی';
+      if (sum && (col == 'mazayaprice' || col == 'kosoratprice')) return col == 'mazayaprice' ? 'جمع حقوق و مزایا' : 'جمع کسورات';
+      return _payslipMap[col] ?? '';
+    case PrintDocType.cheque:
+      if (sum && (col.endsWith('money'))) return 'جمع مبلغ';
+      return _chequeMap[col] ?? '';
+    case PrintDocType.guarantee:
+      if (sum && col.endsWith('money')) return 'جمع مبلغ';
+      return _guaranteeMap[col] ?? '';
+    default:
+      return '';
+  }
+}
+
+bool _isDocType(PrintDocType t) => t == PrintDocType.voucher || t == PrintDocType.payslip || t == PrintDocType.cheque || t == PrintDocType.guarantee;
+
 Map<String, String> _lower(Map<String, String> m) => {for (final e in m.entries) e.key.toLowerCase(): e.value};
 final _invoiceLc = _lower(_invoiceMap);
 final _rowLc = _lower(_rowMap);
@@ -331,6 +503,20 @@ String mapSakanExpression(String expr, PrintDocType type) {
   if (e == 'PageNofM' || e == 'PageNumber' || e == 'PageNumberThrough') return '{صفحه}';
   if (e == 'Today' || e == 'Time') return '';
   final ledger = type == PrintDocType.ledger;
+  if (_isDocType(type)) {
+    if (e.startsWith('Farsi.BeHorof(') || e.contains('ToWords')) return type == PrintDocType.cheque ? '' : '{مبلغ به حروف}';
+    e = e.replaceAll(RegExp(r'^\((double|decimal|int|long|string)\)\s*'), '');
+    final sm = RegExp(r'^Sum\(([^()]+)\)$').firstMatch(e);
+    if (sm != null) {
+      final parts = sm[1]!.split('.');
+      final f = _docField(type, parts.length > 1 ? parts.first.trim() : '', parts.last.trim().toLowerCase(), sum: true);
+      return f.isEmpty ? '' : '{$f}';
+    }
+    final dm = RegExp(r'^([A-Za-z_][\w]*)\.([\w]+)$').firstMatch(e);
+    if (dm == null) return '';
+    final f = _docField(type, dm[1]!, dm[2]!.toLowerCase());
+    return f.isEmpty ? '' : '{$f}';
+  }
   if (e.startsWith('Farsi.BeHorof(') || e.contains('ToWords')) return ledger ? '' : '{مبلغ به حروف}';
   // casts and Sum(...)
   e = e.replaceAll(RegExp(r'^\((double|decimal|int|long|string)\)\s*'), '');
@@ -364,7 +550,8 @@ String mapSakanExpression(String expr, PrintDocType type) {
     return f == null ? '' : '{$f}';
   }
   final f = _isRowSource(src) ? (_rowLc[col] ?? _invoiceLc[col]) : (_invoiceLc[col] ?? _rowLc[col]);
-  return f == null ? '' : '{$f}';
+  final f2 = f ?? _invoiceMap2[col];
+  return f2 == null ? '' : '{$f2}';
 }
 
 String _mapText(String text, PrintDocType type) =>

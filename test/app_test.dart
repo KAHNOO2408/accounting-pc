@@ -23,6 +23,8 @@ import 'package:taraz/data/scale.dart';
 import 'package:taraz/data/tax_report.dart';
 import 'package:taraz/data/tools.dart';
 import 'package:taraz/data/merge.dart';
+import 'package:taraz/ui/report/doc_reports.dart';
+import 'package:taraz/data/report_layout.dart' as rl;
 import 'package:taraz/data/insurance_disk.dart';
 import 'package:taraz/core/iran_system.dart';
 import 'package:taraz/ui/dialogs/payroll_dialogs.dart';
@@ -2687,5 +2689,40 @@ void main() {
     expect(AppStore.open(s.storage).settleDocs.single.total, 1500);
     s.removeInvoice(i1.id);
     expect(s.settleDocs.single.rows.single.invoiceId, i2.id);
+  });
+
+  test('voucher, payslip, cheque and guarantee print data and Sakan field mapping', () {
+    final s = _tempStore();
+    final p = Person(id: newId(), name: 'Ali');
+    s.upsertPerson(p);
+    final v = Voucher(id: newId(), number: 7, fixedNumber: 9, date: DateTime(2026, 10, 1), desc: 'Test', lines: [
+      VoucherLine(moeen: mCash, debit: 500),
+      VoucherLine(moeen: mDebtorsTrade, tafsiliId: p.id, credit: 500),
+    ]);
+    s.saveVoucher(v);
+    final d = voucherReportData(s, v);
+    expect(d.fields['جمع بدهکار'], '500');
+    expect(d.rows.last['نام تفصیلی'], 'Ali');
+    expect(mapSakanExpression('Sanadtibed.TafziliMoney', PrintDocType.voucher), '{بدهکار}');
+    expect(mapSakanExpression('Sanadtibes.TafziliMoney', PrintDocType.voucher), '{بستانکار}');
+    expect(mapSakanExpression('Sum(Sanadtibes.TafziliMoney)', PrintDocType.voucher), '{جمع بستانکار}');
+    expect(mapSakanExpression('SalaryFishHoghogh.hoghoghMahiane', PrintDocType.payslip), '{حقوق ماهیانه}');
+    expect(mapSakanExpression('SSalary_Kosorat.price', PrintDocType.payslip), '{کسورات}');
+    expect(mapSakanExpression('OuttedCheq.ChekMoney', PrintDocType.cheque), '{مبلغ}');
+    expect(mapSakanExpression('VasiqeE.VasiqeNumber', PrintDocType.guarantee), '{شماره سریال}');
+    expect(mapSakanExpression('PrintKalaFrosh.Shserial', PrintDocType.invoice), '{سریال}');
+    for (final t in [PrintDocType.voucher, PrintDocType.payslip, PrintDocType.cheque, PrintDocType.guarantee]) {
+      final l = rl.defaultLayoutFor(t);
+      final fields = rl.fieldsFor(t).toSet();
+      for (final it in l.items) {
+        for (final m in RegExp(r'\{([^{}]+)\}').allMatches(it.text)) {
+          expect(fields.contains(m[1]), isTrue, reason: '${t.name}: ${m[1]}');
+        }
+      }
+      expect(sampleDocData(s, t).rows, isNotEmpty);
+    }
+    final chq = chequeReportData(s, [Cheque(id: 'c', direction: ChequeDirection.received, amount: 900, dueDate: DateTime(2026, 11, 1), issueDate: DateTime(2026, 10, 1), personId: p.id, serial: '55')]);
+    expect(chq.fields['جمع مبلغ'], '900');
+    expect(docAsVoucher(s, 'v:${v.id}', number: 0, fixed: 0, date: DateTime(2026), desc: '').id, v.id);
   });
 }

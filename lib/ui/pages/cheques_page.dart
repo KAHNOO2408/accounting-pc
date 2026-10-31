@@ -4,6 +4,8 @@ import '../../core/jalali.dart';
 import '../../data/models.dart';
 import '../../data/store.dart';
 import '../dialogs/cheque_dialogs.dart';
+import '../print_designer.dart' show showLayoutPicker;
+import '../report/doc_reports.dart' show chequeReportData;
 import '../theme.dart';
 import '../widgets/common.dart';
 
@@ -45,6 +47,17 @@ class _ChequesPageState extends State<ChequesPage> {
           title: 'چک‌ها',
           subtitle: 'پیگیری چک‌های دریافتی و پرداختی',
           actions: [
+            OutlinedButton.icon(
+              onPressed: () => showLayoutPicker(
+                context,
+                type: PrintDocType.cheque,
+                data: (st) => chequeReportData(st, list, title: _dir == ChequeDirection.received ? 'لیست چک های دریافتی' : 'لیست چک های پرداختی'),
+                fileName: 'cheque-list',
+              ),
+              icon: const Icon(Icons.print_outlined, size: 18),
+              label: const Text('چاپ با طرح'),
+            ),
+            const SizedBox(width: 8),
             FilledButton.icon(
               onPressed: () => showChequeDialog(context, direction: _dir),
               icon: const Icon(Icons.add_rounded, size: 18),

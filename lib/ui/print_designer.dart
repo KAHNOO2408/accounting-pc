@@ -15,6 +15,7 @@ import 'dialogs/invoice_editor.dart' show fmtQty;
 import 'print.dart' show openFile;
 import 'report/report_designer.dart';
 import 'report/report_render.dart';
+import 'report/doc_reports.dart' show sampleDocData;
 import '../data/report_layout.dart';
 import 'theme.dart';
 import 'widgets/common.dart';
@@ -48,6 +49,7 @@ String defaultPrintTitle(Invoice inv, PrintDocType t) => switch (t) {
       PrintDocType.warehouse => inv.kind.stockSign > 0 ? 'رسید انبار' : 'حواله انبار',
       PrintDocType.barcode => 'برچسب بارکد',
       PrintDocType.ledger => 'گزارش حساب',
+      PrintDocType.voucher || PrintDocType.payslip || PrintDocType.cheque || PrintDocType.guarantee => t.label,
       PrintDocType.invoice => inv.proforma ? 'پیش‌فاکتور فروش' : inv.kind.label,
     };
 
@@ -483,7 +485,7 @@ Future<void> showPrintTypeMenu(BuildContext anchor, Future<Invoice?> Function() 
     context: anchor,
     position: pos,
     items: [
-      for (final x in PrintDocType.values.where((x) => x != PrintDocType.ledger))
+      for (final x in const [PrintDocType.invoice, PrintDocType.warehouse, PrintDocType.barcode])
         PopupMenuItem(
           value: x,
           child: Row(children: [
@@ -492,7 +494,7 @@ Future<void> showPrintTypeMenu(BuildContext anchor, Future<Invoice?> Function() 
                 PrintDocType.invoice => Icons.receipt_long_outlined,
                 PrintDocType.warehouse => Icons.inventory_2_outlined,
                 PrintDocType.barcode => Icons.qr_code_2_rounded,
-                PrintDocType.ledger => Icons.receipt_long_outlined,
+                _ => Icons.receipt_long_outlined,
               },
               size: 18,
             ),
@@ -1154,6 +1156,10 @@ class _PrintForms extends StatelessWidget {
       ('برگشت از خرید', Icons.remove_shopping_cart_outlined, AppColors.loan, PrintDocType.invoice, 'purchaseReturn'),
       ('حواله انبار', Icons.inventory_2_outlined, AppColors.debt, PrintDocType.warehouse, ''),
       ('گزارش حساب', Icons.receipt_long_outlined, th.colorScheme.primary, PrintDocType.ledger, ''),
+      ('سند حسابداری', Icons.description_outlined, th.colorScheme.primary, PrintDocType.voucher, ''),
+      ('فیش حقوقی', Icons.request_quote_outlined, AppColors.income, PrintDocType.payslip, ''),
+      ('چک ها', Icons.money_outlined, AppColors.debt, PrintDocType.cheque, ''),
+      ('اسناد انتظامی', Icons.verified_user_outlined, AppColors.loan, PrintDocType.guarantee, ''),
     ];
     return FormDialog(
       title: 'طراحی فرم های چاپ',
@@ -1175,9 +1181,11 @@ class _PrintForms extends StatelessWidget {
                 context,
                 type: type,
                 variant: variant,
-                data: (st) => type == PrintDocType.ledger
-                    ? sampleLedgerData(st)
-                    : invoiceReportData(st, sampleInvoice(st, variant.isEmpty ? 'sale' : variant), type: type),
+                data: (st) => switch (type) {
+                  PrintDocType.ledger => sampleLedgerData(st),
+                  PrintDocType.voucher || PrintDocType.payslip || PrintDocType.cheque || PrintDocType.guarantee => sampleDocData(st, type),
+                  _ => invoiceReportData(st, sampleInvoice(st, variant.isEmpty ? 'sale' : variant), type: type),
+                },
                 fileName: '${type.name}-sample',
               ),
             ),

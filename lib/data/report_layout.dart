@@ -215,6 +215,11 @@ const invoiceFields = [
   'جمع عوارض',
   'جمع مالیات و عوارض',
   'جمع کل قبل از مالیات',
+  'کد ملی خریدار',
+  'کد اقتصادی خریدار',
+  'کد پستی خریدار',
+  'نام کاربر',
+  'جمع یارانه',
 ];
 
 const rowFields = [
@@ -226,6 +231,7 @@ const rowFields = [
   'فی واحد 1', 'فی واحد 2', 'فی واحد 3', 'نسبت واحد 2 به واحد 1', 'نسبت واحد 3 به واحد 1',
   'درصد بازاریابی', 'سهم بازاریابی',
   'درصد مالیات', 'درصد عوارض', 'مالیات ردیف', 'عوارض ردیف', 'جمع ردیف با مالیات',
+  'سریال', 'مشخصه',
 ];
 
 int _seq = 0;
@@ -368,6 +374,7 @@ ReportLayout defaultLayoutFor(PrintDocType t, [String variant = '']) {
   final l = switch (t) {
     PrintDocType.warehouse => defaultWarehouseLayout(),
     PrintDocType.ledger => defaultLedgerLayout(),
+    PrintDocType.voucher || PrintDocType.payslip || PrintDocType.cheque || PrintDocType.guarantee => defaultDocLayout(t),
     _ => defaultInvoiceLayout(buyer: variant != 'purchase' && variant != 'saleReturn'),
   };
   l
@@ -386,7 +393,130 @@ String defaultQrText(PrintDocType t) => t == PrintDocType.ledger
     : '{نام فروشگاه}\n{عنوان فاکتور} {شماره فاکتور}\nتاریخ {تاریخ}\nمبلغ {جمع کل فاکتور}';
 
 /// Fields offered by the designer for a layout type.
-List<String> fieldsFor(PrintDocType t) => t == PrintDocType.ledger ? [...ledgerFields, ...ledgerRowFields] : [...invoiceFields, ...rowFields];
+List<String> fieldsFor(PrintDocType t) => switch (t) {
+      PrintDocType.ledger => [...ledgerFields, ...ledgerRowFields],
+      PrintDocType.voucher => [...voucherFields, ...voucherRowFields],
+      PrintDocType.payslip => [...payslipFields, ...payslipRowFields],
+      PrintDocType.cheque => [...chequeFields, ...chequeRowFields],
+      PrintDocType.guarantee => [...guaranteeFields, ...guaranteeRowFields],
+      _ => [...invoiceFields, ...rowFields],
+    };
+
+/// «چاپ سند حسابداری».
+const voucherFields = ['شماره سند', 'شماره ثابت', 'تاریخ سند', 'شرح سند', 'بابت', 'نوع سند', 'مرکز اسناد', 'نام فروشگاه', 'جمع بدهکار', 'جمع بستانکار', 'مبلغ به حروف', 'تنظیم کننده', 'صفحه', 'تاریخ'];
+const voucherRowFields = ['ردیف', 'کد کل', 'نام کل', 'کد معین', 'نام معین', 'کد تفصیلی', 'نام تفصیلی', 'نام حساب', 'شرح ردیف', 'بدهکار', 'بستانکار'];
+
+/// «فیش حقوقی».
+const payslipFields = [
+  'نام', 'نام خانوادگی', 'نام و نام خانوادگی', 'نام پدر', 'کد پرسنلی', 'کد ملی', 'شماره بیمه', 'نوع استخدام', 'شغل', 'شماره حساب', 'نام بانک', //
+  'دوره', 'سال', 'ماه', 'روزهای کارکرد', 'حقوق ماهیانه', 'دستمزد روزانه', 'اضافه کار', 'ساعت اضافه کار', 'کسر کار', 'ساعت کسر کار', 'حق شیفت',
+  'حق ماموریت', 'پاداش', 'عیدی', 'بازخرید مرخصی', 'حق سنوات', 'پرداخت های معوقه', 'مزایای مستمر', 'مزایای غیر نقدی', 'جمع حقوق و مزایا',
+  'بیمه سهم بیمه شده', 'مالیات', 'وام', 'مساعده', 'جریمه', 'غیبت', 'روزهای غیبت', 'مرخصی بدون حقوق', 'روزهای مرخصی بدون حقوق', 'سایر کسورات',
+  'جمع کسورات', 'خالص پرداختی', 'مبلغ به حروف', 'مانده دفتر', 'نام فروشگاه', 'نام کارگاه', 'تاریخ', 'صفحه',
+];
+const payslipRowFields = ['ردیف', 'عنوان', 'مزایا', 'کسورات'];
+
+/// «چاپ چک ها».
+const chequeFields = ['عنوان', 'نام فروشگاه', 'تاریخ', 'جمع مبلغ', 'تعداد', 'صفحه'];
+const chequeRowFields = ['ردیف', 'شماره چک', 'مبلغ', 'سررسید', 'تاریخ صدور', 'بانک', 'طرف حساب', 'دریافت کننده', 'وضعیت', 'نوع', 'شرح'];
+
+/// «چاپ اسناد انتظامی».
+const guaranteeFields = ['شماره سند', 'تاریخ سند', 'نوع سند', 'طرف حساب', 'بابت', 'جمع مبلغ', 'مبلغ به حروف', 'نام فروشگاه', 'تاریخ', 'صفحه'];
+const guaranteeRowFields = ['ردیف', 'نوع', 'شماره سریال', 'مبلغ', 'سررسید', 'بانک', 'مکان نگهداری', 'متعلق به', 'وضعیت'];
+
+/// A table layout (A4): a framed header with [header] lines, column titles,
+/// one row per record and [footer] lines.
+ReportLayout tableLayout(PrintDocType type, String id, List<String> header, List<(double, String, String)> cols, List<String> footer) {
+  const h = BandKind.header, c = BandKind.columns, d = BandKind.data, f1 = BandKind.footer1, f2 = BandKind.footer2;
+  final total = cols.fold<double>(0, (a, x) => a + x.$1);
+  final k = 194 / total;
+  final xs = <(double, double, String, String)>[];
+  var x = 194.0;
+  for (final col in cols) {
+    final w = col.$1 * k;
+    x -= w;
+    xs.add((x, w, col.$2, col.$3));
+  }
+  final hh = 6.0 + header.length * 6.5;
+  return ReportLayout(
+    id: id,
+    type: type,
+    name: 'طرح ۱',
+    pageW: 210,
+    pageH: 297,
+    margin: 8,
+    bandHeights: {h: hh, c: 8, d: 8, f1: 8.0 * (footer.isEmpty ? 1 : footer.length), f2: 6},
+    items: [
+      _t(h, 0, 0, 194, hh - 2, '', border: Sides.all),
+      for (var i = 0; i < header.length; i++) _t(h, 2, 2 + i * 6.5, 190, 6, header[i], fs: i == 0 ? 13 : 9.5, bold: i == 0, align: i == 0 ? 'center' : 'right'),
+      for (final col in xs) _t(c, col.$1, 0, col.$2, 8, col.$3, fs: 9, bold: true, align: 'center', border: Sides.all),
+      for (final col in xs) _t(d, col.$1, 0, col.$2, 8, col.$4, fs: 8.5, align: 'center', border: Sides.all),
+      for (var i = 0; i < footer.length; i++) _t(f1, 0, i * 8.0, 194, 8, footer[i], fs: 9.5, bold: true, border: Sides.all),
+      _t(f2, 0, 0, 194, 6, 'صفحه {صفحه}', fs: 8, align: 'center'),
+    ],
+  );
+}
+
+/// Sakan-like default layouts of the non-invoice documents.
+ReportLayout defaultDocLayout(PrintDocType t) => switch (t) {
+      PrintDocType.voucher => tableLayout(t, 'builtin-voucher', [
+          'سند حسابداری',
+          '{نام فروشگاه}        شماره سند: {شماره سند}    شماره ثابت: {شماره ثابت}    تاریخ: {تاریخ سند}',
+          'شرح سند: {شرح سند}    {بابت}',
+        ], [
+          (8, 'ردیف', '{ردیف}'),
+          (12, 'کد معین', '{کد معین}'),
+          (34, 'نام حساب', '{نام حساب}'),
+          (46, 'شرح', '{شرح ردیف}'),
+          (22, 'بدهکار', '{بدهکار}'),
+          (22, 'بستانکار', '{بستانکار}'),
+        ], [
+          'جمع: بدهکار {جمع بدهکار}    بستانکار {جمع بستانکار}    ({مبلغ به حروف})',
+          'تنظیم کننده: {تنظیم کننده}                 تایید کننده:                 مدیر مالی:',
+        ]),
+      PrintDocType.payslip => tableLayout(t, 'builtin-payslip', [
+          'فیش حقوقی {دوره}',
+          '{نام کارگاه}    نام: {نام و نام خانوادگی}    کد پرسنلی: {کد پرسنلی}    کد ملی: {کد ملی}',
+          'روزهای کارکرد: {روزهای کارکرد}    اضافه کار: {ساعت اضافه کار}    کسر کار: {ساعت کسر کار}    شماره حساب: {شماره حساب}',
+        ], [
+          (10, 'ردیف', '{ردیف}'),
+          (60, 'شرح', '{عنوان}'),
+          (30, 'مزایا', '{مزایا}'),
+          (30, 'کسورات', '{کسورات}'),
+        ], [
+          'جمع حقوق و مزایا: {جمع حقوق و مزایا}    جمع کسورات: {جمع کسورات}    خالص پرداختی: {خالص پرداختی}',
+          '{مبلغ به حروف}',
+        ]),
+      PrintDocType.cheque => tableLayout(t, 'builtin-cheque', [
+          '{عنوان}',
+          '{نام فروشگاه}        تاریخ: {تاریخ}',
+        ], [
+          (8, 'ردیف', '{ردیف}'),
+          (18, 'شماره چک', '{شماره چک}'),
+          (16, 'سررسید', '{سررسید}'),
+          (18, 'بانک', '{بانک}'),
+          (32, 'طرف حساب', '{طرف حساب}'),
+          (22, 'مبلغ', '{مبلغ}'),
+          (20, 'وضعیت', '{وضعیت}'),
+        ], [
+          'تعداد: {تعداد}    جمع مبلغ: {جمع مبلغ}',
+        ]),
+      _ => tableLayout(t, 'builtin-guarantee', [
+          '{نوع سند} شماره {شماره سند}',
+          '{نام فروشگاه}        تاریخ: {تاریخ سند}    طرف حساب: {طرف حساب}    بابت: {بابت}',
+        ], [
+          (8, 'ردیف', '{ردیف}'),
+          (16, 'نوع', '{نوع}'),
+          (22, 'شماره سریال', '{شماره سریال}'),
+          (22, 'مبلغ', '{مبلغ}'),
+          (16, 'سررسید', '{سررسید}'),
+          (24, 'مکان نگهداری', '{مکان نگهداری}'),
+          (20, 'متعلق به', '{متعلق به}'),
+        ], [
+          'جمع: {جمع مبلغ}    ({مبلغ به حروف})',
+          'امضای تحویل دهنده:                                   امضای تحویل گیرنده:',
+        ]),
+    };
 
 /// «گزارش حساب» as Sakan prints it (A4).
 ReportLayout defaultLedgerLayout() {

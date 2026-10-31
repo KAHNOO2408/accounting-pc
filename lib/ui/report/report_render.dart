@@ -130,6 +130,11 @@ ReportData invoiceReportData(AppStore s, Invoice inv, {PrintDocType type = Print
     'جمع کل قبل از مالیات': _money(inv.total - inv.vatTotal),
     'مسئول پخش': s.person(inv.distributorId)?.name ?? '',
     'شماره همراه مسئول پخش': s.person(inv.distributorId)?.phone ?? '',
+    'کد ملی خریدار': p?.info['nationalId'] ?? '',
+    'کد اقتصادی خریدار': p?.info['economicCode'] ?? '',
+    'کد پستی خریدار': p?.info['postalCode'] ?? '',
+    'نام کاربر': s.currentUser.name,
+    'جمع یارانه': _money(inv.subsidyTotal),
   };
   final rows = <Map<String, String>>[];
   var i = 0;
@@ -180,6 +185,8 @@ ReportData invoiceReportData(AppStore s, Invoice inv, {PrintDocType type = Print
       'مالیات ردیف': _money(inv.taxOf(l)),
       'عوارض ردیف': _money(inv.dutyOf(l)),
       'جمع ردیف با مالیات': _money(inv.netOf(l) + inv.taxOf(l) + inv.dutyOf(l)),
+      'سریال': l.serials.join('، '),
+      'مشخصه': l.variant,
     });
   }
   return ReportData(fields: fields, rows: rows, title: '$title ${inv.number}');

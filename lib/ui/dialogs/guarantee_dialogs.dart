@@ -5,6 +5,8 @@ import '../../core/jalali.dart';
 import '../../data/models.dart';
 import '../../data/store.dart';
 import '../print.dart' show printTable;
+import '../print_designer.dart' show showLayoutPicker;
+import '../report/doc_reports.dart' show guaranteeReportData;
 import '../widgets/common.dart';
 import '../widgets/sakan.dart';
 import 'invoice_editor.dart' show pickPersonId;
@@ -62,6 +64,9 @@ class _ListState extends State<_List> {
                     }
                   }, icon: Icons.delete_outline_rounded),
             sakanBtn('گزارش اسناد انتظامی', () => _print(s, rows), icon: Icons.print_outlined),
+            sakanBtn('چاپ سند با طرح', sel == null
+                ? null
+                : () => showLayoutPicker(context, type: PrintDocType.guarantee, data: (st) => guaranteeReportData(st, sel.$1), fileName: 'entezami-${sel.$1.number}'), icon: Icons.design_services_outlined),
           ]),
           const SizedBox(height: 8),
           Row(children: [

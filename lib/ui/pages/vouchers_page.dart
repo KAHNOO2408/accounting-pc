@@ -15,6 +15,8 @@ import '../dialogs/txn_dialog.dart';
 import '../dialogs/voucher_dialog.dart';
 import '../dialogs/ledger_dialogs.dart' show DateFilter, showDocDateFilter;
 import '../print.dart';
+import '../print_designer.dart' show showLayoutPicker;
+import '../report/doc_reports.dart';
 import '../shell.dart' show Nav, AppPage;
 import '../theme.dart';
 import '../widgets/common.dart';
@@ -619,6 +621,14 @@ class _VouchersPageState extends State<VouchersPage> {
                         group('چاپ', [
                           btn('چاپ لیست اسناد', '', () => _printList(s, list), icon: Icons.print_outlined),
                           btn('چاپ سند حسابداری', '', cur == null ? null : () => _printDoc(s, cur), icon: Icons.receipt_long_outlined),
+                          btn('چاپ سند با طرح', '', cur == null
+                              ? null
+                              : () => showLayoutPicker(
+                                    context,
+                                    type: PrintDocType.voucher,
+                                    data: (st) => voucherReportData(st, docAsVoucher(st, cur.key, number: cur.number, fixed: cur.fixed, date: cur.date, desc: cur.desc)),
+                                    fileName: 'sanad-${cur.number}',
+                                  ), icon: Icons.design_services_outlined),
                         ]),
                       ]),
                     ),
