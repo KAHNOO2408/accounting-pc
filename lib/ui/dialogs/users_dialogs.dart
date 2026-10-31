@@ -10,6 +10,7 @@ import '../shell.dart' show ribbonCatalog;
 import '../theme.dart';
 import '../widgets/common.dart';
 import 'branch_dialogs.dart' show showUserAccess;
+import 'sakan_admin_dialogs.dart' show showShareAccounts;
 
 Widget _head(BuildContext context, List<Widget> cells) {
   final th = Theme.of(context);
@@ -261,6 +262,11 @@ class _UsersWindowState extends State<_UsersWindow> {
                     btn('دسترسی شعب', Icons.storefront_outlined, () => _access('branches')),
                     btn('دسترسی انبار ها', Icons.warehouse_outlined, () => _access('warehouses')),
                     btn('دسترسی حسابها', Icons.account_balance_outlined, () => _access('accounts')),
+                    btn('اشتراک گذاری حسابهای تعریف شده', Icons.share_outlined, () async {
+                      if (!_needUser(s)) return;
+                      await showShareAccounts(context, _selected(s)!);
+                      if (mounted) setState(() {});
+                    }),
                     btn('کپی کاربر (F2)', Icons.content_copy_rounded, () {
                       if (_needUser(s)) _form(copyOf: _selected(s));
                     }),

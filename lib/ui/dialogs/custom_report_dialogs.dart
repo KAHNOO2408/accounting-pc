@@ -37,6 +37,7 @@ class _StatementsState extends State<_Statements> {
   String? _sel;
   DateTime _from = _yearStart(), _to = dateOnly(DateTime.now());
   bool _edit = false;
+  bool _lt = false;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +49,7 @@ class _StatementsState extends State<_Statements> {
       list.add(st);
     }
     final st = list.where((x) => x.id == _sel).firstOrNull ?? list.first;
-    final vals = evaluateStatement(s, st, from: _from, to: _to);
+    final vals = evaluateStatement(s, st, from: _from, to: _to, longTermStock: _lt);
     final title = widget.balanceSheet ? 'ترازنامه سفارشی' : 'صورتحساب سود/زیان سفارشی';
     return SakanWindow(
       title: title,
@@ -82,6 +83,11 @@ class _StatementsState extends State<_Statements> {
                 _to = b;
               })),
             if (widget.balanceSheet) SizedBox(width: 170, child: DateField(label: 'تا تاریخ', value: _to, onChanged: (d) => setState(() => _to = d ?? _to))),
+            if (widget.balanceSheet)
+              Row(mainAxisSize: MainAxisSize.min, children: [
+                Checkbox(value: _lt, onChanged: (v) => setState(() => _lt = v ?? false)),
+                const Text('حصه بلند مدت موجودی کالا'),
+              ]),
             sakanBtn('چاپ', () => printTable(
                   store: s,
                   title: st.name,

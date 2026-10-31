@@ -1896,6 +1896,11 @@ class AppUser {
   Set<String> warehouses;
   Set<String> accounts;
 
+  /// «اشتراک گذاری حسابهای ساخته شده»: kinds ('people', 'products',
+  /// 'accounts') whose records made by this user are hidden from the others
+  /// («حذف دسترسی»); the rest are shared («دسترسی کامل»).
+  Set<String> privateKinds;
+
   AppUser({
     required this.id,
     required this.code,
@@ -1908,7 +1913,9 @@ class AppUser {
     Set<String>? branches,
     Set<String>? warehouses,
     Set<String>? accounts,
-  })  : denied = denied ?? {},
+    Set<String>? privateKinds,
+  })  : privateKinds = privateKinds ?? {},
+        denied = denied ?? {},
         branches = branches ?? {},
         warehouses = warehouses ?? {},
         accounts = accounts ?? {};
@@ -1925,6 +1932,7 @@ class AppUser {
         if (branches.isNotEmpty) 'branches': branches.toList(),
         if (warehouses.isNotEmpty) 'warehouses': warehouses.toList(),
         if (accounts.isNotEmpty) 'accounts': accounts.toList(),
+        if (privateKinds.isNotEmpty) 'private': privateKinds.toList(),
       };
 
   factory AppUser.fromJson(Map<String, dynamic> j) => AppUser(
@@ -1939,6 +1947,7 @@ class AppUser {
         branches: {for (final x in (j['branches'] is List ? j['branches'] as List : const [])) '$x'},
         warehouses: {for (final x in (j['warehouses'] is List ? j['warehouses'] as List : const [])) '$x'},
         accounts: {for (final x in (j['accounts'] is List ? j['accounts'] as List : const [])) '$x'},
+        privateKinds: {for (final x in (j['private'] is List ? j['private'] as List : const [])) '$x'},
       );
 }
 
@@ -2235,7 +2244,15 @@ class Consignment {
   List<ConsignReturn> returns;
   int createdAt;
 
+  /// «امانی قرضی»: goods lent to ([ConsignDir.given]) or borrowed from
+  /// ([ConsignDir.received]) a person, returned in kind. Unlike a plain
+  /// امانی it moves our stock and the person's account.
+  bool loan;
+
+  String get title => loan ? (dir == ConsignDir.received ? 'ورود قرضی' : 'خروج قرضی') : dir.label;
+
   Consignment({
+    this.loan = false,
     required this.id,
     required this.dir,
     required this.number,
@@ -2267,9 +2284,11 @@ class Consignment {
         'lines': lines.map((l) => l.toJson()).toList(),
         'returns': returns.map((r) => r.toJson()).toList(),
         'createdAt': createdAt,
+        if (loan) 'loan': true,
       };
 
   factory Consignment.fromJson(Map<String, dynamic> j) => Consignment(
+        loan: j['loan'] == true,
         id: _s(j['id']),
         dir: ConsignDir.values.firstWhere((d) => d.name == j['dir'], orElse: () => ConsignDir.received),
         number: _i(j['number']),

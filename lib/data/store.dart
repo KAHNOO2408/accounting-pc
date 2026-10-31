@@ -120,6 +120,13 @@ class AppStore extends ChangeNotifier {
   /// «ترازنامه سفارشی» / «صورتحساب سود/زیان سفارشی» layouts.
   List<CustomStatement> customStatements = [];
 
+  /// «تعیین حصه بلند مدت دفاتر موجودی کالا»: product id → percent of its
+  /// stock balance shown as a non-current asset.
+  Map<String, double> stockLongTerm = {};
+
+  /// «جابجایی دفتر تفصیلی»: 'fromMoeen|tafsiliId' → target معین.
+  Map<String, String> tafsiliMoves = {};
+
   /// «کارت هواداری»، «قرعه کشی»، «پیام های داخلی»، «تسویه فاکتور به فاکتور».
   List<LoyaltyCard> loyaltyCards = [];
   LoyaltyConfig loyalty = LoyaltyConfig();
@@ -338,6 +345,10 @@ class AppStore extends ChangeNotifier {
     smsSchedules = list('smsSchedules').map(SmsSchedule.fromJson).toList();
     reminders = list('reminders').map(Reminder.fromJson).toList();
     customStatements = list('customStatements').map(CustomStatement.fromJson).toList();
+    final lt = j['stockLongTerm'];
+    final tm = j['tafsiliMoves'];
+    tafsiliMoves = tm is Map ? {for (final e in tm.entries) '${e.key}': '${e.value}'} : {};
+    stockLongTerm = lt is Map ? {for (final e in lt.entries) if (e.value is num) '${e.key}': (e.value as num).toDouble()} : {};
     loyaltyCards = list('loyaltyCards').map(LoyaltyCard.fromJson).toList();
     loyalty = j['loyalty'] is Map<String, dynamic> ? LoyaltyConfig.fromJson(j['loyalty'] as Map<String, dynamic>) : LoyaltyConfig();
     redemptions = list('redemptions').map(Redemption.fromJson).toList();
@@ -589,6 +600,8 @@ class AppStore extends ChangeNotifier {
         'smsSchedules': smsSchedules.map((e) => e.toJson()).toList(),
         'reminders': reminders.map((e) => e.toJson()).toList(),
         'customStatements': customStatements.map((e) => e.toJson()).toList(),
+        'stockLongTerm': stockLongTerm,
+        'tafsiliMoves': tafsiliMoves,
         'loyaltyCards': loyaltyCards.map((e) => e.toJson()).toList(),
         'loyalty': loyalty.toJson(),
         'redemptions': redemptions.map((e) => e.toJson()).toList(),
@@ -759,14 +772,14 @@ class AppStore extends ChangeNotifier {
   /// Usable cash / bank accounts (not archived, within «دسترسی حسابها»).
   List<Account> get activeAccounts {
     final all = accounts.where((a) => !a.archived).toList();
-    final my = all.where((a) => canUseAccount(a.id)).toList();
+    final my = all.where((a) => canUseAccount(a.id) && sharedWithMe(a.info, 'accounts')).toList();
     return my.isEmpty ? all : my;
   }
 
   List<TxnCategory> categoriesOf(CategoryKind kind, {bool includeArchived = false}) =>
       categories.where((c) => c.kind == kind && (includeArchived || !c.archived)).toList();
 
-  List<Person> get peopleSorted => [...people]..sort((a, b) => a.name.compareTo(b.name));
+  List<Person> get peopleSorted => [...people.where((p) => sharedWithMe(p.info, 'people'))]..sort((a, b) => a.name.compareTo(b.name));
 
   // ---------------------------------------------------------------- balances
 
@@ -803,6 +816,17 @@ class AppStore extends ChangeNotifier {
     for (final v in vouchers) {
       for (final l in v.lines) {
         if (l.tafsiliId == personId) b += l.debit - l.credit;
+      }
+    }
+    // «امانی قرضی»: lent goods are owed to us, borrowed goods by us
+    for (final c in consignments) {
+      if (!c.loan || c.personId != personId) continue;
+      final sign = c.dir == ConsignDir.given ? 1 : -1;
+      for (final l in c.lines) {
+        b += sign * (l.qty * l.fi).round();
+        for (final r in c.returns.where((r) => r.lineId == l.id)) {
+          b -= sign * (r.qty * l.fi).round();
+        }
       }
     }
     // «پورسانت»: the marketer is owed his share of each sale
@@ -942,6 +966,7 @@ class AppStore extends ChangeNotifier {
     if (i >= 0) {
       accounts[i] = a;
     } else {
+      if (currentUserId != 'owner') a.info['creator'] = currentUserId;
       accounts.add(a);
     }
     _commit();
@@ -990,6 +1015,7 @@ class AppStore extends ChangeNotifier {
     if (i >= 0) {
       people[i] = p;
     } else {
+      if (currentUserId != 'owner') p.info['creator'] = currentUserId;
       people.add(p);
     }
     _commit();
@@ -1201,13 +1227,14 @@ class AppStore extends ChangeNotifier {
   /// Invoices that affect stock and the ledger (pro-formas excluded).
   Iterable<Invoice> get realInvoices => invoices.where((i) => !i.proforma);
 
-  List<Product> get productsSorted => [...products]..sort((a, b) => a.name.compareTo(b.name));
+  List<Product> get productsSorted => [...products.where((p) => sharedWithMe(p.info, 'products'))]..sort((a, b) => a.name.compareTo(b.name));
 
   void upsertProduct(Product p) {
     final i = products.indexWhere((e) => e.id == p.id);
     if (i >= 0) {
       products[i] = p;
     } else {
+      if (currentUserId != 'owner') p.info['creator'] = currentUserId;
       products.add(p);
     }
     _ensureUnits();
@@ -1242,6 +1269,14 @@ class AppStore extends ChangeNotifier {
       if (inv.id == excludeInvoiceId) continue;
       for (final l in inv.lines) {
         if (l.productId == productId && inW(l.warehouseId)) q += inv.kind.stockSign * l.qty;
+      }
+    }
+    // «امانی قرضی»: lent goods leave, borrowed goods enter; returns reverse
+    for (final c in consignments) {
+      if (!c.loan) continue;
+      final sign = c.dir == ConsignDir.received ? 1 : -1;
+      for (final l in c.lines) {
+        if (l.productId == productId && inW(l.warehouseId)) q += sign * (l.qty - c.returnedQty(l.id));
       }
     }
     if (w != null) {
@@ -1314,8 +1349,8 @@ class AppStore extends ChangeNotifier {
 
   // ---------------------------------------------------------------- امانی
 
-  int nextConsignNumber(ConsignDir d) =>
-      consignments.where((c) => c.dir == d).fold<int>(1, (n, c) => c.number >= n ? c.number + 1 : n);
+  int nextConsignNumber(ConsignDir d, {bool loan = false}) =>
+      consignments.where((c) => c.dir == d && c.loan == loan).fold<int>(1, (n, c) => c.number >= n ? c.number + 1 : n);
 
   Consignment? consignment(String? id) => consignments.where((c) => c.id == id).firstOrNull;
 
@@ -1349,7 +1384,7 @@ class AppStore extends ChangeNotifier {
   /// Goods of others held by us («موجودی امانی») or ours held by others.
   double consignOpen(String productId, ConsignDir dir, {String? warehouseId}) {
     var q = 0.0;
-    for (final c in consignments.where((c) => c.dir == dir)) {
+    for (final c in consignments.where((c) => c.dir == dir && !c.loan)) {
       for (final l in c.lines) {
         if (l.productId != productId) continue;
         if (warehouseId != null && whId(l.warehouseId) != warehouseId) continue;
@@ -1375,7 +1410,14 @@ class AppStore extends ChangeNotifier {
       c.returns = old.returns;
     }
     final i = consignments.indexWhere((x) => x.id == c.id);
-    _log(i >= 0 ? 'ویرایش' : 'ثبت', '${c.dir.label} ${c.number}', docDate: c.date, docNo: c.number);
+    if (c.loan) {
+      for (final l in c.lines) {
+        if (!canUseWarehouse(l.warehouseId) && !(old?.lines.any((x) => x.id == l.id && whId(x.warehouseId) == whId(l.warehouseId)) ?? false)) {
+          return 'شما به «${warehouse(l.warehouseId)?.name}» دسترسی ندارید (دسترسی انبار)';
+        }
+      }
+    }
+    _log(i >= 0 ? 'ویرایش' : 'ثبت', '${c.title} ${c.number}', docDate: c.date, docNo: c.number);
     if (i >= 0) {
       consignments[i] = c;
     } else {
@@ -2027,6 +2069,50 @@ class AppStore extends ChangeNotifier {
   bool canUseAccount(String? id) {
     final u = currentUser;
     return id == null || u.admin || u.accounts.isEmpty || u.accounts.contains(id);
+  }
+
+  /// «جابجایی دفتر تفصیلی»: carries [tafsiliIds] of معین [from] under [to]
+  /// (all their past and future postings). Returns an error or null.
+  String? moveTafsili(String from, Set<String> tafsiliIds, String to) {
+    final f = findMoeen(from), t = findMoeen(to);
+    if (f == null || t == null) return 'دفتر معین نامعتبر است';
+    if (from == to) return 'دفتر معین مقصد با مبدا یکی است';
+    if (!t.hasEntity) return 'دفتر معین مقصد «${t.name}» دفتر تفصیلی ندارد';
+    for (final id in tafsiliIds) {
+      // a ledger moved before keeps its original key
+      final orig = tafsiliMoves.entries.where((e) => e.value == from && e.key.endsWith('|$id')).firstOrNull?.key ?? '$from|$id';
+      if (orig.startsWith('$to|')) {
+        tafsiliMoves.remove(orig); // moved back home
+      } else {
+        tafsiliMoves[orig] = to;
+      }
+    }
+    _log('ویرایش', 'جابجایی ${tafsiliIds.length} دفتر تفصیلی از ${f.name} به ${t.name}');
+    _commit();
+    return null;
+  }
+
+  void setStockLongTerm(Map<String, double> m) {
+    stockLongTerm = {for (final e in m.entries) if (e.value > 0) e.key: e.value.clamp(0, 100).toDouble()};
+    _log('ویرایش', 'حصه بلند مدت موجودی کالا');
+    _commit();
+  }
+
+  /// «اشتراک گذاری حسابهای ساخته شده»: a record made by another user is
+  /// visible unless that user keeps his [kind] of records private.
+  bool sharedWithMe(Map<String, String> info, String kind) {
+    final c = info['creator'];
+    if (c == null || c == currentUserId || currentUser.admin) return true;
+    final u = users.where((x) => x.id == c).firstOrNull;
+    return u == null || !u.privateKinds.contains(kind);
+  }
+
+  void setPrivateKinds(String userId, Set<String> kinds) {
+    final u = users.where((x) => x.id == userId).firstOrNull;
+    if (u == null) return;
+    u.privateKinds = kinds;
+    _log('ویرایش', 'اشتراک گذاری حسابهای ${u.name}');
+    _commit();
   }
 
   int nextBranchCode() => branches.fold<int>(1, (n, b) => b.code >= n ? b.code + 1 : n);

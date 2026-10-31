@@ -37,6 +37,21 @@ class Posting {
   });
 
   String get kol => kolOf(moeen).code;
+
+  Posting withMoeen(String m) => Posting(
+        docKey: docKey,
+        date: date,
+        moeen: m,
+        tafsiliId: tafsiliId,
+        docLabel: docLabel,
+        docNo: docNo,
+        isVoucher: isVoucher,
+        isOpening: isOpening,
+        desc: desc,
+        debit: debit,
+        credit: credit,
+        order: order,
+      );
 }
 
 /// Builds the full journal (دفتر روزنامه) from every document in the store.
@@ -268,6 +283,31 @@ List<Posting> buildJournal(AppStore s) {
   for (final c in s.consignments) {
     key = 'cons:${c.id}';
     final who = s.person(c.personId)?.name ?? 'متفرقه';
+    if (c.loan) {
+      // «امانی قرضی»: the person owes us the lent goods (or we owe the borrowed ones)
+      final out = c.dir == ConsignDir.given;
+      final label = '${c.title} ${c.number}';
+      final desc = out ? 'خروج قرضی کالا به $who' : 'ورود قرضی کالا از $who';
+      for (final l in c.lines) {
+        final v = (l.qty * l.fi).round();
+        if (out) {
+          pair(c.date, label, desc, v, drM: mDebtorsTrade, drT: c.personId, crM: mStock, crT: l.productId, no: c.number, order: c.createdAt);
+        } else {
+          pair(c.date, label, desc, v, drM: mStock, drT: l.productId, crM: mDebtorsTrade, crT: c.personId, no: c.number, order: c.createdAt);
+        }
+      }
+      for (final r in c.returns) {
+        final l = c.lines.where((x) => x.id == r.lineId).firstOrNull;
+        if (l == null) continue;
+        final v = (r.qty * l.fi).round();
+        if (out) {
+          pair(r.date, 'عودت $label', desc, v, drM: mStock, drT: l.productId, crM: mDebtorsTrade, crT: c.personId, no: c.number, order: c.createdAt);
+        } else {
+          pair(r.date, 'عودت $label', desc, v, drM: mDebtorsTrade, drT: c.personId, crM: mStock, crT: l.productId, no: c.number, order: c.createdAt);
+        }
+      }
+      continue;
+    }
     final label = '${c.dir.label} ${c.number}';
     final desc = c.dir == ConsignDir.received ? 'دریافت امانی از $who' : 'پرداخت امانی به $who';
     pair(c.date, label, desc, c.total, drM: '1250', crM: '1260', no: c.number, order: c.createdAt);
@@ -317,6 +357,15 @@ List<Posting> buildJournal(AppStore s) {
     }
   }
 
+  // «جابجایی دفتر تفصیلی»: a detail account carried under another معین
+  if (s.tafsiliMoves.isNotEmpty) {
+    for (var i = 0; i < out.length; i++) {
+      final p = out[i];
+      if (p.tafsiliId == null) continue;
+      final to = s.tafsiliMoves['${p.moeen}|${p.tafsiliId}'];
+      if (to != null && to != p.moeen) out[i] = p.withMoeen(to);
+    }
+  }
   out.sort((a, b) {
     final c = a.date.compareTo(b.date);
     return c != 0 ? c : a.order.compareTo(b.order);

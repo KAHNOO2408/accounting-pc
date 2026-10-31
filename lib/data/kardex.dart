@@ -84,6 +84,23 @@ List<KardexRow> buildKardex(AppStore s, String productId, {String? warehouseId})
       order: a.createdAt,
     ));
   }
+  // «امانی قرضی» at the value it was lent / borrowed at
+  for (final c in s.consignments.where((c) => c.loan)) {
+    final sign = c.dir == ConsignDir.received ? 1.0 : -1.0;
+    final who = s.person(c.personId)?.name ?? 'متفرقه';
+    for (final l in c.lines) {
+      if (l.productId != productId || !inW(l.warehouseId)) continue;
+      final wh = s.warehouse(l.warehouseId)?.name ?? '';
+      raw.add(KardexRow(
+          docKey: 'cons:${c.id}', number: c.number, date: c.date, desc: '${c.title} ${c.number} ${sign > 0 ? 'از' : 'به'} $who', qty: sign * l.qty, fi: l.fi,
+          total: (sign * l.qty * l.fi).round(), warehouse: wh, order: c.createdAt));
+      for (final r in c.returns.where((r) => r.lineId == l.id)) {
+        raw.add(KardexRow(
+            docKey: 'cons:${c.id}', number: c.number, date: r.date, desc: 'عودت ${c.title} ${c.number}', qty: -sign * r.qty, fi: l.fi,
+            total: (-sign * r.qty * l.fi).round(), warehouse: wh, order: c.createdAt));
+      }
+    }
+  }
   if (w != null) {
     for (final t in s.transfers) {
       for (final l in t.lines) {

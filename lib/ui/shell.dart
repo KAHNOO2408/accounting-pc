@@ -29,6 +29,7 @@ import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
 import 'dialogs/list_import_dialogs.dart';
 import 'dialogs/branch_dialogs.dart';
+import 'dialogs/sakan_admin_dialogs.dart';
 import '../data/list_import.dart' show ImportKind;
 import 'dialogs/scale_dialogs.dart';
 import 'dialogs/settle_dialogs.dart';
@@ -316,6 +317,9 @@ final List<_Tab> _tabs = [
       _Item('امانی دریافتنی', Icons.inventory_outlined, _violet, run: (c, _) => showConsignList(c, dir: ConsignDir.received)),
       _Item('امانی پرداختنی', Icons.local_shipping_outlined, _violet, run: (c, _) => showConsignList(c, dir: ConsignDir.given)),
       _Item('مانده امانی', Icons.pending_actions_outlined, _violet, run: (c, _) => showConsignList(c, openOnly: true)),
+      _Item('امانی قرضی (خروج)', Icons.output_rounded, _violet, run: (c, _) => showConsignEditor(c, ConsignDir.given, loan: true)),
+      _Item('امانی قرضی (ورود)', Icons.input_rounded, _violet, run: (c, _) => showConsignEditor(c, ConsignDir.received, loan: true)),
+      _Item('لیست امانی قرضی', Icons.swap_horiz_rounded, _violet, run: (c, _) => showConsignList(c, loan: true)),
     ]),
   ]),
   _Tab('مالی', [
@@ -484,6 +488,10 @@ final List<_Tab> _tabs = [
       _Item('سطل بازیافت', Icons.delete_outline_rounded, _red, run: (c, _) => showRecycleBin(c)),
       _Item('معرفی شعب', Icons.store_mall_directory_outlined, _blue, run: (c, _) => showBranches(c)),
       _Item('انتخاب شعبه', Icons.storefront_outlined, _blue, run: (c, _) => showSelectBranch(c)),
+      _Item('انتقال گزارشات از سایر دفاتر', Icons.drive_file_move_outline, _violet, run: (c, _) => showImportReportsFromBook(c)),
+      _Item('جابجایی دفتر تفصیلی', Icons.swap_vert_circle_outlined, _amber, run: (c, _) => showMoveTafsili(c)),
+      _Item('تصحیح وضعیت چک ها', Icons.rule_rounded, _red, run: (c, _) => showFixChequeStatus(c)),
+      _Item('تعیین حصه بلند مدت دفاتر موجودی کالا', Icons.inventory_rounded, _blue, run: (c, _) => showStockLongTerm(c)),
     ]),
     _Group('متفرقه', [
       _Item('کدبندی دفاتر کل و معین', Icons.account_tree_outlined, _blue, run: (c, _) => showChartCoding(c)),

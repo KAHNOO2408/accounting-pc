@@ -65,17 +65,25 @@ class CustomStatement {
 }
 
 /// Values of a statement's rows (null for headers).
-List<int?> evaluateStatement(AppStore s, CustomStatement st, {DateTime? from, DateTime? to, List<Posting>? journal}) {
+List<int?> evaluateStatement(AppStore s, CustomStatement st, {DateTime? from, DateTime? to, List<Posting>? journal, bool longTermStock = false}) {
   final j = journal ?? buildJournal(s);
   final bal = <String, int>{};
+  final stockOf = <String, int>{};
   for (final p in j) {
     if (to != null && p.date.isAfter(to)) continue;
     if (!st.balanceSheet && from != null && p.date.isBefore(from)) continue;
     if (!st.balanceSheet && p.isOpening) continue;
     bal[p.moeen] = (bal[p.moeen] ?? 0) + p.debit - p.credit;
+    if (p.moeen == mStock && p.tafsiliId != null) stockOf[p.tafsiliId!] = (stockOf[p.tafsiliId!] ?? 0) + p.debit - p.credit;
+  }
+  // «حصه بلند مدت موجودی کالا» moves to the non-current assets (کل 12)
+  final lt = longTermStock && st.balanceSheet ? stockLongTermValue(s.stockLongTerm, stockOf) : 0;
+  if (lt != 0) {
+    bal[mStock] = (bal[mStock] ?? 0) - lt;
+    bal[mStockLongTerm] = (bal[mStockLongTerm] ?? 0) + lt;
   }
   int code(String c) {
-    if (c.length <= 2) return bal.entries.where((e) => kolOf(e.key).code == c).fold(0, (a, e) => a + e.value);
+    if (c.length <= 2) return bal.entries.where((e) => (e.key == mStockLongTerm ? '12' : kolOf(e.key).code) == c).fold(0, (a, e) => a + e.value);
     return bal[c] ?? 0;
   }
 
@@ -103,6 +111,30 @@ List<int?> evaluateStatement(AppStore s, CustomStatement st, {DateTime? from, Da
       v += t.startsWith('-') ? -code(t.substring(1)) : code(t);
     }
     out.add(r.creditPositive ? -v : v);
+  }
+  return out;
+}
+
+/// Pseudo ledger of the long-term portion of the stock in the statements.
+const mStockLongTerm = '12LT';
+
+/// Long-term portion of the inventory ledgers (per product: its stock
+/// balance × the percent of «تعیین حصه بلند مدت دفاتر موجودی کالا»).
+int stockLongTermValue(Map<String, double> percents, Map<String, int> stockOf) {
+  var t = 0;
+  percents.forEach((id, pct) {
+    final b = stockOf[id] ?? 0;
+    if (b > 0) t += (b * pct / 100).round();
+  });
+  return t;
+}
+
+/// Stock ledger balance per product up to [to].
+Map<String, int> stockLedgerBalances(AppStore s, {DateTime? to}) {
+  final out = <String, int>{};
+  for (final p in buildJournal(s)) {
+    if (p.moeen != mStock || p.tafsiliId == null || (to != null && p.date.isAfter(to))) continue;
+    out[p.tafsiliId!] = (out[p.tafsiliId!] ?? 0) + p.debit - p.credit;
   }
   return out;
 }

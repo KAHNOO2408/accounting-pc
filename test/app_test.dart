@@ -2875,4 +2875,71 @@ void main() {
     expect(again.branches.length, 2);
     expect(again.users.single.warehouses, {'w3'});
   });
+
+  test('loan goods, tafsili move, long-term stock and shared accounts', () {
+    final s = _tempStore();
+    final ali = Person(id: newId(), name: 'Ali');
+    s.upsertPerson(ali);
+    final pr = Product(id: newId(), name: 'Bolt');
+    s.upsertProduct(pr);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.purchase, number: 1, date: DateTime(2026, 4, 1), lines: [InvoiceLine(productId: pr.id, qty: 10, unitPrice: 100)]));
+    expect(s.stock(pr.id), 10);
+
+    // «امانی قرضی»: lend 4, get 1 back
+    final line = ConsignLine(id: newId(), productId: pr.id, qty: 4, fi: 100);
+    final loan = Consignment(id: newId(), dir: ConsignDir.given, number: s.nextConsignNumber(ConsignDir.given, loan: true), date: DateTime(2026, 5, 1), personId: ali.id, lines: [line], loan: true);
+    expect(s.saveConsignment(loan), isNull);
+    expect(loan.title, 'خروج قرضی');
+    expect(s.stock(pr.id), 6);
+    expect(s.consignOpen(pr.id, ConsignDir.given), 0); // not a plain امانی
+    expect(s.personBalance(ali.id), 400);
+    expect(s.addConsignReturn(line.id, 1, DateTime(2026, 5, 10)), isNull);
+    expect(s.stock(pr.id), 7);
+    expect(s.personBalance(ali.id), 300);
+    final k = buildKardex(s, pr.id);
+    expect(k.last.balance, 7);
+    expect(k.last.value, 700);
+    var j = buildJournal(s);
+    int bal(List<Posting> j, String m, [String? t]) => j.where((p) => p.moeen == m && (t == null || p.tafsiliId == t)).fold(0, (a, p) => a + p.debit - p.credit);
+    expect(bal(j, mStock), 700);
+    expect(bal(j, mDebtorsTrade, ali.id), 300);
+
+    // «جابجایی دفتر تفصیلی»: Ali moves to «سایر اشخاص» and back
+    expect(s.moveTafsili(mDebtorsTrade, {ali.id}, mCash), isNotNull); // other kind of ledger
+    expect(s.moveTafsili(mDebtorsTrade, {ali.id}, mDebtorsOther), isNull);
+    j = buildJournal(s);
+    expect(bal(j, mDebtorsTrade, ali.id), 0);
+    expect(bal(j, mDebtorsOther, ali.id), 300);
+    expect(AppStore.open(s.storage).tafsiliMoves, isNotEmpty);
+    expect(s.moveTafsili(mDebtorsOther, {ali.id}, mDebtorsTrade), isNull);
+    expect(s.tafsiliMoves, isEmpty);
+
+    // «حصه بلند مدت موجودی کالا»: 30% of the 700 stock ledger
+    s.setStockLongTerm({pr.id: 30});
+    final bs = CustomStatement(id: 'x', name: 'bs', rows: [
+      StatementRow(title: 'current', codes: ['11']),
+      StatementRow(title: 'non-current', codes: ['12']),
+      StatementRow(title: 'stock', codes: [mStock]),
+    ]);
+    final plain = evaluateStatement(s, bs, to: DateTime(2026, 12, 31));
+    final lt = evaluateStatement(s, bs, to: DateTime(2026, 12, 31), longTermStock: true);
+    expect(lt[0], plain[0]! - 210);
+    expect(lt[1], plain[1]! + 210);
+    expect(lt[2], 490);
+
+    // «اشتراک گذاری حسابهای ساخته شده»
+    s.saveUser(AppUser(id: 'u1', code: 2, name: 'A', login: 'a'), password: '');
+    s.saveUser(AppUser(id: 'u2', code: 3, name: 'B', login: 'b'), password: '');
+    s.login('a', '');
+    final mine = Person(id: newId(), name: 'Secret');
+    s.upsertPerson(mine);
+    expect(mine.info['creator'], 'u1');
+    s.setPrivateKinds('u1', {'people'});
+    expect(s.peopleSorted.any((p) => p.id == mine.id), isTrue); // his own
+    s.login('b', '');
+    expect(s.peopleSorted.any((p) => p.id == mine.id), isFalse);
+    expect(s.peopleSorted.any((p) => p.id == ali.id), isTrue);
+    s.setPrivateKinds('u1', {});
+    expect(s.peopleSorted.any((p) => p.id == mine.id), isTrue);
+  });
 }

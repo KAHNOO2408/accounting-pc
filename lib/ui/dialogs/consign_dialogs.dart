@@ -13,8 +13,8 @@ import 'invoice_editor.dart' show fmtQty, parseQty, pickPersonId;
 // ================================================================ سند امانی
 
 /// «دریافت امانی» / «پرداخت امانی» — Sakan's consignment document.
-Future<void> showConsignEditor(BuildContext context, ConsignDir dir, {Consignment? edit}) =>
-    showDialog<void>(context: context, barrierDismissible: false, builder: (_) => _ConsignEditor(dir: edit?.dir ?? dir, edit: edit));
+Future<void> showConsignEditor(BuildContext context, ConsignDir dir, {Consignment? edit, bool loan = false}) =>
+    showDialog<void>(context: context, barrierDismissible: false, builder: (_) => _ConsignEditor(dir: edit?.dir ?? dir, edit: edit, loan: edit?.loan ?? loan));
 
 class _Row {
   final String id;
@@ -37,7 +37,10 @@ class _Row {
 class _ConsignEditor extends StatefulWidget {
   final ConsignDir dir;
   final Consignment? edit;
-  const _ConsignEditor({required this.dir, this.edit});
+  final bool loan;
+  const _ConsignEditor({required this.dir, this.edit, this.loan = false});
+
+  String get title => loan ? (dir == ConsignDir.received ? 'ورود قرضی' : 'خروج قرضی') : dir.label;
 
   @override
   State<_ConsignEditor> createState() => _ConsignEditorState();
@@ -64,7 +67,7 @@ class _ConsignEditorState extends State<_ConsignEditor> {
     _date = e?.date ?? DateTime.now();
     _follow = e?.followDate;
     _person = e?.personId;
-    _number.text = '${e?.number ?? s.nextConsignNumber(widget.dir)}';
+    _number.text = '${e?.number ?? s.nextConsignNumber(widget.dir, loan: widget.loan)}';
     _followNote.text = e?.followNote ?? '';
     _note.text = e?.note ?? '';
     for (final l in e?.lines ?? const <ConsignLine>[]) {
@@ -97,8 +100,11 @@ class _ConsignEditorState extends State<_ConsignEditor> {
     setState(() {
       final r = _Row(newId())
         ..productId = id
-        ..unit = p.hasUnit(p.defaultUnit) ? p.defaultUnit : 1;
-      final base = widget.dir == ConsignDir.received ? p.buyPrice : p.sellPrice;
+        ..unit = p.hasUnit(p.defaultUnit) ? p.defaultUnit : 1
+        ..warehouseId = widget.loan ? StoreScope.read(context).allowedWarehouse(null) : null;
+      // «امانی قرضی» is valued at cost (the stock's average price)
+      final avg = StoreScope.read(context).avgCost(p.id);
+      final base = widget.loan ? (avg > 0 ? avg : p.buyPrice) : (widget.dir == ConsignDir.received ? p.buyPrice : p.sellPrice);
       r.fi.text = groupDigits((base * p.unitFactor(r.unit)).round());
       _rows.add(r);
     });
@@ -108,7 +114,7 @@ class _ConsignEditorState extends State<_ConsignEditor> {
     final s = StoreScope.read(context);
     final number = int.tryParse(normalizeDigits(_number.text.trim())) ?? 0;
     if (number <= 0) return setState(() => _err = 'شماره سند را وارد کنید');
-    if (s.consignments.any((c) => c.id != widget.edit?.id && c.dir == widget.dir && c.number == number)) {
+    if (s.consignments.any((c) => c.id != widget.edit?.id && c.dir == widget.dir && c.loan == widget.loan && c.number == number)) {
       return setState(() => _err = 'شماره $number قبلاً ثبت شده است');
     }
     final lines = <ConsignLine>[];
@@ -129,6 +135,7 @@ class _ConsignEditorState extends State<_ConsignEditor> {
       ));
     }
     final c = Consignment(
+      loan: widget.loan,
       id: widget.edit?.id ?? newId(),
       dir: widget.dir,
       number: number,
@@ -143,7 +150,7 @@ class _ConsignEditorState extends State<_ConsignEditor> {
     final e = s.saveConsignment(c);
     if (e != null) return setState(() => _err = e);
     Navigator.pop(context);
-    toast(context, '${widget.dir.label} شماره $number ذخیره شد');
+    toast(context, '${widget.title} شماره $number ذخیره شد');
   }
 
   @override
@@ -161,7 +168,7 @@ class _ConsignEditorState extends State<_ConsignEditor> {
       child: Focus(
         autofocus: true,
         child: SakanWindow(
-          title: widget.dir.label,
+          title: widget.loan ? 'امانی قرضی — ${widget.title}' : widget.dir.label,
           width: 1100,
           height: 700,
           body: Padding(
@@ -360,14 +367,15 @@ class _ProductPickState extends State<_ProductPick> {
 /// «امانی دریافتنی / پرداختنی» and «مانده امانی»: every consignment row with
 /// its returned, invoiced and remaining quantity. With [personId] it is
 /// «صورت امانی های طرف حساب».
-Future<void> showConsignList(BuildContext context, {ConsignDir? dir, String? personId, bool openOnly = false}) =>
-    showDialog<void>(context: context, builder: (_) => _ConsignList(dir: dir, personId: personId, openOnly: openOnly));
+Future<void> showConsignList(BuildContext context, {ConsignDir? dir, String? personId, bool openOnly = false, bool loan = false}) =>
+    showDialog<void>(context: context, builder: (_) => _ConsignList(dir: dir, personId: personId, openOnly: openOnly, loan: loan));
 
 class _ConsignList extends StatefulWidget {
   final ConsignDir? dir;
   final String? personId;
   final bool openOnly;
-  const _ConsignList({this.dir, this.personId, this.openOnly = false});
+  final bool loan;
+  const _ConsignList({this.dir, this.personId, this.openOnly = false, this.loan = false});
 
   @override
   State<_ConsignList> createState() => _ConsignListState();
@@ -384,7 +392,7 @@ class _ConsignListState extends State<_ConsignList> {
   List<_CRow> _rows(AppStore s) {
     final q = normalizeDigits(_q.trim()).toLowerCase();
     final out = <_CRow>[];
-    final list = s.consignments.where((c) => (_dir == null || c.dir == _dir) && (widget.personId == null || c.personId == widget.personId)).toList()
+    final list = s.consignments.where((c) => c.loan == widget.loan && (_dir == null || c.dir == _dir) && (widget.personId == null || c.personId == widget.personId)).toList()
       ..sort((a, b) => b.date.compareTo(a.date));
     for (final c in list) {
       for (final l in c.lines) {
@@ -410,7 +418,7 @@ class _ConsignListState extends State<_ConsignList> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, set) => FormDialog(
-          title: 'تسویه انبار — ${r.$1.dir.label} ${r.$1.number}',
+          title: '${r.$1.loan ? 'عودت' : 'تسویه انبار'} — ${r.$1.title} ${r.$1.number}',
           width: 460,
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('انصراف')),
@@ -446,7 +454,7 @@ class _ConsignListState extends State<_ConsignList> {
   }
 
   Future<void> _delete(AppStore s, Consignment c) async {
-    if (!await confirm(context, 'حذف سند امانی', '${c.dir.label} شماره ${c.number} حذف شود؟')) return;
+    if (!await confirm(context, 'حذف سند امانی', '${c.title} شماره ${c.number} حذف شود؟')) return;
     final e = s.removeConsignment(c.id);
     if (e != null && mounted) toast(context, e, error: true);
   }
@@ -462,7 +470,7 @@ class _ConsignListState extends State<_ConsignList> {
       rows: [
         for (final r in rows)
           [
-            r.$1.dir.label,
+            r.$1.title,
             '${r.$1.number}',
             jFormat(r.$1.date),
             s.person(r.$1.personId)?.name ?? '',
@@ -488,7 +496,9 @@ class _ConsignListState extends State<_ConsignList> {
     final th = Theme.of(context);
     final rows = _rows(s);
     final sel = rows.where((r) => r.$2.id == _sel).firstOrNull;
-    final title = widget.personId != null ? 'صورت امانی های طرف حساب — ${s.person(widget.personId)?.name ?? ''}' : 'امانی ها';
+    final title = widget.loan
+        ? 'لیست امانی قرضی'
+        : (widget.personId != null ? 'صورت امانی های طرف حساب — ${s.person(widget.personId)?.name ?? ''}' : 'امانی ها');
     const w = [90.0, 60.0, 100.0, 150.0, 0.0, 70.0, 70.0, 80.0, 70.0, 110.0, 100.0];
     final remValue = rows.fold<int>(0, (a, r) => a + (r.$2.qty == 0 ? 0 : (r.$2.total * r.$5 / r.$2.qty).round()));
     return SakanWindow(
@@ -499,11 +509,11 @@ class _ConsignListState extends State<_ConsignList> {
         padding: const EdgeInsets.all(10),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Wrap(spacing: 8, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
-            sakanBtn('دریافت امانی', () => showConsignEditor(context, ConsignDir.received), icon: Icons.move_to_inbox_outlined),
-            sakanBtn('پرداخت امانی', () => showConsignEditor(context, ConsignDir.given), icon: Icons.outbox_outlined),
-            sakanBtn('ویرایش', sel == null ? null : () => showConsignEditor(context, sel.$1.dir, edit: sel.$1), icon: Icons.edit_outlined),
+            sakanBtn(widget.loan ? 'ورود قرضی' : 'دریافت امانی', () => showConsignEditor(context, ConsignDir.received, loan: widget.loan), icon: Icons.move_to_inbox_outlined),
+            sakanBtn(widget.loan ? 'خروج قرضی' : 'پرداخت امانی', () => showConsignEditor(context, ConsignDir.given, loan: widget.loan), icon: Icons.outbox_outlined),
+            sakanBtn('ویرایش', sel == null ? null : () => showConsignEditor(context, sel.$1.dir, edit: sel.$1, loan: sel.$1.loan), icon: Icons.edit_outlined),
             sakanBtn('حذف سند', sel == null ? null : () => _delete(s, sel.$1), icon: Icons.delete_outline_rounded),
-            sakanBtn('تسویه انبار', sel == null || sel.$5 <= 1e-9 ? null : () => _return(s, sel), icon: Icons.assignment_return_outlined),
+            sakanBtn(widget.loan ? 'عودت کالا' : 'تسویه انبار', sel == null || sel.$5 <= 1e-9 ? null : () => _return(s, sel), icon: Icons.assignment_return_outlined),
             sakanBtn('چاپ', () => _print(s, rows), icon: Icons.print_outlined),
             const SizedBox(width: 12),
             SegmentedButton<ConsignDir?>(
@@ -549,11 +559,11 @@ class _ConsignListState extends State<_ConsignList> {
                 final due = r.$1.followDate != null && r.$5 > 1e-9 && !r.$1.followDate!.isAfter(DateTime.now());
                 return InkWell(
                   onTap: () => setState(() => _sel = r.$2.id),
-                  onDoubleTap: () => showConsignEditor(context, r.$1.dir, edit: r.$1),
+                  onDoubleTap: () => showConsignEditor(context, r.$1.dir, edit: r.$1, loan: r.$1.loan),
                   child: Container(
                     color: on ? sakanSel : (due ? sakanPink : (i.isOdd ? const Color(0xFFF3F7FC) : null)),
                     child: Row(children: [
-                      sakanCell(Text(r.$1.dir.label, style: st), w[0]),
+                      sakanCell(Text(r.$1.title, style: st), w[0]),
                       sakanCell(Text('${r.$1.number}', style: st), w[1]),
                       sakanCell(Text(jFormat(r.$1.date), style: st), w[2]),
                       sakanCell(Text(s.person(r.$1.personId)?.name ?? '', style: st, overflow: TextOverflow.ellipsis), w[3]),
@@ -630,7 +640,7 @@ class _ConsignPickerState extends State<_ConsignPicker> {
     final s = StoreScope.of(context);
     final th = Theme.of(context);
     final open = <(Consignment, ConsignLine, double)>[];
-    for (final c in s.consignments.where((c) => c.dir == widget.dir && (widget.personId == null || c.personId == widget.personId))) {
+    for (final c in s.consignments.where((c) => !c.loan && c.dir == widget.dir && (widget.personId == null || c.personId == widget.personId))) {
       for (final l in c.lines) {
         if (widget.taken.contains(l.id)) continue;
         final rem = s.consignRemaining(c, l, excludeInvoiceId: widget.excludeInvoiceId);
@@ -663,7 +673,7 @@ class _ConsignPickerState extends State<_ConsignPicker> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(children: [
-                    SizedBox(width: 120, child: Text('${c.dir.label} ${c.number}')),
+                    SizedBox(width: 120, child: Text('${c.title} ${c.number}')),
                     SizedBox(width: 90, child: Text(jFormat(c.date))),
                     SizedBox(width: 130, child: Text(s.person(c.personId)?.name ?? '', overflow: TextOverflow.ellipsis)),
                     Expanded(child: Text(s.product(l.productId)?.name ?? '', overflow: TextOverflow.ellipsis)),
