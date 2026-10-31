@@ -6,6 +6,7 @@
 library;
 
 import 'models.dart' show newId;
+import 'pay_tables.dart';
 
 String _s(Object? v) => v == null ? '' : '$v';
 int _i(Object? v, [int d = 0]) => v is int ? v : (v is num ? v.toInt() : int.tryParse('$v') ?? d);
@@ -173,6 +174,9 @@ class Employee {
 
   /// «گروه حقوق» this employee follows.
   String? payGroupId;
+
+  /// «جداول پایه پرسنل»: [PayTableKind] name → table id.
+  Map<String, String> tables = {};
   List<PayItem2> deductions; // کسورات ثابت
   bool active;
 
@@ -257,6 +261,7 @@ class Employee {
         'benefits': benefits.map((e) => e.toJson()).toList(),
         if (taxExemptMonthly != 0) 'taxExemptMonthly': taxExemptMonthly,
         if (payGroupId != null) 'payGroupId': payGroupId,
+        if (tables.isNotEmpty) 'tables': tables,
         'deductions': deductions.map((e) => e.toJson()).toList(),
         'active': active,
       };
@@ -301,7 +306,8 @@ class Employee {
         active: j['active'] != false,
       )
         ..taxExemptMonthly = _i(j['taxExemptMonthly'])
-        ..payGroupId = j['payGroupId'] is String ? j['payGroupId'] as String : null;
+        ..payGroupId = j['payGroupId'] is String ? j['payGroupId'] as String : null
+        ..tables = j['tables'] is Map ? {for (final e in (j['tables'] as Map).entries) '${e.key}': '${e.value}'} : {};
 }
 
 /// «گروه حقوق»: a wage and fixed benefits shared by a group of employees.
@@ -649,6 +655,9 @@ class PayResult {
   int jarime = 0;
   int kosoratSabet = 0;
 
+  /// «جزییات محاسبه مالیات» (label → amount).
+  final Map<String, int> taxDetail = {};
+
   // attendance counts (SalaryNatijeAmalkarMonth)
   double workDays = 0;
   double paidLeaveDays = 0;
@@ -674,8 +683,12 @@ PayResult computePayslip({
   List<Leave> leaves = const [],
   List<Mission> missions = const [],
   int loanInstallment = 0,
+  PaySetup setup = PaySetup.none,
+  List<PayOnce> once = const [],
 }) {
   final r = PayResult();
+  final sal = setup[PayTableKind.salary], ins = setup[PayTableKind.insurance], taxT = setup[PayTableKind.tax];
+  final sev = setup[PayTableKind.severance], exm = setup[PayTableKind.taxExemption];
   final days = period.days <= 0 ? 30 : period.days;
   for (final l in leaves) {
     switch (l.kind) {
@@ -692,10 +705,22 @@ PayResult computePayslip({
   // sick leave is paid by the insurance; unpaid leave and absence are not paid
   final paidDays = (p.workDays - r.sickLeaveDays - r.unpaidLeaveDays - r.absenceDays).clamp(0, 31).toDouble();
   r.workDays = paidDays;
-  r.dailyWage = (e.monthlyWage / days).round();
-  final ratio = paidDays / days;
-  r.hoghoghMahiane = (e.monthlyWage * ratio).round();
-  r.haghSanavat = (e.sanavatMonthly * ratio).round();
+  // «مرکز حقوق»: daily wage and performance coefficient
+  final perf = sal == null || sal.n('perf') == 0 ? 1.0 : sal.n('perf').toDouble();
+  final monthly = ((sal != null && sal.n('dailyWage') > 0 ? sal.n('dailyWage') * days : e.monthlyWage) * perf).round();
+  r.dailyWage = (monthly / days).round();
+  final byPeriod = sal != null && sal.t('basis') == 'بر اساس تعداد روزهای دوره';
+  final ratio = byPeriod ? (p.workDays >= days ? 1.0 : p.workDays / days) : paidDays / days;
+  r.hoghoghMahiane = (monthly * ratio).round();
+  // «مزایای پایان خدمت»
+  var sevInsured = e.sanavatInsured, sevTaxed = e.sanavatTaxed;
+  if (sev != null) {
+    r.haghSanavat = ((sev.n('daily') + sev.n('diffDaily')) * paidDays).round();
+    sevInsured = sev.f('insured');
+    sevTaxed = sev.f('taxed');
+  } else {
+    r.haghSanavat = (e.sanavatMonthly * ratio).round();
+  }
   var benefitsInsured = 0, benefitsTaxed = 0;
   for (final b in e.benefits) {
     final v = (b.amount * ratio).round();
@@ -704,19 +729,46 @@ PayResult computePayslip({
     if (b.insured) benefitsInsured += v;
     if (b.taxed) benefitsTaxed += v;
   }
+  var nonCashTaxed = 0, onceTaxed = 0;
+  // «جدول مزایای نقدی مستمر»
+  for (final b in setup[PayTableKind.benefit]?.items ?? const <PayTableItem>[]) {
+    final v = (b.amount * ratio).round();
+    r.mazayaMostamar += v;
+    if (b.insured) benefitsInsured += v;
+    if (b.taxed) benefitsTaxed += v;
+  }
+  // «جدول مزایای غیر نقدی مستمر» (مسکن، وسیله، سایر)
+  for (final b in setup[PayTableKind.nonCash]?.items ?? const <PayTableItem>[]) {
+    final v = (b.amount * ratio).round();
+    r.mazayaMostamar += v;
+    r.gheirNaghdi += v;
+    if (b.insured) benefitsInsured += v;
+    if (b.taxed) nonCashTaxed += (v - b.exempt).clamp(0, v).toInt();
+  }
+  // «مزایای غیر نقدی غیر مستمر»
+  for (final o in once.where((o) => !o.exemptExpense)) {
+    r.extraBenefits += o.amount;
+    r.gheirNaghdi += o.amount;
+    if (o.insured) benefitsInsured += o.amount;
+    if (o.taxed) onceTaxed += (o.amount - o.taxCap).clamp(0, o.amount).toInt();
+  }
   for (final b in p.extraBenefits) {
     r.extraBenefits += b.amount;
     if (b.nonCash) r.gheirNaghdi += b.amount;
     if (b.insured) benefitsInsured += b.amount;
     if (b.taxed) benefitsTaxed += b.amount;
   }
-  final hourly = e.monthlyWage / 220; // ۲۲۰ ساعت کار ماهانه (قانون کار)
-  r.ezafeKari = (p.overtimeHours * hourly * 1.4).round();
-  r.kasrKar = (p.shortHours * hourly).round();
-  r.haghShift = p.shiftPay + (p.eveningShiftHours * hourly * 0.10).round() + (p.nightShiftHours * hourly * 0.35).round();
+  final hourly = monthly / 220; // ۲۲۰ ساعت کار ماهانه (قانون کار)
+  num rate(String k, num legal) => sal != null && sal.n(k) > 0 ? sal.n(k) : legal;
+  r.ezafeKari = (p.overtimeHours * rate('overtimeHour', hourly * 1.4)).round();
+  r.kasrKar = (p.shortHours * rate('shortHour', hourly)).round();
+  r.haghShift = p.shiftPay + (p.eveningShiftHours * rate('eveningHour', hourly * 0.10)).round() + (p.nightShiftHours * rate('nightHour', hourly * 0.35)).round();
+  if (sal != null && sal.n('shiftDay') > 0 && (p.eveningShiftHours > 0 || p.nightShiftHours > 0) && p.shiftPay == 0) {
+    r.haghShift += (sal.n('shiftDay') * paidDays).round();
+  }
   for (final m in missions) {
     r.missionDays += m.days;
-    r.haghMamoriat += m.amount;
+    r.haghMamoriat += m.amount == 0 && sal != null ? (m.days * sal.n('missionDay')).round() : m.amount;
     r.safar += m.travelCost;
   }
   r.padash = p.bonus;
@@ -726,36 +778,74 @@ PayResult computePayslip({
   r.bazKharidMorkhasi = p.leaveBuyback != 0 ? p.leaveBuyback : (p.leaveBuybackDays * r.dailyWage).round();
 
   // بیمه: مزد، مزایای مستمر مشمول، اضافه کاری، شیفت، معوقه، پاداش (در صورت مشمول بودن)
-  var insured = r.hoghoghMahiane + benefitsInsured + r.ezafeKari + r.haghShift + r.pardakhthayeMoavaghe - r.kasrKar;
-  if (e.sanavatInsured) insured += r.haghSanavat;
+  final otIns = sal?.f('otIns', true) ?? true, shiftIns = sal?.f('shiftIns', true) ?? true, missionIns = sal?.f('missionIns') ?? false;
+  var insured = r.hoghoghMahiane + benefitsInsured + (otIns ? r.ezafeKari : 0) + (shiftIns ? r.haghShift : 0) + (missionIns ? r.haghMamoriat : 0) + r.pardakhthayeMoavaghe - r.kasrKar;
+  if (sevInsured) insured += r.haghSanavat;
   if (p.bonusInsured) insured += r.padash;
-  if (rules.insuranceCapDaily > 0) {
-    final cap = (rules.insuranceCapDaily * paidDays).round();
+  // «جدول بیمه»
+  final noIns = ins != null && ins.t('type') == 'ندارد';
+  final capDaily = ins != null ? ins.n('capDaily').toInt() : rules.insuranceCapDaily;
+  if (capDaily > 0) {
+    final insDays = ins != null && ins.t('basis') == 'بر اساس تعداد روزهای دوره' ? days : paidDays;
+    final cap = (capDaily * insDays).round();
     if (insured > cap) insured = cap;
   }
-  if (insured < 0) insured = 0;
+  if (insured < 0 || noIns) insured = 0;
+  double pct(String k, double legal) => ins == null ? legal : ins.n(k).toDouble();
   r.dastmozdMashmoolBime = insured;
   r.dastmozdGheirMashmoolBime = r.jamKol - insured;
-  r.bimeSahmBimeShode = (insured * rules.workerPct / 100).round();
-  r.bimeSahmKarfarma = (insured * rules.employerPct / 100).round();
-  r.bimeBikari = (insured * rules.unemploymentPct / 100).round();
-  r.bimeMashagheleSakht = e.hardJob ? (insured * rules.hardPct / 100).round() : 0;
+  r.bimeSahmBimeShode = (insured * pct('worker', rules.workerPct) / 100).round();
+  r.bimeSahmKarfarma = (insured * pct('employer', rules.employerPct) / 100).round();
+  r.bimeBikari = (insured * pct('unemployment', rules.unemploymentPct) / 100).round();
+  r.bimeMashagheleSakht = e.hardJob ? (insured * pct('hard', rules.hardPct) / 100).round() : 0;
 
   // مالیات: حقوق و مزایای مشمول، منهای سهم بیمه کارگر (ماده ۱۳۷)
-  var taxable = r.hoghoghMahiane + benefitsTaxed + r.ezafeKari + r.haghShift + r.haghMamoriat + r.padash + r.pardakhthayeMoavaghe + r.sayerPardakhthayeNaghdy + r.bazKharidMorkhasi - r.kasrKar;
-  if (e.sanavatTaxed) taxable += r.haghSanavat;
+  final otTax = sal?.f('otTax', true) ?? true, shiftTax = sal?.f('shiftTax', true) ?? true, missionTax = sal?.f('missionTax', true) ?? true;
   final eydiTaxed = rules.eydiTaxExempt > 0 && r.eydi > rules.eydiTaxExempt ? r.eydi - rules.eydiTaxExempt : 0;
+  final exemptExp = e.taxExemptMonthly +
+      (setup[PayTableKind.exemptExpense]?.items ?? const <PayTableItem>[]).fold<int>(0, (a, x) => a + x.amount) +
+      once.where((o) => o.exemptExpense).fold<int>(0, (a, o) => a + o.amount);
+  final insFree = ins == null || ins.f('taxFree', true);
+  final d = r.taxDetail;
+  d['ناخالص حقوق و دستمزد و مستمر نقدی (حقوق ماهانه + حق شیفت + مزایا + حق سنوات)'] = r.hoghoghMahiane + r.haghShift + r.mazayaMostamar - r.gheirNaghdi + r.haghSanavat;
+  d['ناخالص اضافه کاری'] = r.ezafeKari;
+  d['ناخالص اضافه کاری مشمول مالیات'] = otTax ? r.ezafeKari : 0;
+  d['پرداخت مزایای مستمر غیر نقدی مشمول مالیات'] = nonCashTaxed;
+  d['پرداخت مزایای غیر مستمر غیر نقدی مشمول مالیات'] = onceTaxed;
+  d['پاداش موردی مشمول مالیات'] = r.padash;
+  d['پرداخت های غیر مستمر نقدی معوقه مشمول مالیات'] = r.pardakhthayeMoavaghe;
+  d['سایر پرداخت های غیر مستمر نقدی مشمول مالیات'] = r.sayerPardakhthayeNaghdy + (missionTax ? r.haghMamoriat : 0);
+  d['بازخرید مرخصی و بازخرید سنوات مشمول مالیات'] = r.bazKharidMorkhasi + (sevTaxed ? r.haghSanavat : 0);
+  d['عیدی و مزایای پایان سال'] = r.eydi;
+  d['عیدی و مزایای پایان سال مشمول مالیات'] = eydiTaxed;
+  d['حق بیمه پرداختی موضوع ماده 137 ق.م.م'] = insFree ? r.bimeSahmBimeShode : 0;
+  d['هزینه های معاف از مالیات پرداختی توسط مودی'] = exemptExp;
+  var taxable = r.hoghoghMahiane + benefitsTaxed + nonCashTaxed + onceTaxed + (otTax ? r.ezafeKari : 0) + (shiftTax ? r.haghShift : 0) + (missionTax ? r.haghMamoriat : 0) + r.padash + r.pardakhthayeMoavaghe + r.sayerPardakhthayeNaghdy + r.bazKharidMorkhasi - r.kasrKar;
+  if (sevTaxed) taxable += r.haghSanavat;
   taxable += eydiTaxed;
-  taxable -= r.bimeSahmBimeShode;
-  taxable -= e.taxExemptMonthly;
+  d['جمع حقوق مزایای مستمر و غیر مستمر نقدی و غیر نقدی عیدی و مزایای پایان سال و بازخرید مرخصی و سنوات'] = r.jamKol;
+  d['جمع حقوق مزایای مستمر و غیر مستمر نقدی و غیر نقدی عیدی و مزایای پایان سال و بازخرید مرخصی و سنوات مشمول مالیات'] = taxable;
+  if (insFree) taxable -= r.bimeSahmBimeShode;
+  taxable -= exemptExp;
   if (taxable < 0) taxable = 0;
   r.mashmoolMaliat = taxable;
-  r.maliat = rules.tax(taxable);
+  // «مرکز مالیات» (پلکان) or the general table; «معافیت ماده ۹۱/۹۲»
+  var tax = taxT != null && taxT.items.isNotEmpty ? bracketTax(taxT, taxable) : rules.tax(taxable);
+  if (exm != null && exm.n('pct') > 0) {
+    final off = (tax * exm.n('pct') / 100).round();
+    d['معافیت مالیاتی (${exm.t('article')})'] = off;
+    tax -= off;
+  }
+  r.maliat = tax;
+  d['مشمول مالیات پس از کسر معافیت ها'] = taxable;
+  d['مالیات متعلقه'] = tax;
 
   r.vam = p.loanInstallment != 0 ? p.loanInstallment : loanInstallment;
   r.mosaede = p.advance;
-  r.jarime = p.fine;
-  r.kosoratSabet = e.deductions.fold(0, (a, d) => a + d.amount) + p.extraDeductions.fold(0, (a, d) => a + d.amount);
+  r.jarime = p.fine + (sal == null ? 0 : (r.absenceDays * sal.n('absenceDay')).round());
+  r.kosoratSabet = e.deductions.fold<int>(0, (a, x) => a + x.amount) +
+      p.extraDeductions.fold<int>(0, (a, x) => a + x.amount) +
+      (setup[PayTableKind.deduction]?.items ?? const <PayTableItem>[]).fold<int>(0, (a, x) => a + x.amount);
   return r;
 }
 

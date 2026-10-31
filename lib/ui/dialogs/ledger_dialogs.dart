@@ -476,6 +476,16 @@ List<AccRow> accountRows(AppStore s, AccCat c, Map<String, int> bal) {
         if (rest != null) {
           out.add(AccRow(key: '$code|', code: code, kol: m.kol.name, moeen: m.name, name: m.name, balance: rest, moeens: {code}, tafsili: ''));
         }
+      case TafsiliKind.contract:
+        for (final c in s.contracts) {
+          final b = bal['$code|${c.id}'];
+          if (b == null) continue;
+          out.add(AccRow(key: '$code|${c.id}', code: '${c.code}', kol: m.kol.name, moeen: m.name, name: c.title, balance: b, moeens: {code}, tafsili: c.id));
+        }
+        final rest = bal['$code|'];
+        if (rest != null) {
+          out.add(AccRow(key: '$code|', code: code, kol: m.kol.name, moeen: m.name, name: m.name, balance: rest, moeens: {code}, tafsili: ''));
+        }
       case TafsiliKind.none:
         out.add(AccRow(key: code, code: code, kol: m.kol.name, moeen: m.name, name: m.name, balance: bal[code] ?? 0, moeens: {code}));
     }

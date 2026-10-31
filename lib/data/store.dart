@@ -14,6 +14,7 @@ import 'discounts.dart';
 import 'marketing.dart';
 import 'models.dart';
 import 'payroll.dart';
+import 'pay_tables.dart';
 import 'report_layout.dart';
 import 'storage.dart';
 import 'woo.dart';
@@ -124,6 +125,18 @@ class AppStore extends ChangeNotifier {
   /// stock balance shown as a non-current asset.
   Map<String, double> stockLongTerm = {};
 
+  List<SubTafsili> subTafsilis = [];
+  List<Contract> contracts = [];
+  List<TempDoc> tempDocs = [];
+
+  /// «تنظیمات پشتیبان گیری خودکار»: two (time 'HH:mm', folder) slots and the
+  /// day each last ran.
+  List<(String, String)> backupSlots = [('', ''), ('', '')];
+  Map<String, String> backupLastRun = {};
+
+  /// «قفل اسناد»: ranges locked so far.
+  List<(int, int, DateTime, String)> lockRanges = [];
+
   /// «جابجایی دفتر تفصیلی»: 'fromMoeen|tafsiliId' → target معین.
   Map<String, String> tafsiliMoves = {};
 
@@ -159,6 +172,10 @@ class AppStore extends ChangeNotifier {
   PayrollRules payrollRules = PayrollRules();
   Workshop workshop = Workshop();
   List<PayGroup> payGroups = [];
+
+  /// «جداول پایه پرسنل» and the one-off items of a period.
+  List<PayTable> payTables = [];
+  List<PayOnce> payOnce = [];
 
   /// «حضور و غیاب».
   List<Shift> shifts = [];
@@ -346,6 +363,20 @@ class AppStore extends ChangeNotifier {
     reminders = list('reminders').map(Reminder.fromJson).toList();
     customStatements = list('customStatements').map(CustomStatement.fromJson).toList();
     final lt = j['stockLongTerm'];
+    subTafsilis = list('subTafsilis').map(SubTafsili.fromJson).toList();
+    contracts = list('contracts').map(Contract.fromJson).toList();
+    tempDocs = list('tempDocs').map(TempDoc.fromJson).toList();
+    final bs = j['backupSlots'];
+    backupSlots = [
+      for (var i = 0; i < 2; i++)
+        bs is List && i < bs.length && bs[i] is Map ? ('${(bs[i] as Map)['time'] ?? ''}', '${(bs[i] as Map)['path'] ?? ''}') : ('', ''),
+    ];
+    final bl = j['backupLastRun'];
+    backupLastRun = bl is Map ? {for (final e in bl.entries) '${e.key}': '${e.value}'} : {};
+    lockRanges = [
+      for (final r in (j['lockRanges'] is List ? j['lockRanges'] as List : const []))
+        if (r is Map) ((r['from'] as num?)?.toInt() ?? 0, (r['to'] as num?)?.toInt() ?? 0, DateTime.tryParse('${r['at']}') ?? DateTime.now(), '${r['user'] ?? ''}'),
+    ];
     final tm = j['tafsiliMoves'];
     tafsiliMoves = tm is Map ? {for (final e in tm.entries) '${e.key}': '${e.value}'} : {};
     stockLongTerm = lt is Map ? {for (final e in lt.entries) if (e.value is num) '${e.key}': (e.value as num).toDouble()} : {};
@@ -370,6 +401,8 @@ class AppStore extends ChangeNotifier {
     missions = list('missions').map(Mission.fromJson).toList();
     staffLoans = list('staffLoans').map(StaffLoan.fromJson).toList();
     payGroups = list('payGroups').map(PayGroup.fromJson).toList();
+    payTables = list('payTables').map(PayTable.fromJson).toList();
+    payOnce = list('payOnce').map(PayOnce.fromJson).toList();
     shifts = list('shifts').map(Shift.fromJson).toList();
     clock = list('clock').map(ClockRecord.fromJson).toList();
     employeeShift = j['employeeShift'] is Map ? {for (final e in (j['employeeShift'] as Map).entries) '${e.key}': '${e.value}'} : {};
@@ -602,6 +635,12 @@ class AppStore extends ChangeNotifier {
         'customStatements': customStatements.map((e) => e.toJson()).toList(),
         'stockLongTerm': stockLongTerm,
         'tafsiliMoves': tafsiliMoves,
+        'subTafsilis': subTafsilis.map((e) => e.toJson()).toList(),
+        'contracts': contracts.map((e) => e.toJson()).toList(),
+        'tempDocs': tempDocs.map((e) => e.toJson()).toList(),
+        'backupSlots': [for (final b in backupSlots) {'time': b.$1, 'path': b.$2}],
+        'backupLastRun': backupLastRun,
+        'lockRanges': [for (final r in lockRanges) {'from': r.$1, 'to': r.$2, 'at': r.$3.toIso8601String(), 'user': r.$4}],
         'loyaltyCards': loyaltyCards.map((e) => e.toJson()).toList(),
         'loyalty': loyalty.toJson(),
         'redemptions': redemptions.map((e) => e.toJson()).toList(),
@@ -624,6 +663,8 @@ class AppStore extends ChangeNotifier {
         'staffLoans': staffLoans.map((e) => e.toJson()).toList(),
         'payrollRules': payrollRules.toJson(),
         'payGroups': payGroups.map((e) => e.toJson()).toList(),
+        'payTables': payTables.map((e) => e.toJson()).toList(),
+        'payOnce': payOnce.map((e) => e.toJson()).toList(),
         'shifts': shifts.map((e) => e.toJson()).toList(),
         'clock': clock.map((e) => e.toJson()).toList(),
         'employeeShift': employeeShift,
@@ -1766,7 +1807,98 @@ class AppStore extends ChangeNotifier {
       leaves: leavesIn(e, p),
       missions: missionsIn(e, p),
       loanInstallment: _installment(e, p, s),
+      setup: paySetupOf(e),
+      once: payOnce.where((o) => o.periodId == p.id && o.employeeId == e.id).toList(),
     );
+  }
+
+  // ---------------------------------------------------------------- جداول پایه پرسنل
+
+  List<PayTable> payTablesOf(PayTableKind k) => payTables.where((t) => t.kind == k).toList()..sort((a, b) => a.code.compareTo(b.code));
+  PayTable? payTable(String? id) => payTables.where((t) => t.id == id).firstOrNull;
+  int nextPayTableCode(PayTableKind k) => payTablesOf(k).fold<int>(1, (n, t) => t.code >= n ? t.code + 1 : n);
+
+  /// The tables [e] follows: its own, else the default of each kind.
+  PaySetup paySetupOf(Employee e) {
+    final m = <PayTableKind, PayTable>{};
+    for (final k in PayTableKind.values) {
+      final t = payTable(e.tables[k.name]) ?? payTablesOf(k).where((t) => t.isDefault).firstOrNull;
+      if (t != null) m[k] = t;
+    }
+    return PaySetup(m);
+  }
+
+  /// «مشاهده لیست پرسنل استفاده شده».
+  List<Employee> employeesUsing(PayTable t) =>
+      employees.where((e) => e.tables[t.kind.name] == t.id || (e.tables[t.kind.name] == null && t.isDefault)).toList()..sort((a, b) => a.fullName.compareTo(b.fullName));
+
+  String? savePayTable(PayTable t) {
+    t.title = t.title.trim();
+    if (t.title.isEmpty) return 'عنوان جدول را وارد کنید';
+    if (payTables.any((x) => x.id != t.id && x.kind == t.kind && x.code == t.code)) return 'کد جدول تکراری است';
+    if (t.kind == PayTableKind.tax) {
+      for (final i in t.items) {
+        if (i.pct < 0 || i.pct > 100) return 'درصد مالیات نامعتبر است';
+        if (i.to != 0 && i.to < i.amount) return '«تا مبلغ» از «از مبلغ» کمتر است';
+      }
+    }
+    if (t.isDefault) {
+      for (final x in payTables.where((x) => x.kind == t.kind && x.id != t.id)) {
+        x.isDefault = false;
+      }
+    }
+    final i = payTables.indexWhere((x) => x.id == t.id);
+    if (i >= 0) {
+      payTables[i] = t;
+    } else {
+      payTables.add(t);
+    }
+    _log(i >= 0 ? 'ویرایش' : 'ثبت', '${t.kind.label} ${t.title}');
+    _commit();
+    return null;
+  }
+
+  String? removePayTable(String id) {
+    final t = payTable(id);
+    if (t == null) return null;
+    if (employees.any((e) => e.tables[t.kind.name] == id)) return 'این جدول به پرسنل اختصاص داده شده است';
+    payTables.remove(t);
+    _commit();
+    return null;
+  }
+
+  void setDefaultPayTable(String id) {
+    final t = payTable(id);
+    if (t == null) return;
+    for (final x in payTables.where((x) => x.kind == t.kind)) {
+      x.isDefault = x.id == id;
+    }
+    _commit();
+  }
+
+  /// Assigns table [tableId] (null = default) of [k] to [employeeIds].
+  void assignPayTable(PayTableKind k, String? tableId, Iterable<String> employeeIds) {
+    for (final e in employees.where((e) => employeeIds.contains(e.id))) {
+      if (tableId == null) {
+        e.tables.remove(k.name);
+      } else {
+        e.tables[k.name] = tableId;
+      }
+    }
+    _commit();
+  }
+
+  /// «اختصاص گروهی مزایای غیر نقدی غیر مستمر» / «هزینه های غیر مستمر معاف».
+  void addPayOnce(PayPeriod p, Iterable<String> employeeIds, PayOnce template) {
+    for (final id in employeeIds) {
+      payOnce.add(PayOnce.fromJson({...template.toJson(), 'id': newId(), 'periodId': p.id, 'employeeId': id}));
+    }
+    _commit();
+  }
+
+  void removePayOnce(String id) {
+    payOnce.removeWhere((o) => o.id == id);
+    _commit();
   }
 
   /// Employees with a payslip in [p].
@@ -2040,6 +2172,28 @@ class AppStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Whether invoice [i] belongs to branch [b] (null = every branch the user
+  /// may see; documents without a branch are always shown).
+  bool invoiceInBranch(Invoice i, String? b) {
+    final ib = i.info['branch'];
+    if (b != null) return ib == b;
+    if (ib == null || currentUser.admin || currentUser.branches.isEmpty) return true;
+    return currentUser.branches.contains(ib);
+  }
+
+  /// «گزارش فروش به تفکیک شعبه»: (branch name, sales, returns, count).
+  List<(String, int, int, int)> salesByBranch(DateTime from, DateTime to) {
+    final m = <String, (int, int, int)>{};
+    for (final i in realInvoices) {
+      if (i.date.isBefore(from) || i.date.isAfter(to)) continue;
+      if (i.kind != InvoiceKind.sale && i.kind != InvoiceKind.saleReturn) continue;
+      final name = branch(i.info['branch'])?.name ?? 'بدون شعبه';
+      final o = m[name] ?? (0, 0, 0);
+      m[name] = i.kind == InvoiceKind.sale ? (o.$1 + i.total, o.$2, o.$3 + 1) : (o.$1, o.$2 + i.total, o.$3);
+    }
+    return [for (final e in m.entries) (e.key, e.value.$1, e.value.$2, e.value.$3)]..sort((a, b) => a.$1.compareTo(b.$1));
+  }
+
   /// Warehouses the signed-in user may work with: «دسترسی انبار» and the
   /// warehouses of the selected branch. Never empty while any exists.
   List<Warehouse> get myWarehouses {
@@ -2064,6 +2218,43 @@ class AppStore extends ChangeNotifier {
 
   /// A warehouse id the user may use: [id] if allowed, otherwise the first allowed one.
   String? allowedWarehouse(String? id) => canUseWarehouse(id) ? id : myWarehouses.first.id;
+
+  /// «دسترسی اسناد»: may the signed-in user do [op] ('n' ثبت، 'e' ویرایش،
+  /// 'd' حذف) on documents of [type] (see [docAccessTypes])?
+  bool canDoc(String type, String op) {
+    final u = currentUser;
+    if (u.admin) return true;
+    final a = u.docAccess[type];
+    return a == null || a.contains(op);
+  }
+
+  String docTypeOfKey(String key) {
+    if (key.startsWith('v:')) return 'voucher';
+    if (key.startsWith('inv:')) {
+      final i = invoices.where((x) => 'inv:${x.id}' == key).firstOrNull;
+      return i == null ? 'sale' : (i.proforma ? 'proforma' : i.kind.name);
+    }
+    return 'receipt';
+  }
+
+  /// Why [op] on document [key] is refused (lock or «دسترسی اسناد»), or null.
+  String? docRefusal(String key, String op) {
+    if (op != 'n' && isLocked(key)) return 'سند قفل است («قفل اسناد»)';
+    final t = docTypeOfKey(key);
+    if (!canDoc(t, op)) {
+      final name = docAccessTypes.where((x) => x.$1 == t).firstOrNull?.$2 ?? 'سند';
+      return 'شما مجوز ${switch (op) { 'n' => 'ثبت', 'e' => 'ویرایش', _ => 'حذف' }} «$name» را ندارید (دسترسی اسناد)';
+    }
+    return null;
+  }
+
+  void setDocAccess(String userId, Map<String, String> access) {
+    final u = users.where((x) => x.id == userId).firstOrNull;
+    if (u == null) return;
+    u.docAccess = access;
+    _log('ویرایش', 'دسترسی اسناد ${u.name}');
+    _commit();
+  }
 
   /// Cash / bank accounts the signed-in user may use («دسترسی حسابها»).
   bool canUseAccount(String? id) {
@@ -2846,7 +3037,175 @@ class AppStore extends ChangeNotifier {
     _commit();
   }
 
+  // ---------------------------------------------------------------- فایل های موقت
+
+  void saveTempDoc(String name, Voucher v) {
+    tempDocs.add(TempDoc(id: newId(), name: name.trim().isEmpty ? 'فایل موقت ${tempDocs.length + 1}' : name.trim(), created: DateTime.now(), user: currentUser.name, voucher: Voucher.fromJson(v.toJson())));
+    _commit();
+  }
+
+  void removeTempDocs(Set<String> ids) {
+    tempDocs.removeWhere((t) => ids.contains(t.id));
+    _commit();
+  }
+
+  /// «تایید و ثبت سند ردیف های منتخب»: posts the balanced drafts; returns
+  /// the names of those that are not balanced (kept).
+  List<String> postTempDocs(Set<String> ids) {
+    final bad = <String>[];
+    for (final t in tempDocs.where((t) => ids.contains(t.id)).toList()) {
+      final dr = t.voucher.lines.fold<int>(0, (a, l) => a + l.debit), cr = t.voucher.lines.fold<int>(0, (a, l) => a + l.credit);
+      if (t.voucher.lines.isEmpty || dr != cr) {
+        bad.add(t.name);
+        continue;
+      }
+      final v = Voucher.fromJson(t.voucher.toJson())
+        ..id = newId()
+        ..number = nextVoucherNumber()
+        ..fixedNumber = nextFixedNumber();
+      saveVoucher(v);
+      tempDocs.remove(t);
+    }
+    _commit();
+    return bad;
+  }
+
+  // ---------------------------------------------------------------- پشتیبان گیری خودکار
+
+  void setBackupSlots(List<(String, String)> slots) {
+    backupSlots = slots;
+    _commit();
+  }
+
+  /// Runs the slots whose time has come today and not yet run; returns the
+  /// files written.
+  List<String> runScheduledBackups([DateTime? now]) {
+    final n = now ?? DateTime.now();
+    final day = '${n.year}-${n.month}-${n.day}';
+    final out = <String>[];
+    for (var i = 0; i < backupSlots.length; i++) {
+      final (time, path) = backupSlots[i];
+      final m = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch(time.trim());
+      if (m == null || path.trim().isEmpty) continue;
+      final at = DateTime(n.year, n.month, n.day, int.parse(m[1]!), int.parse(m[2]!));
+      if (n.isBefore(at) || backupLastRun['$i'] == day) continue;
+      try {
+        final d = Directory(path.trim());
+        if (!d.existsSync()) d.createSync(recursive: true);
+        out.add(exportBackup(dir: d.path));
+        backupLastRun['$i'] = day;
+      } catch (_) {}
+    }
+    if (out.isNotEmpty) _commit();
+    return out;
+  }
+
+  /// «کپی دسترسی دفتر مالی»: copies the permissions of the users of [other]
+  /// to the users with the same login here. Returns how many were updated.
+  int copyAccessFrom(AppStore other) {
+    var n = 0;
+    for (final u in users) {
+      final o = other.users.where((x) => x.login.toLowerCase() == u.login.toLowerCase()).firstOrNull;
+      if (o == null) continue;
+      u
+        ..admin = o.admin
+        ..denied = {...o.denied}
+        ..branches = {...o.branches}
+        ..warehouses = {...o.warehouses}
+        ..accounts = {...o.accounts}
+        ..privateKinds = {...o.privateKinds}
+        ..docAccess = {...o.docAccess}
+        ..deniedReports = {...o.deniedReports};
+      n++;
+    }
+    _log('ویرایش', 'کپی دسترسی از دفتر مالی دیگر ($n کاربر)');
+    _commit();
+    return n;
+  }
+
+  // ---------------------------------------------------------------- قرارداد (پیمان)
+
+  Contract? contract(String? id) => contracts.where((c) => c.id == id).firstOrNull;
+  int nextContractCode() => contracts.fold<int>(1, (n, c) => c.code >= n ? c.code + 1 : n);
+
+  String? saveContract(Contract c) {
+    c.title = c.title.trim();
+    if (c.title.isEmpty) return 'عنوان قرارداد را وارد کنید';
+    if (contracts.any((x) => x.id != c.id && x.code == c.code)) return 'کد قرارداد تکراری است';
+    final i = contracts.indexWhere((x) => x.id == c.id);
+    if (i >= 0) {
+      contracts[i] = c;
+    } else {
+      contracts.add(c);
+    }
+    _log(i >= 0 ? 'ویرایش' : 'ثبت', 'قرارداد ${c.title}');
+    _commit();
+    return null;
+  }
+
+  String? removeContract(String id) {
+    if (vouchers.any((v) => v.lines.any((l) => l.tafsiliId == id))) return 'برای این قرارداد سند ثبت شده است';
+    contracts.removeWhere((c) => c.id == id);
+    _commit();
+    return null;
+  }
+
+  // ---------------------------------------------------------------- تفصیلی در تفصیلی
+
+  List<SubTafsili> subsOf(String? tafsiliId) => subTafsilis.where((x) => x.tafsiliId == tafsiliId).toList()..sort((a, b) => a.code.compareTo(b.code));
+  SubTafsili? subTafsili(String? id) => subTafsilis.where((x) => x.id == id).firstOrNull;
+
+  String? saveSubTafsili(SubTafsili x) {
+    x.name = x.name.trim();
+    if (x.name.isEmpty) return 'نام دفتر را وارد کنید';
+    if (subTafsilis.any((o) => o.id != x.id && o.tafsiliId == x.tafsiliId && (o.code == x.code || o.name == x.name))) return 'کد یا نام تکراری است';
+    final i = subTafsilis.indexWhere((o) => o.id == x.id);
+    if (i >= 0) {
+      subTafsilis[i] = x;
+    } else {
+      subTafsilis.add(x);
+    }
+    _commit();
+    return null;
+  }
+
+  String? removeSubTafsili(String id) {
+    if (vouchers.any((v) => v.lines.any((l) => l.subId == id))) return 'این دفتر در اسناد استفاده شده است';
+    subTafsilis.removeWhere((x) => x.id == id);
+    _commit();
+    return null;
+  }
+
+  /// Balance (debit positive) and turnover of each sub-account of [tafsiliId].
+  List<(SubTafsili, int, int)> subBalances(String tafsiliId, {DateTime? to}) => [
+        for (final x in subsOf(tafsiliId))
+          (
+            x,
+            vouchers.where((v) => to == null || !v.date.isAfter(to)).expand((v) => v.lines).where((l) => l.subId == x.id).fold<int>(0, (a, l) => a + l.debit),
+            vouchers.where((v) => to == null || !v.date.isAfter(to)).expand((v) => v.lines).where((l) => l.subId == x.id).fold<int>(0, (a, l) => a + l.credit),
+          ),
+      ];
+
   bool isLocked(String key) => docMeta[key]?.locked ?? false;
+
+  /// «قفل اسناد»: locks (or unlocks) every document numbered [from]..[to].
+  int lockDocRange(int from, int to, {bool lock = true}) {
+    var n = 0;
+    for (final k in docKeys.toList()) {
+      final no = docNumberOf(k);
+      if (no == null || no < from || no > to) continue;
+      meta(k).locked = lock;
+      n++;
+    }
+    lockRanges.removeWhere((r) => r.$1 == from && r.$2 == to);
+    if (lock) lockRanges.add((from, to, DateTime.now(), currentUser.name));
+    _log(lock ? 'قفل' : 'باز کردن قفل', 'اسناد $from تا $to ($n سند)');
+    _commit();
+    return n;
+  }
+
+  /// Highest locked document number range.
+  int get lastLockedNo => lockRanges.fold<int>(0, (a, r) => r.$2 > a ? r.$2 : a);
 
   void saveVoucher(Voucher v) {
     _touchDoc('v:${v.id}');
@@ -3138,6 +3497,7 @@ class AppStore extends ChangeNotifier {
       TafsiliKind.person => person(l.tafsiliId)?.name ?? '',
       TafsiliKind.product => product(l.tafsiliId)?.name ?? '',
       TafsiliKind.incomeCat || TafsiliKind.expenseCat => category(l.tafsiliId)?.name ?? '',
+      TafsiliKind.contract => contract(l.tafsiliId)?.title ?? '',
       TafsiliKind.none => '',
     };
   }
@@ -3149,7 +3509,7 @@ class AppStore extends ChangeNotifier {
     var b = settings.openingOther[moeenCode] ?? 0;
     for (final v in vouchers) {
       for (final l in v.lines) {
-        if (l.moeen != moeenCode || (m.hasEntity && l.tafsiliId != null)) continue;
+        if (l.moeen != moeenCode || (!m.freeLedger && l.tafsiliId != null)) continue;
         b += m.debitNature ? l.debit - l.credit : l.credit - l.debit;
       }
     }
@@ -3907,12 +4267,12 @@ class AppStore extends ChangeNotifier {
 
   /// «تهیه کپی نسخه پشتیبان»: a compressed .zip holding the data file
   /// (AES-encrypted when a backup password is set in the settings).
-  String exportBackup({String? password}) {
+  String exportBackup({String? password, String? dir}) {
     final n = DateTime.now();
     final j = Jalali.fromDateTime(n);
     final name =
         'taraz-backup-${j.format(sep: '-')}-${n.hour.toString().padLeft(2, '0')}${n.minute.toString().padLeft(2, '0')}';
-    final f = File('${Storage.userFolder.path}${Storage.sep}$name.zip');
+    final f = File('${dir ?? Storage.userFolder.path}${Storage.sep}$name.zip');
     final pass = password ?? settings.backupPassword;
     f.writeAsBytesSync(zipBackup(const JsonEncoder.withIndent(' ').convert(toJson()), password: pass), flush: true);
     return f.path;

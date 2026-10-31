@@ -31,6 +31,14 @@ String fillText(String text, Map<String, String> values) =>
 String _money(int v) => groupDigits(v);
 
 /// Builds the data of an invoice printout (فاکتور / حواله انبار).
+String _computerName() {
+  try {
+    return Platform.localHostname;
+  } catch (_) {
+    return '';
+  }
+}
+
 ReportData invoiceReportData(AppStore s, Invoice inv, {PrintDocType type = PrintDocType.invoice}) {
   final st = s.settings;
   final p = s.person(inv.personId);
@@ -135,6 +143,18 @@ ReportData invoiceReportData(AppStore s, Invoice inv, {PrintDocType type = Print
     'کد پستی خریدار': p?.info['postalCode'] ?? '',
     'نام کاربر': s.currentUser.name,
     'جمع یارانه': _money(inv.subsidyTotal),
+    'شهر خریدار': p?.info['city'] ?? '',
+    'استان خریدار': p?.info['province'] ?? '',
+    'نوع خریدار': p == null ? '' : (p.info['kind'] == 'legal' ? 'حقوقی' : 'حقیقی'),
+    'شماره پیامک خریدار': p?.phone ?? '',
+    'عنوان معین خریدار': p == null ? '' : 'اشخاص',
+    'مرکز اسناد': s.docMeta['inv:${inv.id}']?.center ?? '',
+    'نام کامپیوتر': _computerName(),
+    'جمع خدمات': _money(inv.lines.where((l) => l.productId == null).fold<int>(0, (a, l) => a + l.total)),
+    'جمع مالیات خدمات': _money(inv.lines.where((l) => l.productId == null).fold<int>(0, (a, l) => a + inv.taxOf(l))),
+    'جمع عوارض خدمات': _money(inv.lines.where((l) => l.productId == null).fold<int>(0, (a, l) => a + inv.dutyOf(l))),
+    'شماره مالیاتی': inv.info['taxNo'] ?? '',
+    'شماره مالیاتی مرجع': inv.info['refTaxNo'] ?? '',
   };
   final rows = <Map<String, String>>[];
   var i = 0;
@@ -187,6 +207,10 @@ ReportData invoiceReportData(AppStore s, Invoice inv, {PrintDocType type = Print
       'جمع ردیف با مالیات': _money(inv.netOf(l) + inv.taxOf(l) + inv.dutyOf(l)),
       'سریال': l.serials.join('، '),
       'مشخصه': l.variant,
+      'نام لاتین کالا': pr?.info['latin'] ?? '',
+      'واحد لاتین': pr?.info['unitLatin'] ?? '',
+      'شناسه کالا': pr?.info['taxId'] ?? '',
+      'انباردار': s.warehouse(l.warehouseId)?.keeper ?? '',
     });
   }
   return ReportData(fields: fields, rows: rows, title: '$title ${inv.number}');

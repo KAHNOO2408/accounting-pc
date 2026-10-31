@@ -160,6 +160,7 @@ class _TxnDialogState extends State<TxnDialog> {
     } else if (_type == TxnType.transfer && (_toAccount == null || _toAccount == _account)) {
       err = 'حساب مقصد معتبر نیست';
     }
+    err ??= _isEdit ? store.docRefusal('txn:${widget.edit!.id}', 'e') : (store.canDoc('receipt', 'n') ? null : 'شما مجوز ثبت دریافت و پرداخت را ندارید (دسترسی اسناد)');
     if (err != null) {
       setState(() => _err = err);
       return false;
@@ -192,6 +193,8 @@ class _TxnDialogState extends State<TxnDialog> {
   }
 
   Future<void> _delete() async {
+    final refused = StoreScope.read(context).docRefusal('txn:${widget.edit!.id}', 'd');
+    if (refused != null) return toast(context, refused, error: true);
     final ok = await confirm(context, 'حذف تراکنش', 'این تراکنش حذف شود؟');
     if (!ok || !mounted) return;
     StoreScope.read(context).removeTxn(widget.edit!.id);

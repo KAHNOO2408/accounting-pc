@@ -97,6 +97,30 @@ class BookRegistry {
     if (!books.any((b) => b.id == current && !b.deleted)) current = 'main';
   }
 
+  /// «بازیابی دفاتر گم شده»: book folders with data that the list lost.
+  List<String> lostBookIds() {
+    final d = Directory('${base.path}${Storage.sep}books');
+    if (!d.existsSync()) return const [];
+    return [
+      for (final x in d.listSync().whereType<Directory>())
+        if (!books.any((b) => b.id == x.path.split(Storage.sep).last) && Storage(x).dataFile.existsSync()) x.path.split(Storage.sep).last,
+    ]..sort();
+  }
+
+  /// Puts a lost book back in the list (its title from its own data).
+  BookInfo recoverBook(String id) {
+    final s = open(id);
+    final y = Jalali.fromDateTime(s.settings.openingDate ?? DateTime.now()).year;
+    final info = BookInfo(
+      id: id,
+      title: s.settings.businessName.isEmpty ? 'دفتر بازیابی شده $id' : '${s.settings.businessName} $y (بازیابی شده)',
+      start: s.settings.openingDate,
+    );
+    books.add(info);
+    save();
+    return info;
+  }
+
   void save() {
     if (!base.existsSync()) base.createSync(recursive: true);
     _file.writeAsStringSync(const JsonEncoder.withIndent(' ').convert({'current': current, 'books': books.map((b) => b.toJson()).toList()}));
@@ -200,7 +224,7 @@ class BookRegistry {
     }
     final other = <String, int>{};
     for (final m in allMoeens) {
-      if (m.hasEntity || m.code == mCapital) continue;
+      if (!m.freeLedger || m.code == mCapital) continue;
       if (m.side == Side.income || m.side == Side.expense) continue;
       final d = dr[m.code] ?? 0;
       final b = m.debitNature ? d : -d;

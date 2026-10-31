@@ -793,6 +793,9 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
       final ids = [for (final l in lines) if (l.productId != null) l.productId];
       if (ids.toSet().length != ids.length) err = 'ثبت کالای تکراری در فاکتور مجاز نیست (تنظیمات فاکتور)';
     }
+    final prev = _saved ?? widget.edit;
+    if (err == null && prev != null) err = store.docRefusal('inv:${prev.id}', 'e');
+    if (err == null && prev == null && !store.canDoc(_proforma ? 'proforma' : _kind.name, 'n')) err = 'شما مجوز ثبت این نوع فاکتور را ندارید (دسترسی اسناد)';
     if (err == null) {
       final old = {for (final l in (_saved ?? widget.edit)?.lines ?? const <InvoiceLine>[]) store.whId(l.warehouseId)};
       final bad = lines.where((l) => l.productId != null && !old.contains(store.whId(l.warehouseId)) && !store.canUseWarehouse(l.warehouseId)).firstOrNull;
@@ -1076,6 +1079,8 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   }
 
   Future<void> _delete() async {
+    final refused = StoreScope.read(context).docRefusal('inv:${widget.edit!.id}', 'd');
+    if (refused != null) return toast(context, refused, error: true);
     final ok = await confirm(context, 'حذف فاکتور', 'این فاکتور و ثبت‌های مالی و انبار آن حذف شود؟');
     if (!ok || !mounted) return;
     StoreScope.read(context).removeInvoice(widget.edit!.id);

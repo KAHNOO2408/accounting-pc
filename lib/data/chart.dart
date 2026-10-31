@@ -8,7 +8,7 @@
 enum Side { asset, liability, equity, income, expense }
 
 /// What kind of detail (تفصیلی) a ledger (معین) is linked to.
-enum TafsiliKind { none, cash, bank, person, product, incomeCat, expenseCat }
+enum TafsiliKind { none, cash, bank, person, product, incomeCat, expenseCat, contract }
 
 class Moeen {
   final String code;
@@ -32,6 +32,13 @@ class Moeen {
 
   /// Linked to an entity (cash box, bank, person…) whose own balance tracks it.
   bool get hasEntity => kind != TafsiliKind.none;
+
+  /// A detail account must be chosen on each row (not for categories and
+  /// «پیمان» ledgers, where it is optional).
+  bool get tafsiliRequired => hasEntity && kind != TafsiliKind.incomeCat && kind != TafsiliKind.expenseCat && kind != TafsiliKind.contract;
+
+  /// Kept as one balance in the general reports (with or without detail).
+  bool get freeLedger => kind == TafsiliKind.none || kind == TafsiliKind.contract;
 }
 
 class Kol {
@@ -130,7 +137,7 @@ const List<Kol> chart = [
     Moeen(mPrepayments, 'پیش پرداختها', TafsiliKind.none, '110650'),
     Moeen(mVatReceivable, 'مالیات و عوارض ارزش افزوده خرید'),
     Moeen('1170', 'سربار واقعی سربار جذبی', TafsiliKind.none, '110700'),
-    Moeen('1175', 'پیمان در دست اجرا', TafsiliKind.none, '110750'),
+    Moeen('1175', 'پیمان در دست اجرا', TafsiliKind.contract, '110750'),
     Moeen('5090', 'اسناد ارزی وصولی نزد بانکهای ارزی', TafsiliKind.none, '500900'),
     Moeen('6060', 'اسناد ارزی وصولی نزد صندوق ارزی', TafsiliKind.none, '600600'),
     Moeen('7070', 'پیش پرداختهای ارزی', TafsiliKind.none, '700700'),
@@ -138,6 +145,7 @@ const List<Kol> chart = [
   Kol('12', 'دارایی های غیر جاری', Side.asset, [
     Moeen('1210', 'سرمایه گذاریهای بلند مدت', TafsiliKind.none, '120100'),
     Moeen(mAssets, 'اموال و ماشین آلات', TafsiliKind.none, '120200'),
+    Moeen('1230', 'دارایی های نامشهود', TafsiliKind.none, '120300'),
     Moeen('1240', 'سایر دارایی ها', TafsiliKind.none, '120400'),
     Moeen(mDeposits, 'سپرده ها'),
     Moeen('1250', 'حسابهای انتظامی', TafsiliKind.none, '120500'),
@@ -155,7 +163,7 @@ const List<Kol> chart = [
     Moeen(mOtherControl, 'سایر حسابهای کنترلی'),
     Moeen('2060', 'اعتبارات', TafsiliKind.none, '200600'),
     Moeen('2065', 'ذخیره مطالبات مشکوک الوصول', TafsiliKind.none, '200650'),
-    Moeen('2070', 'صورت وضعیت های تایید شده پیمان در دست اجرا', TafsiliKind.none, '200700'),
+    Moeen('2070', 'صورت وضعیت های تایید شده پیمان در دست اجرا', TafsiliKind.contract, '200700'),
     Moeen('1260', 'طرف حسابهای انتظامی', TafsiliKind.none, '120600'),
     Moeen('6050', 'اسناد ارزی پرداختنی بانکهای ارزی', TafsiliKind.none, '600500'),
     Moeen('7060', 'پیش دریافتهای ارزی', TafsiliKind.none, '700600'),
@@ -167,6 +175,7 @@ const List<Kol> chart = [
     Moeen('2140', 'سایر ذخایر', TafsiliKind.none, '210400'),
     Moeen(mOtherLiab, 'سایر بدهی ها', TafsiliKind.none, '210500'),
     Moeen(mAccDepreciation, 'ذخیره استهلاک اموال و ماشین آلات', TafsiliKind.none, '210800'),
+    Moeen('2185', 'استهلاک انباشته دارایی های نامشهود', TafsiliKind.none, '210850'),
   ]),
   Kol('30', 'حقوق صاحبان سرمایه', Side.equity, [
     Moeen(mCapital, 'سرمایه', TafsiliKind.none, '300100'),
@@ -181,12 +190,13 @@ const List<Kol> chart = [
     Moeen(mIncome, 'درآمدها', TafsiliKind.incomeCat, '400200'),
     Moeen(mOtherIncome, 'سایر درآمدها'),
     Moeen(mFxGain, 'درآمد ناشی از نوسانات نرخ ارز'),
-    Moeen('4030', 'درآمد پیمان در دست اجرا', TafsiliKind.none, '400300'),
+    Moeen('4030', 'درآمد پیمان در دست اجرا', TafsiliKind.contract, '400300'),
     Moeen('4040', 'فروش موجودی کالای متفرقه', TafsiliKind.none, '400400'),
     Moeen(mServiceSales, 'فروش خدمات', TafsiliKind.none, '400500'),
     Moeen(mSales, 'فروش موجودی کالا', TafsiliKind.product, '400600'),
     Moeen(mPurchaseReturn, 'برگشت از خرید موجودی کالا', TafsiliKind.none, '400700'),
     Moeen('4080', 'فروش اموال و ماشین آلات', TafsiliKind.none, '400800'),
+    Moeen('4085', 'فروش دارایی های نامشهود', TafsiliKind.none, '400850'),
   ]),
   Kol('50', 'هزینه ها و قیمت تمام شده', Side.expense, [
     Moeen(mExpense, 'هزینه ها', TafsiliKind.expenseCat, '500050'),
@@ -195,11 +205,13 @@ const List<Kol> chart = [
     Moeen('5010', 'هزینه های توزیع و فروش', TafsiliKind.none, '500100'),
     Moeen(mSalaryExpense, 'هزینه حقوق و دستمزد'),
     Moeen(mInsuranceExpense, 'هزینه بیمه سهم کارفرما'),
-    Moeen('5025', 'قیمت تمام شده درآمد پیمان در دست اجرا', TafsiliKind.none, '500250'),
+    Moeen('5025', 'قیمت تمام شده درآمد پیمان در دست اجرا', TafsiliKind.contract, '500250'),
     Moeen('5030', 'انحراف جذب سربار در قیمت تمام شده', TafsiliKind.none, '500300'),
     Moeen('5035', 'قیمت تمام شده فروش موجودی کالای متفرقه', TafsiliKind.none, '500350'),
     Moeen(mCogs, 'قیمت تمام شده کالاهای فروخته شده از موجودی کالا', TafsiliKind.product, '500400'),
     Moeen('5045', 'قیمت تمام شده برگشت از خرید موجودی کالا', TafsiliKind.none, '500450'),
+    Moeen('5046', 'قیمت تمام شده دارایی های نامشهود فروش رفته', TafsiliKind.none, '500460'),
+    Moeen('5076', 'هزینه استهلاک دارایی های نامشهود', TafsiliKind.none, '500760'),
     Moeen(mSaleDiscount, 'تخفیف از فروش', TafsiliKind.none, '500500'),
     Moeen(mSalesReturn, 'برگشت از فروش موجودی کالا', TafsiliKind.product, '500550'),
     Moeen('5060', 'قیمت تمام شده اموال و ماشین آلات', TafsiliKind.none, '500600'),

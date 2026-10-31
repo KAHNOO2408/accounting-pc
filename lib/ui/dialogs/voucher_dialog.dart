@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +6,6 @@ import '../../core/format.dart';
 import '../../core/jalali.dart';
 import '../../data/chart.dart';
 import '../../data/models.dart';
-import '../../data/storage.dart';
 import '../../data/store.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
@@ -31,6 +28,7 @@ List<(String, String)> tafsiliOptions(AppStore store, Moeen m) => switch (m.kind
       TafsiliKind.product => [for (final p in store.productsSorted) (p.id, p.name)],
       TafsiliKind.incomeCat => [for (final c in store.categoriesOf(CategoryKind.income)) (c.id, c.name)],
       TafsiliKind.expenseCat => [for (final c in store.categoriesOf(CategoryKind.expense)) (c.id, c.name)],
+      TafsiliKind.contract => [for (final c in store.contracts) (c.id, '${c.code} - ${c.title}')],
       TafsiliKind.none => const [],
     };
 
@@ -92,16 +90,6 @@ class _VoucherDialogState extends State<VoucherDialog> {
   int get _dr => _lines.fold(0, (s, l) => s + l.debit);
   int get _cr => _lines.fold(0, (s, l) => s + l.credit);
 
-  File _tempFile(AppStore store) => File('${store.storage.dir.path}${Storage.sep}voucher_draft.json');
-
-  Map<String, dynamic> _draftJson() => {
-        'desc': _desc.text,
-        'archive': _archive.text,
-        'followDesc': _followDesc.text,
-        'date': _date.toIso8601String(),
-        'lines': _lines.map((l) => l.toJson()).toList(),
-      };
-
   Future<void> _addOrEdit({int? index}) async {
     final r = await showDialog<VoucherLine>(
       context: context,
@@ -138,7 +126,7 @@ class _VoucherDialogState extends State<VoucherDialog> {
       final l = _lines[i];
       final m = findMoeen(l.moeen);
       if (m == null) return 'ردیف ${i + 1}: حساب معین مشخص نیست';
-      if (m.hasEntity && l.tafsiliId == null && m.kind != TafsiliKind.incomeCat && m.kind != TafsiliKind.expenseCat) {
+      if (m.tafsiliRequired && l.tafsiliId == null) {
         return 'ردیف ${i + 1}: حساب تفصیلی «${m.name}» را انتخاب کنید';
       }
     }
@@ -155,7 +143,10 @@ class _VoucherDialogState extends State<VoucherDialog> {
   }
 
   void _save() {
-    final err = _validate();
+    final st = StoreScope.read(context);
+    final err = widget.edit != null
+        ? (st.docRefusal('v:${widget.edit!.id}', 'e') ?? _validate())
+        : (st.canDoc('voucher', 'n') ? _validate() : 'شما مجوز ثبت سند حسابداری را ندارید (دسترسی اسناد)');
     if (err != null) {
       toast(context, err, error: true);
       return;
@@ -399,41 +390,57 @@ class _VoucherDialogState extends State<VoucherDialog> {
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
                 child: Row(children: [
                   OutlinedButton(
-                    onPressed: () {
-                      try {
-                        _tempFile(store).writeAsStringSync(jsonEncode(_draftJson()));
-                        toast(context, 'سند در فایل موقت ذخیره شد');
-                      } catch (e) {
-                        toast(context, 'خطا: $e', error: true);
-                      }
+                    onPressed: () async {
+                      if (_lines.isEmpty) return toast(context, 'سند ردیفی ندارد', error: true);
+                      final name = TextEditingController(text: _desc.text.trim());
+                      final ok = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('اطلاعات فایل موقت'),
+                          content: TextField(controller: name, autofocus: true, decoration: const InputDecoration(labelText: 'نام فایل موقت:')),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('انصراف F10')),
+                            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('تایید F9')),
+                          ],
+                        ),
+                      );
+                      if (ok != true || !mounted) return;
+                      store.saveTempDoc(
+                        name.text,
+                        Voucher(id: newId(), number: 0, fixedNumber: 0, date: _date, desc: _desc.text.trim(), lines: _lines.map((l) => l.copy()).toList())
+                          ..archivePath = _archive.text.trim()
+                          ..followDesc = _followDesc.text.trim(),
+                      );
+                      if (mounted) toast(context, 'سند در فایل موقت ذخیره شد');
                     },
                     child: const Text('ثبت در فایل موقت'),
                   ),
                   const SizedBox(width: 8),
                   OutlinedButton(
-                    onPressed: () {
-                      try {
-                        final f = _tempFile(store);
-                        if (!f.existsSync()) {
-                          toast(context, 'فایل موقتی وجود ندارد', error: true);
-                          return;
-                        }
-                        final j = jsonDecode(f.readAsStringSync()) as Map<String, dynamic>;
-                        setState(() {
-                          _desc.text = '${j['desc'] ?? ''}';
-                          _archive.text = '${j['archive'] ?? ''}';
-                          _followDesc.text = '${j['followDesc'] ?? ''}';
-                          final d = DateTime.tryParse('${j['date']}');
-                          if (d != null) _date = dateOnly(d);
-                          _lines
-                            ..clear()
-                            ..addAll((j['lines'] as List).whereType<Map<String, dynamic>>().map(VoucherLine.fromJson));
-                          _sel = null;
-                        });
-                        toast(context, 'فایل موقت خوانده شد');
-                      } catch (e) {
-                        toast(context, 'خطا در خواندن فایل موقت: $e', error: true);
-                      }
+                    onPressed: () async {
+                      if (store.tempDocs.isEmpty) return toast(context, 'فایل موقتی وجود ندارد', error: true);
+                      final t = await showDialog<TempDoc>(
+                        context: context,
+                        builder: (ctx) => SimpleDialog(
+                          title: const Text('لیست فایل های موقت'),
+                          children: [
+                            for (final t in store.tempDocs)
+                              SimpleDialogOption(onPressed: () => Navigator.pop(ctx, t), child: Text('${t.name}  —  ${jFormat(t.voucher.date)}  (${t.voucher.lines.length} ردیف)')),
+                          ],
+                        ),
+                      );
+                      if (t == null || !mounted) return;
+                      setState(() {
+                        _desc.text = t.voucher.desc;
+                        _archive.text = t.voucher.archivePath;
+                        _followDesc.text = t.voucher.followDesc;
+                        _date = dateOnly(t.voucher.date);
+                        _lines
+                          ..clear()
+                          ..addAll(t.voucher.lines.map((l) => l.copy()));
+                        _sel = null;
+                      });
+                      toast(context, 'فایل موقت «${t.name}» خوانده شد');
                     },
                     child: const Text('خواندن فایل موقت'),
                   ),
@@ -443,6 +450,8 @@ class _VoucherDialogState extends State<VoucherDialog> {
                   if (_isEdit) ...[
                     TextButton.icon(
                       onPressed: () async {
+                        final refused = StoreScope.read(context).docRefusal('v:${widget.edit!.id}', 'd');
+                        if (refused != null) return toast(context, refused, error: true);
                         final ok = await confirm(context, 'حذف سند', 'این سند حذف شود؟');
                         if (!ok || !mounted) return;
                         StoreScope.read(context).removeVoucher(widget.edit!.id);
@@ -507,6 +516,7 @@ class _LineDialogState extends State<_LineDialog> {
   String? _kol;
   String? _moeen;
   String? _tafsili;
+  String? _sub;
   String? _cc;
   final _desc = TextEditingController();
   final _debit = TextEditingController();
@@ -521,6 +531,7 @@ class _LineDialogState extends State<_LineDialog> {
       _moeen = l.moeen;
       _kol = findMoeen(l.moeen)?.kolCode;
       _tafsili = l.tafsiliId;
+      _sub = l.subId;
       _cc = l.costCenterId;
       _desc.text = l.desc;
       if (l.debit > 0) _debit.text = groupDigits(l.debit);
@@ -559,7 +570,7 @@ class _LineDialogState extends State<_LineDialog> {
     }
     Navigator.pop(
       context,
-      VoucherLine(moeen: _moeen!, tafsiliId: m!.hasEntity ? _tafsili : null, desc: _desc.text.trim(), debit: d, credit: c, costCenterId: _cc),
+      VoucherLine(moeen: _moeen!, tafsiliId: m!.hasEntity ? _tafsili : null, desc: _desc.text.trim(), debit: d, credit: c, costCenterId: _cc, subId: m.hasEntity && _tafsili != null ? _sub : null),
     );
   }
 
@@ -619,12 +630,27 @@ class _LineDialogState extends State<_LineDialog> {
                 label: 'حساب تفصیلی',
                 value: _tafsili,
                 items: [
-                  if (m.kind == TafsiliKind.incomeCat || m.kind == TafsiliKind.expenseCat)
+                  if (!m.tafsiliRequired)
                     const DropdownMenuItem<String?>(value: null, child: Text('—')),
                   for (final o in opts) DropdownMenuItem<String?>(value: o.$1, child: Text(o.$2)),
                 ],
-                onChanged: (v) => setState(() => _tafsili = v),
+                onChanged: (v) => setState(() {
+                  _tafsili = v;
+                  _sub = null;
+                }),
               ),
+              if (store.subsOf(_tafsili).isNotEmpty) ...[
+                const SizedBox(height: 12),
+                FieldDropdown<String?>(
+                  label: 'دفتر تفصیلی در تفصیلی',
+                  value: store.subsOf(_tafsili).any((x) => x.id == _sub) ? _sub : null,
+                  items: [
+                    const DropdownMenuItem<String?>(value: null, child: Text('—')),
+                    for (final x in store.subsOf(_tafsili)) DropdownMenuItem<String?>(value: x.id, child: Text('${x.code}  ${x.name}')),
+                  ],
+                  onChanged: (v) => setState(() => _sub = v),
+                ),
+              ],
               if (opts.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),

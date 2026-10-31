@@ -8,6 +8,7 @@ import '../../core/jalali.dart';
 import '../../data/models.dart';
 import '../../data/insurance_disk.dart';
 import '../../data/payroll.dart';
+import '../../data/pay_tables.dart';
 import '../../data/store.dart';
 import '../print.dart' show openFile, printTable;
 import '../print_designer.dart' show showLayoutPicker;
@@ -384,6 +385,23 @@ class _EmployeeDialogState extends State<_EmployeeDialog> {
               ),
             ),
         ]),
+        _section('جداول پایه پرسنل', [
+          for (final k in PayTableKind.values)
+            SizedBox(
+              width: 260,
+              child: DropdownButtonFormField<String?>(
+                isExpanded: true,
+                value: StoreScope.read(context).payTablesOf(k).any((t) => t.id == e.tables[k.name]) ? e.tables[k.name] : null,
+                decoration: InputDecoration(labelText: k.label, isDense: true),
+                items: [
+                  DropdownMenuItem<String?>(
+                      value: null, child: Text('پیش فرض (${StoreScope.read(context).payTablesOf(k).where((t) => t.isDefault).firstOrNull?.title ?? 'تنظیمات عمومی'})', overflow: TextOverflow.ellipsis)),
+                  for (final t in StoreScope.read(context).payTablesOf(k)) DropdownMenuItem<String?>(value: t.id, child: Text('${t.code} - ${t.title}', overflow: TextOverflow.ellipsis)),
+                ],
+                onChanged: (v) => setState(() => v == null ? e.tables.remove(k.name) : e.tables[k.name] = v),
+              ),
+            ),
+        ]),
         _ItemsEditor(title: 'مزایای مستمر (حق مسکن، بن، حق اولاد …)', items: e.benefits),
         const SizedBox(height: 10),
         _ItemsEditor(title: 'کسورات ثابت ماهانه', items: e.deductions, flags: false),
@@ -618,6 +636,8 @@ class _PayslipDialogState extends State<_PayslipDialog> {
       leaves: s.leavesIn(e, p),
       missions: s.missionsIn(e, p),
       loanInstallment: s.autoInstallment(e, p),
+      setup: s.paySetupOf(e),
+      once: s.payOnce.where((o) => o.periodId == p.id && o.employeeId == e.id).toList(),
     );
     void ch(String _) => setState(() {});
     Widget q(String k, String label) => _tf(c(k), label, width: 150, ltr: true, onChanged: ch);

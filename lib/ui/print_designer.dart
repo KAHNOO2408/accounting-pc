@@ -554,7 +554,12 @@ class _LayoutPickerState extends State<_LayoutPicker> {
 
   String get _v => hasVariants(widget.type) ? widget.variant : '';
 
-  List<ReportLayout> _list(AppStore s) => s.layoutsOf(widget.type, variant: _v);
+  List<ReportLayout> _list(AppStore s) {
+    final all = s.layoutsOf(widget.type, variant: _v);
+    final denied = s.currentUser.admin ? const <String>{} : s.currentUser.deniedReports;
+    final ok = all.where((l) => !denied.contains(l.id)).toList();
+    return ok.isEmpty ? all.take(1).toList() : ok; // «دسترسی گزارشات»
+  }
 
   ReportLayout _current(AppStore s) => _list(s).where((x) => x.id == _id).firstOrNull ?? s.defaultLayout(widget.type, variant: _v);
 

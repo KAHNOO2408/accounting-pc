@@ -261,7 +261,10 @@ class VoucherLine {
   /// «مرکز هزینه (رکورد)» of the row.
   String? costCenterId;
 
-  VoucherLine({required this.moeen, this.tafsiliId, this.desc = '', this.debit = 0, this.credit = 0, this.currencyId, this.fx = 0, this.costCenterId});
+  /// «دفاتر تفصیلی در تفصیلی»: the sub-account under [tafsiliId].
+  String? subId;
+
+  VoucherLine({required this.moeen, this.tafsiliId, this.desc = '', this.debit = 0, this.credit = 0, this.currencyId, this.fx = 0, this.costCenterId, this.subId});
 
   VoucherLine copy() => VoucherLine.fromJson(toJson());
 
@@ -274,9 +277,11 @@ class VoucherLine {
         if (currencyId != null) 'currencyId': currencyId,
         if (fx != 0) 'fx': fx,
         if (costCenterId != null) 'costCenterId': costCenterId,
+        if (subId != null) 'subId': subId,
       };
 
   factory VoucherLine.fromJson(Map<String, dynamic> j) => VoucherLine(
+        subId: _sn(j['subId']),
         costCenterId: _sn(j['costCenterId']),
         moeen: _s(j['moeen']),
         tafsiliId: _sn(j['tafsiliId']),
@@ -1904,6 +1909,13 @@ class AppUser {
   /// («حذف دسترسی»); the rest are shared («دسترسی کامل»).
   Set<String> privateKinds;
 
+  /// «دسترسی اسناد»: document type → allowed operations ('n' ثبت، 'e'
+  /// ویرایش، 'd' حذف). A type missing from the map is fully allowed.
+  Map<String, String> docAccess = {};
+
+  /// «دسترسی گزارشات»: print / report layouts (ids) this user may not use.
+  Set<String> deniedReports = {};
+
   AppUser({
     required this.id,
     required this.code,
@@ -1936,6 +1948,8 @@ class AppUser {
         if (warehouses.isNotEmpty) 'warehouses': warehouses.toList(),
         if (accounts.isNotEmpty) 'accounts': accounts.toList(),
         if (privateKinds.isNotEmpty) 'private': privateKinds.toList(),
+        if (docAccess.isNotEmpty) 'docAccess': docAccess,
+        if (deniedReports.isNotEmpty) 'deniedReports': deniedReports.toList(),
       };
 
   factory AppUser.fromJson(Map<String, dynamic> j) => AppUser(
@@ -1951,8 +1965,87 @@ class AppUser {
         warehouses: {for (final x in (j['warehouses'] is List ? j['warehouses'] as List : const [])) '$x'},
         accounts: {for (final x in (j['accounts'] is List ? j['accounts'] as List : const [])) '$x'},
         privateKinds: {for (final x in (j['private'] is List ? j['private'] as List : const [])) '$x'},
+      )
+        ..docAccess = j['docAccess'] is Map ? {for (final e in (j['docAccess'] as Map).entries) '${e.key}': '${e.value}'} : {}
+        ..deniedReports = {for (final x in (j['deniedReports'] is List ? j['deniedReports'] as List : const [])) '$x'};
+}
+
+/// «فایل های موقت»: a voucher kept as a draft until «تایید و ثبت سند».
+class TempDoc {
+  String id;
+  String name;
+  DateTime created;
+  String user;
+  Voucher voucher;
+  TempDoc({required this.id, required this.name, required this.created, this.user = '', required this.voucher});
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'created': created.toIso8601String(), 'user': user, 'voucher': voucher.toJson()};
+  factory TempDoc.fromJson(Map<String, dynamic> j) => TempDoc(
+        id: _s(j['id']),
+        name: _s(j['name']),
+        created: DateTime.tryParse(_s(j['created'])) ?? DateTime.now(),
+        user: _s(j['user']),
+        voucher: Voucher.fromJson(j['voucher'] is Map<String, dynamic> ? j['voucher'] as Map<String, dynamic> : const {}),
       );
 }
+
+/// «لیست قرارداد»: a contract (پیمان) — the detail account of the «پیمان در
+/// دست اجرا» ledgers.
+class Contract {
+  String id;
+  int code;
+  String title;
+  String? personId; // کارفرما
+  int amount; // مبلغ قرارداد
+  DateTime? start;
+  DateTime? end;
+  String note;
+  Contract({required this.id, required this.code, required this.title, this.personId, this.amount = 0, this.start, this.end, this.note = ''});
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'code': code,
+        'title': title,
+        'personId': personId,
+        'amount': amount,
+        if (start != null) 'start': _d(start!),
+        if (end != null) 'end': _d(end!),
+        if (note.isNotEmpty) 'note': note,
+      };
+  factory Contract.fromJson(Map<String, dynamic> j) => Contract(
+        id: _s(j['id']),
+        code: _i(j['code']),
+        title: _s(j['title']),
+        personId: _sn(j['personId']),
+        amount: _i(j['amount']),
+        start: _pn(j['start']),
+        end: _pn(j['end']),
+        note: _s(j['note']),
+      );
+}
+
+/// «دفاتر تفصیلی در تفصیلی»: a sub-account under a detail account
+/// ([tafsiliId], any kind: a person, a bank, a product…).
+class SubTafsili {
+  String id;
+  String tafsiliId;
+  int code;
+  String name;
+  String note;
+  SubTafsili({required this.id, required this.tafsiliId, required this.code, required this.name, this.note = ''});
+  Map<String, dynamic> toJson() => {'id': id, 'tafsiliId': tafsiliId, 'code': code, 'name': name, if (note.isNotEmpty) 'note': note};
+  factory SubTafsili.fromJson(Map<String, dynamic> j) =>
+      SubTafsili(id: _s(j['id']), tafsiliId: _s(j['tafsiliId']), code: _i(j['code']), name: _s(j['name']), note: _s(j['note']));
+}
+
+/// Document types of «دسترسی اسناد».
+const docAccessTypes = [
+  ('sale', 'فاکتور فروش'),
+  ('purchase', 'فاکتور خرید'),
+  ('saleReturn', 'برگشت از فروش'),
+  ('purchaseReturn', 'برگشت از خرید'),
+  ('proforma', 'پیش فاکتور'),
+  ('voucher', 'سند حسابداری'),
+  ('receipt', 'دریافت و پرداخت'),
+];
 
 /// «شعبه»: a branch of the business owning a group of warehouses.
 class Branch {

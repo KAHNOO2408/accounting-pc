@@ -30,7 +30,7 @@ class BalanceSheetPage extends StatelessWidget {
       ..add(('حساب‌های دریافتنی (طلب از اشخاص)', store.totalReceivable))
       ..add(('اسناد دریافتنی (چک‌های در جریان)', store.pendingChequesIn))
       ..add(('موجودی کالا (به قیمت تمام‌شده)', store.stockValue()));
-    for (final m in allMoeens.where((m) => !m.hasEntity)) {
+    for (final m in allMoeens.where((m) => m.freeLedger)) {
       if (m.side != Side.asset && m.side != Side.liability) continue;
       final v = store.ledgerBalance(m.code);
       if (v == 0) continue;

@@ -11,6 +11,7 @@ import '../theme.dart';
 import '../widgets/common.dart';
 import 'branch_dialogs.dart' show showUserAccess;
 import 'sakan_admin_dialogs.dart' show showShareAccounts;
+import 'sakan_more_dialogs.dart' show showDocAccess, showReportAccess, showCopyBookAccess;
 
 Widget _head(BuildContext context, List<Widget> cells) {
   final th = Theme.of(context);
@@ -262,6 +263,22 @@ class _UsersWindowState extends State<_UsersWindow> {
                     btn('دسترسی شعب', Icons.storefront_outlined, () => _access('branches')),
                     btn('دسترسی انبار ها', Icons.warehouse_outlined, () => _access('warehouses')),
                     btn('دسترسی حسابها', Icons.account_balance_outlined, () => _access('accounts')),
+                    btn('دسترسی اسناد', Icons.description_outlined, () async {
+                      if (!_needUser(s)) return;
+                      await showDocAccess(context, _selected(s)!);
+                      if (mounted) setState(() {});
+                    }),
+                    btn('دسترسی گزارشات', Icons.summarize_outlined, () async {
+                      if (!_needUser(s)) return;
+                      final items = <String>{
+                        for (final (tab, list) in ribbonCatalog())
+                          for (final i in list)
+                            if (tab == 'گزارشات' || i.contains('گزارش')) i,
+                      }.toList();
+                      await showReportAccess(context, _selected(s)!, items);
+                      if (mounted) setState(() {});
+                    }),
+                    btn('کپی دسترسی دفتر مالی', Icons.library_books_outlined, () => showCopyBookAccess(context)),
                     btn('اشتراک گذاری حسابهای تعریف شده', Icons.share_outlined, () async {
                       if (!_needUser(s)) return;
                       await showShareAccounts(context, _selected(s)!);

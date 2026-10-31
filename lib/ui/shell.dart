@@ -30,6 +30,9 @@ import 'dialogs/opening_dialog.dart';
 import 'dialogs/list_import_dialogs.dart';
 import 'dialogs/branch_dialogs.dart';
 import 'dialogs/sakan_admin_dialogs.dart';
+import 'dialogs/sakan_more_dialogs.dart';
+import 'dialogs/pay_tables_dialogs.dart';
+import '../data/pay_tables.dart' show PayTableKind;
 import '../data/list_import.dart' show ImportKind;
 import 'dialogs/scale_dialogs.dart';
 import 'dialogs/settle_dialogs.dart';
@@ -440,6 +443,16 @@ final List<_Tab> _tabs = [
       _Item('تعیین شیفت', Icons.schedule_rounded, _blue, run: (c, _) => showShifts(c)),
       _Item('گروه حقوق', Icons.groups_outlined, _green, run: (c, _) => showPayGroups(c)),
     ]),
+    _Group('جداول پایه', [
+      _Item('فرم جداول پایه پرسنل', Icons.table_chart_outlined, _violet, run: (c, _) => showPayBaseTables(c)),
+      _Item('جدول حقوق', Icons.payments_outlined, _green, run: (c, _) => showPayTables(c, PayTableKind.salary)),
+      _Item('جدول بیمه', Icons.health_and_safety_outlined, _blue, run: (c, _) => showPayTables(c, PayTableKind.insurance)),
+      _Item('جدول مالیات', Icons.account_balance_outlined, _red, run: (c, _) => showPayTables(c, PayTableKind.tax)),
+      _Item('جدول معافیت های مالیاتی', Icons.percent_rounded, _red, run: (c, _) => showPayTables(c, PayTableKind.taxExemption)),
+      _Item('مزایای غیر نقدی غیر مستمر', Icons.card_giftcard_outlined, _amber, run: (c, _) => showPayOnce(c, exempt: false)),
+      _Item('هزینه های غیر مستمر معاف از مالیات', Icons.money_off_rounded, _amber, run: (c, _) => showPayOnce(c, exempt: true)),
+      _Item('مالیات بر درآمد', Icons.receipt_long_outlined, _red, run: (c, _) => showIncomeTax(c)),
+    ]),
     _Group('گزارش و تنظیم', [
       _Item('گزارشات حقوق، بیمه و مالیات', Icons.summarize_outlined, _violet, run: (c, _) => showPayrollWindow(c, tab: 5)),
       _Item('تنظیمات بیمه و مالیات', Icons.tune_rounded, _slate, run: (c, _) => showPayrollWindow(c, tab: 6)),
@@ -488,10 +501,17 @@ final List<_Tab> _tabs = [
       _Item('سطل بازیافت', Icons.delete_outline_rounded, _red, run: (c, _) => showRecycleBin(c)),
       _Item('معرفی شعب', Icons.store_mall_directory_outlined, _blue, run: (c, _) => showBranches(c)),
       _Item('انتخاب شعبه', Icons.storefront_outlined, _blue, run: (c, _) => showSelectBranch(c)),
+      _Item('گزارش فروش به تفکیک شعبه', Icons.store_outlined, _blue, run: (c, _) => showBranchSales(c)),
       _Item('انتقال گزارشات از سایر دفاتر', Icons.drive_file_move_outline, _violet, run: (c, _) => showImportReportsFromBook(c)),
       _Item('جابجایی دفتر تفصیلی', Icons.swap_vert_circle_outlined, _amber, run: (c, _) => showMoveTafsili(c)),
       _Item('تصحیح وضعیت چک ها', Icons.rule_rounded, _red, run: (c, _) => showFixChequeStatus(c)),
       _Item('تعیین حصه بلند مدت دفاتر موجودی کالا', Icons.inventory_rounded, _blue, run: (c, _) => showStockLongTerm(c)),
+      _Item('قفل اسناد', Icons.lock_clock_outlined, _red, run: (c, _) => showDocLock(c)),
+      _Item('دفاتر تفصیلی در تفصیلی', Icons.account_tree_rounded, _amber, run: (c, _) => showSubTafsilis(c)),
+      _Item('لیست قرارداد', Icons.handshake_outlined, _violet, run: (c, _) => showContracts(c)),
+      _Item('فایل های موقت', Icons.drafts_outlined, _slate, run: (c, _) => showTempDocs(c)),
+      _Item('تنظیمات پشتیبان گیری خودکار', Icons.backup_outlined, _green, run: (c, _) => showAutoBackupSettings(c)),
+      _Item('بازیابی دفاتر گم شده', Icons.restore_page_outlined, _green, run: (c, _) => showRecoverBooks(c)),
     ]),
     _Group('متفرقه', [
       _Item('کدبندی دفاتر کل و معین', Icons.account_tree_outlined, _blue, run: (c, _) => showChartCoding(c)),
@@ -618,8 +638,13 @@ class _ShellState extends State<Shell> {
         }
       }
     });
-    _autoTimer = Timer.periodic(const Duration(minutes: 5), (_) {
-      if (mounted) unawaited(runAutoSms(StoreScope.read(context)));
+    _autoTimer = Timer.periodic(const Duration(minutes: 1), (t) {
+      if (!mounted) return;
+      final s = StoreScope.read(context);
+      if (t.tick % 5 == 0) unawaited(runAutoSms(s));
+      // «پشتیبان گیری خودکار» at the set times
+      final files = s.runScheduledBackups();
+      if (files.isNotEmpty) toast(context, 'پشتیبان خودکار ذخیره شد: ${files.join('، ')}');
     });
     // «شبکه»: pick up what other computers saved
     if (Storage.networked) {

@@ -146,13 +146,13 @@ class _SplitDialogState extends State<_SplitDialog> {
     String? err;
     if (_src == null) {
       err = 'عنوان حساب ${sh ? 'سود قابل تقسیم' : 'مبدا'} را انتخاب کنید';
-    } else if (findMoeen(_src)!.hasEntity && _srcTaf == null) {
+    } else if (findMoeen(_src)!.tafsiliRequired && _srcTaf == null) {
       err = 'تفصیلی حساب مبدا را انتخاب کنید';
     } else if (_totalV <= 0) {
       err = 'مبلغ قابل تقسیم را وارد کنید';
     } else if (rows.isEmpty) {
       err = 'حداقل یک ردیف با مبلغ وارد کنید';
-    } else if (rows.any((r) => sh ? r.tafsili == null : (r.moeen == null || (findMoeen(r.moeen)!.hasEntity && r.tafsili == null)))) {
+    } else if (rows.any((r) => sh ? r.tafsili == null : (r.moeen == null || (findMoeen(r.moeen)!.tafsiliRequired && r.tafsili == null)))) {
       err = sh ? 'صاحب سهم هر ردیف را انتخاب کنید' : 'عنوان حساب هر ردیف را کامل انتخاب کنید';
     } else if (sum > _totalV) {
       err = 'جمع ردیف‌ها (${groupDigits(sum)}) از مبلغ قابل تقسیم بیشتر است';

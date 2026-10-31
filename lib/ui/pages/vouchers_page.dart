@@ -339,6 +339,8 @@ class _VouchersPageState extends State<VouchersPage> {
   Future<void> _delete(AppStore s, _Doc? d) async {
     if (d == null) return toast(context, 'سندی انتخاب نشده', error: true);
     if (d.meta.locked) return toast(context, 'سند ${d.number} قفل است', error: true);
+    final refused = s.docRefusal(d.key, 'd');
+    if (refused != null) return toast(context, refused, error: true);
     final ok = await confirm(context, 'حذف سند', 'سند شماره ${d.number} حذف شود؟');
     if (!ok || !mounted) return;
     final id = d.key.substring(d.key.indexOf(':') + 1);

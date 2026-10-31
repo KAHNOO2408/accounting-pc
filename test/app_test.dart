@@ -24,6 +24,7 @@ import 'package:taraz/data/tax_report.dart';
 import 'package:taraz/data/tools.dart';
 import 'package:taraz/data/merge.dart';
 import 'package:taraz/data/list_import.dart';
+import 'package:taraz/data/pay_tables.dart';
 import 'package:taraz/ui/report/doc_reports.dart';
 import 'package:taraz/data/report_layout.dart' as rl;
 import 'package:taraz/data/insurance_disk.dart';
@@ -2978,5 +2979,137 @@ void main() {
     final tb = sampleDocData(s, PrintDocType.trialBalance);
     expect(tb.fields['جمع مانده بدهکار'], tb.fields['جمع مانده بستانکار']);
     expect(sampleDocData(s, PrintDocType.salaryList).rows, isNotEmpty);
+  });
+
+  test('Sakan payroll base tables: salary, insurance, tax, deductions, non-cash, exemptions', () {
+    final s = _tempStore();
+    final e = Employee(id: newId(), personId: '', firstName: 'Sara', lastName: 'Ahmadi', personnelCode: '2001', monthlyWage: 30000000);
+    expect(s.saveEmployee(e), isNull);
+    final p = s.addPayPeriod(1405, 7);
+    s.savePayslip(s.payslipOf(p, e)..overtimeHours = 10);
+    final plain = s.payResult(p, e);
+
+    // جدول حقوق: fixed overtime rate; جدول بیمه: 5% worker share; جدول مالیات: 10% above 10M
+    final sal = PayTable(id: newId(), kind: PayTableKind.salary, code: 1, title: 'حقوق کارگری', v: {...payTableDefaults(PayTableKind.salary), 'overtimeHour': 200000});
+    final ins = PayTable(id: newId(), kind: PayTableKind.insurance, code: 1, title: 'تامین اجتماعی', isDefault: true, v: {...payTableDefaults(PayTableKind.insurance), 'worker': 5});
+    final tax = PayTable(id: newId(), kind: PayTableKind.tax, code: 1, title: 'مالیات', items: [PayTableItem(amount: 0, to: 10000000, pct: 0), PayTableItem(amount: 10000000, pct: 10)]);
+    final ded = PayTable(id: newId(), kind: PayTableKind.deduction, code: 1, title: 'کسورات', items: [PayTableItem(name: 'صندوق', amount: 500000)]);
+    final nc = PayTable(id: newId(), kind: PayTableKind.nonCash, code: 1, title: 'مسکن', items: [PayTableItem(name: 'مسکن', amount: 4000000, insured: false, exempt: 1000000, kind: 'مسکن')]);
+    for (final t in [sal, ins, tax, ded, nc]) {
+      expect(s.savePayTable(t), isNull);
+    }
+    expect(s.savePayTable(PayTable(id: newId(), kind: PayTableKind.tax, code: 1, title: 'تکراری')), isNotNull);
+    s.assignPayTable(PayTableKind.salary, sal.id, [e.id]);
+    s.assignPayTable(PayTableKind.tax, tax.id, [e.id]);
+    s.assignPayTable(PayTableKind.deduction, ded.id, [e.id]);
+    s.assignPayTable(PayTableKind.nonCash, nc.id, [e.id]);
+    expect(s.employeesUsing(ins).single.id, e.id); // via «پیش فرض»
+    final r = s.payResult(p, e);
+    expect(r.ezafeKari, 2000000);
+    expect(r.gheirNaghdi, 4000000);
+    expect(r.dastmozdMashmoolBime, 30000000 + 2000000);
+    expect(r.bimeSahmBimeShode, (32000000 * 0.05).round());
+    final taxable = 30000000 + 2000000 + 3000000 - r.bimeSahmBimeShode; // non-cash taxed above its exempt part
+    expect(r.mashmoolMaliat, taxable);
+    expect(r.maliat, ((taxable - 10000000) * 0.10).round());
+    expect(r.kosoratSabet, 500000);
+    expect(r.taxDetail['مالیات متعلقه'], r.maliat);
+    expect(plain.ezafeKari, isNot(r.ezafeKari));
+
+    // معافیت ماده ۹۲ (50%) and a one-off exempt expense
+    final ex = PayTable(id: newId(), kind: PayTableKind.taxExemption, code: 1, title: 'مناطق کمتر توسعه یافته', v: payTableDefaults(PayTableKind.taxExemption));
+    s.savePayTable(ex);
+    s.assignPayTable(PayTableKind.taxExemption, ex.id, [e.id]);
+    s.addPayOnce(p, [e.id], PayOnce(id: '', periodId: p.id, employeeId: '', title: 'بیمه تکمیلی', amount: 1000000, exemptExpense: true));
+    final r2 = s.payResult(p, e);
+    expect(r2.mashmoolMaliat, taxable - 1000000);
+    expect(r2.maliat, (((taxable - 1000000 - 10000000) * 0.10).round() * 0.5).round());
+    expect(s.removePayTable(sal.id), isNotNull); // assigned
+    final again = AppStore.open(s.storage);
+    expect(again.payTables.length, 6);
+    expect(again.employees.single.tables[PayTableKind.salary.name], sal.id);
+    expect(again.payResult(again.payPeriods.single, again.employees.single).maliat, r2.maliat);
+
+    // «جدول بیمه» ندارد
+    ins.v['type'] = 'ندارد';
+    s.savePayTable(ins);
+    expect(s.payResult(p, e).bimeSahmBimeShode, 0);
+  });
+
+  test('doc lock, document access, sub-tafsili, contracts, temp files, branches and backups', () {
+    final s = _tempStore();
+    final ali = Person(id: newId(), name: 'Ali');
+    s.upsertPerson(ali);
+    s.saveVoucher(Voucher(id: 'v1', number: 1, fixedNumber: 1, date: DateTime(2026, 5, 1), lines: [
+      VoucherLine(moeen: mCash, tafsiliId: s.accounts.first.id, debit: 100),
+      VoucherLine(moeen: mDebtorsTrade, tafsiliId: ali.id, credit: 100),
+    ]));
+    expect(s.lockDocRange(1, 1), 1);
+    expect(s.isLocked('v:v1'), isTrue);
+    expect(s.docRefusal('v:v1', 'e'), contains('قفل'));
+    expect(AppStore.open(s.storage).lockRanges.single.$2, 1);
+    s.lockDocRange(1, 1, lock: false);
+    expect(s.docRefusal('v:v1', 'e'), isNull);
+
+    s.saveUser(AppUser(id: 'u1', code: 2, name: 'A', login: 'a'), password: '');
+    s.setDocAccess('u1', {'voucher': 'n'});
+    s.login('a', '');
+    expect(s.canDoc('voucher', 'n'), isTrue);
+    expect(s.canDoc('voucher', 'd'), isFalse);
+    expect(s.docRefusal('v:v1', 'd'), contains('دسترسی اسناد'));
+    expect(s.canDoc('sale', 'd'), isTrue);
+    s.currentUserId = 'owner';
+
+    // «دفاتر تفصیلی در تفصیلی»
+    final sub = SubTafsili(id: newId(), tafsiliId: ali.id, code: 1, name: 'پروژه ۱');
+    expect(s.saveSubTafsili(sub), isNull);
+    s.saveVoucher(Voucher(id: 'v2', number: 2, fixedNumber: 2, date: DateTime(2026, 5, 2), lines: [
+      VoucherLine(moeen: mDebtorsTrade, tafsiliId: ali.id, subId: sub.id, debit: 70),
+      VoucherLine(moeen: mCash, tafsiliId: s.accounts.first.id, credit: 70),
+    ]));
+    expect(s.subBalances(ali.id).single.$2, 70);
+    expect(s.removeSubTafsili(sub.id), isNotNull);
+
+    // «لیست قرارداد»: detail of the «پیمان در دست اجرا» ledgers
+    final c = Contract(id: newId(), code: s.nextContractCode(), title: 'پروژه ساختمان', personId: ali.id, amount: 5000);
+    expect(s.saveContract(c), isNull);
+    expect(findMoeen('1175')!.tafsiliRequired, isFalse);
+    expect(findMoeen('1175')!.freeLedger, isTrue);
+    s.saveVoucher(Voucher(id: 'v3', number: 3, fixedNumber: 3, date: DateTime(2026, 5, 3), lines: [
+      VoucherLine(moeen: '1175', tafsiliId: c.id, debit: 300),
+      VoucherLine(moeen: mCash, tafsiliId: s.accounts.first.id, credit: 300),
+    ]));
+    expect(s.tafsiliName(VoucherLine(moeen: '1175', tafsiliId: c.id)), 'پروژه ساختمان');
+    expect(s.ledgerBalance('1175'), 300);
+    expect(s.removeContract(c.id), isNotNull);
+    expect(findMoeen('1230')!.name, 'دارایی های نامشهود');
+
+    // «فایل های موقت»
+    s.saveTempDoc('پیش نویس', Voucher(id: 'x', number: 0, fixedNumber: 0, date: DateTime(2026, 6, 1), lines: [VoucherLine(moeen: mCash, debit: 5)]));
+    s.saveTempDoc('', Voucher(id: 'y', number: 0, fixedNumber: 0, date: DateTime(2026, 6, 1), lines: [VoucherLine(moeen: mCash, tafsiliId: s.accounts.first.id, debit: 5), VoucherLine(moeen: mCapital, credit: 5)]));
+    final bad = s.postTempDocs({for (final t in s.tempDocs) t.id});
+    expect(bad, ['پیش نویس']);
+    expect(s.tempDocs.length, 1);
+    expect(s.vouchers.length, 4);
+
+    // branches in the invoice list and the branch sales report
+    s.saveBranch(Branch(id: 'b1', code: 1, name: 'مرکزی'));
+    s.selectBranch('b1');
+    final inv = Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: DateTime(2026, 6, 1), lines: [InvoiceLine(title: 'خدمت', qty: 1, unitPrice: 1000)]);
+    s.saveInvoice(inv);
+    s.selectBranch(null);
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 2, date: DateTime(2026, 6, 1), lines: [InvoiceLine(title: 'خدمت', qty: 1, unitPrice: 500)]));
+    expect(s.invoiceInBranch(inv, 'b1'), isTrue);
+    expect(s.invoices.where((i) => s.invoiceInBranch(i, 'b1')).length, 1);
+    final rep = s.salesByBranch(DateTime(2026, 1, 1), DateTime(2026, 12, 31));
+    expect(rep.map((r) => (r.$1, r.$2)).toSet(), {('مرکزی', 1000), ('بدون شعبه', 500)});
+
+    // «پشتیبان گیری خودکار»
+    final dir = Directory.systemTemp.createTempSync('taraz_bk');
+    s.setBackupSlots([('10:00', dir.path), ('', '')]);
+    expect(s.runScheduledBackups(DateTime(2026, 6, 1, 9, 59)), isEmpty);
+    expect(s.runScheduledBackups(DateTime(2026, 6, 1, 10, 5)).length, 1);
+    expect(s.runScheduledBackups(DateTime(2026, 6, 1, 11)), isEmpty); // once a day
+    expect(dir.listSync().length, 1);
   });
 }

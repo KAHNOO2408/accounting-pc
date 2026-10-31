@@ -21,6 +21,8 @@ class _InvoicesPageState extends State<InvoicesPage> {
   late InvoiceKind? _kind = widget.initialKind;
   late RangePreset _preset = widget.proforma ? RangePreset.all : RangePreset.thisMonth;
   String _q = '';
+  String? _branch; // null = همه شعب
+  bool _branchInit = false;
 
   Color _kindColor(InvoiceKind k) => switch (k) {
         InvoiceKind.sale => AppColors.income,
@@ -34,8 +36,13 @@ class _InvoicesPageState extends State<InvoicesPage> {
     final th = Theme.of(context);
     final r = _preset.range();
     final q = normalizeDigits(_q.trim()).toLowerCase();
+    if (!_branchInit) {
+      _branchInit = true;
+      _branch = store.currentBranchId;
+    }
     final list = store.invoicesSorted.where((i) {
       if (i.proforma != widget.proforma) return false;
+      if (!store.invoiceInBranch(i, _branch)) return false;
       if (_kind != null && i.kind != _kind) return false;
       if (r.$1 != null && i.date.isBefore(r.$1!)) return false;
       if (r.$2 != null && i.date.isAfter(r.$2!)) return false;
@@ -147,6 +154,17 @@ class _InvoicesPageState extends State<InvoicesPage> {
                   ],
                 ),
               ),
+              if (store.branches.isNotEmpty) ...[
+                DropdownButton<String?>(
+                  value: store.myBranches.any((b) => b.id == _branch) ? _branch : null,
+                  items: [
+                    const DropdownMenuItem<String?>(value: null, child: Text('همه شعب')),
+                    for (final b in store.myBranches) DropdownMenuItem<String?>(value: b.id, child: Text(b.name)),
+                  ],
+                  onChanged: (v) => setState(() => _branch = v),
+                ),
+                const SizedBox(width: 10),
+              ],
               SizedBox(
                 width: 260,
                 child: TextField(
