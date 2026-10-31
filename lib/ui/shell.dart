@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart' show PointerScrollEvent;
 import 'package:flutter/services.dart';
 
 import '../core/jalali.dart';
@@ -987,14 +986,6 @@ class _Ribbon extends StatefulWidget {
 }
 
 class _RibbonState extends State<_Ribbon> {
-  final _scroll = ScrollController();
-
-  @override
-  void dispose() {
-    _scroll.dispose();
-    super.dispose();
-  }
-
   /// Natural width of the tab's buttons (see [_RibbonButton] / [_RibbonGroup]).
   double _naturalWidth(AppStore s) {
     var w = 0.0;
@@ -1038,28 +1029,18 @@ class _RibbonState extends State<_Ribbon> {
           Expanded(
             child: LayoutBuilder(builder: (context, box) {
               // a slightly long tab is scaled down a little; a much longer one
-              // keeps its normal size and scrolls (wheel or the scrollbar)
+              // keeps its normal size and wraps onto more rows
               final need = _naturalWidth(store);
               if (need <= box.maxWidth / 0.85) {
                 return FittedBox(fit: BoxFit.scaleDown, alignment: AlignmentDirectional.centerStart, child: content);
               }
-              return Listener(
-                onPointerSignal: (e) {
-                  if (e is PointerScrollEvent && _scroll.hasClients) {
-                    final d = e.scrollDelta.dy != 0 ? e.scrollDelta.dy : e.scrollDelta.dx;
-                    _scroll.jumpTo((_scroll.offset + d).clamp(0.0, _scroll.position.maxScrollExtent));
-                  }
-                },
-                child: Scrollbar(
-                  controller: _scroll,
-                  thumbVisibility: true,
-                  child: SingleChildScrollView(
-                    controller: _scroll,
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: content,
-                  ),
-                ),
+              return Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                children: [
+                  for (final g in tab.groups)
+                    if (g.items.any((i) => store.canUse(i.label))) _RibbonGroup(group: g, onItem: widget.onItem, maxWidth: box.maxWidth),
+                ],
               );
             }),
           ),
@@ -1078,35 +1059,43 @@ class _RibbonState extends State<_Ribbon> {
 class _RibbonGroup extends StatelessWidget {
   final _Group group;
   final ValueChanged<_Item> onItem;
-  const _RibbonGroup({required this.group, required this.onItem});
+
+  /// Set when the tab wraps: the group may not be wider than this, and its
+  /// buttons wrap onto more rows.
+  final double? maxWidth;
+  const _RibbonGroup({required this.group, required this.onItem, this.maxWidth});
 
   @override
   Widget build(BuildContext context) {
     final brand = Brand.of(context);
     final th = Theme.of(context);
-    return Container(
+    final store = StoreScope.of(context);
+    final items = [for (final i in group.items) if (store.canUse(i.label)) i];
+    final natural = 10 + items.fold<double>(0, (a, i) => a + (i.label.length > 17 ? 100 : 84));
+    final wrap = maxWidth != null && natural > maxWidth!;
+    final Widget buttons = wrap
+        ? Wrap(children: [for (final i in items) _RibbonButton(item: i, onTap: () => onItem(i))])
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [for (final i in items) _RibbonButton(item: i, onTap: () => onItem(i))],
+          );
+    final box = Container(
       decoration: BoxDecoration(
         color: brand.dark ? Colors.white.withValues(alpha: 0.04) : Colors.white.withValues(alpha: 0.72),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: brand.accent.withValues(alpha: brand.dark ? 0.25 : 0.16)),
       ),
       clipBehavior: Clip.antiAlias,
-      child: IntrinsicWidth(
-        child: Column(
+      child: (wrap ? (Widget c) => c : (Widget c) => IntrinsicWidth(child: c))(Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 4, 4, 2),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (final i in group.items)
-                  if (StoreScope.of(context).canUse(i.label)) _RibbonButton(item: i, onTap: () => onItem(i)),
-              ],
-            ),
+            child: buttons,
           ),
-          const Spacer(),
+          if (maxWidth != null) const SizedBox(height: 2) else const Spacer(),
           if (group.title.isNotEmpty)
             Container(
               padding: const EdgeInsets.symmetric(vertical: 2),
@@ -1130,6 +1119,7 @@ class _RibbonGroup extends StatelessWidget {
       ),
       ),
     );
+    return wrap ? SizedBox(width: maxWidth, child: box) : box;
   }
 }
 
