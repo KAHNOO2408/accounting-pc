@@ -226,7 +226,7 @@ class _ConsignEditorState extends State<_ConsignEditor> {
                               value: s.whId(r.warehouseId),
                               isExpanded: true,
                               isDense: true,
-                              items: [for (final w in s.warehouses) DropdownMenuItem(value: w.id, child: Text(w.name, overflow: TextOverflow.ellipsis))],
+                              items: [for (final w in s.warehousesFor(r.warehouseId)) DropdownMenuItem(value: w.id, child: Text(w.name, overflow: TextOverflow.ellipsis))],
                               onChanged: (v) => setState(() => r.warehouseId = v),
                             ),
                           ),

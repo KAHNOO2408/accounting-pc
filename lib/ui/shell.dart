@@ -28,6 +28,7 @@ import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
 import 'dialogs/list_import_dialogs.dart';
+import 'dialogs/branch_dialogs.dart';
 import '../data/list_import.dart' show ImportKind;
 import 'dialogs/scale_dialogs.dart';
 import 'dialogs/settle_dialogs.dart';
@@ -481,6 +482,8 @@ final List<_Tab> _tabs = [
       _Item('تنظیمات فاکتور فروش', Icons.point_of_sale_rounded, _green, run: (c, _) => showInvoiceOptionsDialog(c, buy: false)),
       _Item('تنظیمات فاکتور خرید', Icons.shopping_cart_checkout_rounded, _red, run: (c, _) => showInvoiceOptionsDialog(c, buy: true)),
       _Item('سطل بازیافت', Icons.delete_outline_rounded, _red, run: (c, _) => showRecycleBin(c)),
+      _Item('معرفی شعب', Icons.store_mall_directory_outlined, _blue, run: (c, _) => showBranches(c)),
+      _Item('انتخاب شعبه', Icons.storefront_outlined, _blue, run: (c, _) => showSelectBranch(c)),
     ]),
     _Group('متفرقه', [
       _Item('کدبندی دفاتر کل و معین', Icons.account_tree_outlined, _blue, run: (c, _) => showChartCoding(c)),
@@ -597,6 +600,15 @@ class _ShellState extends State<Shell> {
       if (due.isNotEmpty) toast(context, 'یادآوری امروز: ${due.map((r) => r.title).join('، ')}');
       final unread = s.unreadFor(s.currentUser.id);
       if (unread > 0) toast(context, '$unread پیام داخلی خوانده نشده دارید (متفرقه ← پیام های داخلی)');
+      // «انتخاب شعبه» at start when branches are defined
+      if (s.branches.isNotEmpty && s.currentBranch == null) {
+        final my = s.myBranches;
+        if (my.length == 1) {
+          s.selectBranch(my.first.id);
+        } else if (my.isNotEmpty) {
+          showSelectBranch(context);
+        }
+      }
     });
     _autoTimer = Timer.periodic(const Duration(minutes: 5), (_) {
       if (mounted) unawaited(runAutoSms(StoreScope.read(context)));

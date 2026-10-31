@@ -641,7 +641,7 @@ class _KardexWinState extends State<_KardexWin> {
         width: 460,
         actions: [FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('تایید'))],
         child: Column(children: [
-          for (final w in s.warehouses)
+          for (final w in s.myWarehouses)
             ListTile(
               dense: true,
               leading: const Icon(Icons.warehouse_outlined),
@@ -761,7 +761,7 @@ class _KardexWinState extends State<_KardexWin> {
                           decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
                           items: [
                             const DropdownMenuItem(value: '*', child: Text('تمام انبارها')),
-                            for (final w in s.warehouses) DropdownMenuItem(value: w.id, child: Text(w.name)),
+                            for (final w in s.warehousesFor(_wh)) DropdownMenuItem(value: w.id, child: Text(w.name)),
                           ],
                           onChanged: (v) => setState(() {
                             _wh = v == '*' ? null : v;

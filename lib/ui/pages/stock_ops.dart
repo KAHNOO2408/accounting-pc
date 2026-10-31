@@ -83,7 +83,7 @@ class _WasteDialogState extends State<_WasteDialog> {
             FieldDropdown<String>(
               label: 'انبار',
               value: store.whId(_wh),
-              items: [for (final w in store.warehouses) DropdownMenuItem(value: w.id, child: Text(w.name))],
+              items: [for (final w in store.warehousesFor(_wh)) DropdownMenuItem(value: w.id, child: Text(w.name))],
               onChanged: (v) => setState(() => _wh = v),
             ),
           ],

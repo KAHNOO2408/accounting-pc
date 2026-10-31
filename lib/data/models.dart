@@ -1890,6 +1890,12 @@ class AppUser {
   /// Ribbon buttons this user may not use (دسترسی دکمه ها).
   Set<String> denied;
 
+  /// «دسترسی شعب» / «دسترسی انبار ها» / «دسترسی حسابها»: allowed ids
+  /// (empty = all).
+  Set<String> branches;
+  Set<String> warehouses;
+  Set<String> accounts;
+
   AppUser({
     required this.id,
     required this.code,
@@ -1899,7 +1905,13 @@ class AppUser {
     this.passwordSalt = '',
     this.admin = false,
     Set<String>? denied,
-  }) : denied = denied ?? {};
+    Set<String>? branches,
+    Set<String>? warehouses,
+    Set<String>? accounts,
+  })  : denied = denied ?? {},
+        branches = branches ?? {},
+        warehouses = warehouses ?? {},
+        accounts = accounts ?? {};
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -1910,6 +1922,9 @@ class AppUser {
         'passwordSalt': passwordSalt,
         'admin': admin,
         'denied': denied.toList(),
+        if (branches.isNotEmpty) 'branches': branches.toList(),
+        if (warehouses.isNotEmpty) 'warehouses': warehouses.toList(),
+        if (accounts.isNotEmpty) 'accounts': accounts.toList(),
       };
 
   factory AppUser.fromJson(Map<String, dynamic> j) => AppUser(
@@ -1921,6 +1936,29 @@ class AppUser {
         passwordSalt: _s(j['passwordSalt']),
         admin: j['admin'] == true,
         denied: {for (final x in (j['denied'] is List ? j['denied'] as List : const [])) '$x'},
+        branches: {for (final x in (j['branches'] is List ? j['branches'] as List : const [])) '$x'},
+        warehouses: {for (final x in (j['warehouses'] is List ? j['warehouses'] as List : const [])) '$x'},
+        accounts: {for (final x in (j['accounts'] is List ? j['accounts'] as List : const [])) '$x'},
+      );
+}
+
+/// «شعبه»: a branch of the business owning a group of warehouses.
+class Branch {
+  String id;
+  int code;
+  String name;
+  Set<String> warehouseIds;
+  String note;
+  Branch({required this.id, required this.code, required this.name, Set<String>? warehouseIds, this.note = ''}) : warehouseIds = warehouseIds ?? {};
+
+  Map<String, dynamic> toJson() => {'id': id, 'code': code, 'name': name, 'warehouseIds': warehouseIds.toList(), 'note': note};
+
+  factory Branch.fromJson(Map<String, dynamic> j) => Branch(
+        id: _s(j['id']),
+        code: _i(j['code']),
+        name: _s(j['name']),
+        warehouseIds: {for (final x in (j['warehouseIds'] is List ? j['warehouseIds'] as List : const [])) '$x'},
+        note: _s(j['note']),
       );
 }
 

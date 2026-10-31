@@ -9,6 +9,7 @@ import '../print.dart';
 import '../shell.dart' show ribbonCatalog;
 import '../theme.dart';
 import '../widgets/common.dart';
+import 'branch_dialogs.dart' show showUserAccess;
 
 Widget _head(BuildContext context, List<Widget> cells) {
   final th = Theme.of(context);
@@ -129,6 +130,13 @@ class _UsersWindowState extends State<_UsersWindow> {
     if (mounted) setState(() {});
   }
 
+  Future<void> _access(String what) async {
+    final s = StoreScope.read(context);
+    if (!_needUser(s)) return;
+    await showUserAccess(context, _selected(s)!, what);
+    if (mounted) setState(() {});
+  }
+
   Future<void> _copyPermissions() async {
     final s = StoreScope.read(context);
     if (!_needUser(s)) return;
@@ -149,6 +157,9 @@ class _UsersWindowState extends State<_UsersWindow> {
     if (from == null || !mounted) return;
     target
       ..denied = {...from.denied}
+      ..branches = {...from.branches}
+      ..warehouses = {...from.warehouses}
+      ..accounts = {...from.accounts}
       ..admin = from.admin;
     s.saveUser(target);
     toast(context, 'دسترسی‌های ${from.name} به ${target.name} کپی شد');
@@ -247,6 +258,9 @@ class _UsersWindowState extends State<_UsersWindow> {
                     btn('بازنشانی رمز عبور', Icons.key_rounded, _resetPassword),
                     btn('دسترسی دکمه ها', Icons.touch_app_outlined, _permissions),
                     btn('کپی دسترسی از کاربر دیگر', Icons.copy_all_outlined, _copyPermissions),
+                    btn('دسترسی شعب', Icons.storefront_outlined, () => _access('branches')),
+                    btn('دسترسی انبار ها', Icons.warehouse_outlined, () => _access('warehouses')),
+                    btn('دسترسی حسابها', Icons.account_balance_outlined, () => _access('accounts')),
                     btn('کپی کاربر (F2)', Icons.content_copy_rounded, () {
                       if (_needUser(s)) _form(copyOf: _selected(s));
                     }),

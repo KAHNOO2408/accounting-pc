@@ -480,7 +480,7 @@ class _TransferDialogState extends State<_TransferDialog> {
     _receipt = TextEditingController(text: '${e?.receiptNo ?? s.nextReceiptNumber()}');
     final n = DateTime.now();
     _date = e?.date ?? DateTime(n.year, n.month, n.day);
-    _from = s.whId(e?.fromId);
+    _from = e == null ? s.whId(s.allowedWarehouse(null)) : s.whId(e.fromId);
     if (e != null) {
       for (final l in e.lines) {
         final r = _Row(l.productId, toId: l.toId);
@@ -538,6 +538,7 @@ class _TransferDialogState extends State<_TransferDialog> {
   Future<void> _pickFrom() async {
     final id = await showWarehousesWindow(context, pick: true, selected: _from);
     if (id != null && mounted) {
+      if (!StoreScope.read(context).canUseWarehouse(id)) return toast(context, 'به این انبار دسترسی ندارید (دسترسی انبار)', error: true);
       setState(() {
         _from = id;
         for (final r in _rows) {

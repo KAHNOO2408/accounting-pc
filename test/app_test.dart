@@ -2841,4 +2841,38 @@ void main() {
     expect(lines.single.unitPrice, 120000);
     expect(missing, ['000']);
   });
+
+  test('branches and warehouse / account access per user', () {
+    final s = _tempStore();
+    final w2 = Warehouse(id: 'w2', code: 2, name: 'انبار شعبه ۲');
+    final w3 = Warehouse(id: 'w3', code: 3, name: 'انبار ۳');
+    s.warehouses.addAll([w2, w3]);
+    final b1 = Branch(id: 'b1', code: 1, name: 'مرکزی', warehouseIds: {'main', 'w3'});
+    final b2 = Branch(id: 'b2', code: 2, name: 'شعبه ۲', warehouseIds: {'w2'});
+    expect(s.saveBranch(b1), isNull);
+    expect(s.saveBranch(b2), isNull);
+    expect(s.saveBranch(Branch(id: 'x', code: 3, name: 'مرکزی')), isNotNull);
+    expect(s.myWarehouses.length, 3); // owner, no branch selected
+    s.selectBranch('b2');
+    expect(s.myWarehouses.map((w) => w.id), ['w2']);
+    expect(s.allowedWarehouse('main'), 'w2');
+    s.selectBranch(null);
+
+    final u = AppUser(id: 'u1', code: 2, name: 'فروشنده', login: 'seller');
+    expect(s.saveUser(u, password: ''), isNull);
+    s.setUserAccess('u1', branches: {'b1'}, warehouses: {'w3'}, accounts: {'nope'});
+    expect(s.login('seller', ''), isNotNull);
+    expect(s.myBranches.map((b) => b.name), ['مرکزی']);
+    expect(s.myWarehouses.map((w) => w.id), ['w3']);
+    expect(s.canUseWarehouse('main'), isFalse);
+    expect(s.warehousesFor('main').map((w) => w.id), ['w3', 'main']);
+    expect(s.canUseAccount(s.accounts.first.id), isFalse);
+    s.selectBranch('b1');
+    final inv = Invoice(id: newId(), kind: InvoiceKind.sale, number: 900, date: DateTime(2026, 10, 1), lines: []);
+    s.saveInvoice(inv);
+    expect(s.invoices.firstWhere((i) => i.id == inv.id).info['branch'], 'b1');
+    final again = AppStore.open(s.storage);
+    expect(again.branches.length, 2);
+    expect(again.users.single.warehouses, {'w3'});
+  });
 }

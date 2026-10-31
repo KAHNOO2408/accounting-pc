@@ -185,6 +185,11 @@ class AppStore extends ChangeNotifier {
   /// مراکز اسناد
   List<String> docCenters = ['اصلی'];
   List<AppUser> users = [];
+
+  /// «شعب» and the branch this session works in («انتخاب شعبه»; null =
+  /// «بدون شعبه»). The selection is per session, not saved in the book.
+  List<Branch> branches = [];
+  String? currentBranchId;
   List<AuditEntry> audit = [];
 
   /// سطل بازیافت — deleted documents.
@@ -301,6 +306,7 @@ class AppStore extends ChangeNotifier {
     transfers = list('transfers').map(WarehouseTransfer.fromJson).toList();
     assets = list('assets').map(Asset.fromJson).toList();
     users = list('users').map(AppUser.fromJson).toList();
+    branches = list('branches').map(Branch.fromJson).toList();
     audit = list('audit').map(AuditEntry.fromJson).toList();
     recycle = list('recycle').map(RecycleItem.fromJson).toList();
     reportFiles = list('reportFiles').map(ReportFile.fromJson).toList();
@@ -619,6 +625,7 @@ class AppStore extends ChangeNotifier {
         'assets': assets.map((e) => e.toJson()).toList(),
         'docCenters': docCenters,
         'users': users.map((e) => e.toJson()).toList(),
+        'branches': branches.map((e) => e.toJson()).toList(),
         'audit': audit.map((e) => e.toJson()).toList(),
         'defaultTemplates': defaultTemplates,
         'settings': settings.toJson(),
@@ -749,7 +756,12 @@ class AppStore extends ChangeNotifier {
     return null;
   }
 
-  List<Account> get activeAccounts => accounts.where((a) => !a.archived).toList();
+  /// Usable cash / bank accounts (not archived, within «دسترسی حسابها»).
+  List<Account> get activeAccounts {
+    final all = accounts.where((a) => !a.archived).toList();
+    final my = all.where((a) => canUseAccount(a.id)).toList();
+    return my.isEmpty ? all : my;
+  }
 
   List<TxnCategory> categoriesOf(CategoryKind kind, {bool includeArchived = false}) =>
       categories.where((c) => c.kind == kind && (includeArchived || !c.archived)).toList();
@@ -1969,6 +1981,91 @@ class AppStore extends ChangeNotifier {
     _commit();
   }
 
+  // ---------------------------------------------------------------- branches & access
+
+  Branch? branch(String? id) => branches.where((b) => b.id == id).firstOrNull;
+  Branch? get currentBranch => branch(currentBranchId);
+
+  /// Branches the signed-in user may select («دسترسی شعب»).
+  List<Branch> get myBranches {
+    final u = currentUser;
+    return [for (final b in branches) if (u.admin || u.branches.isEmpty || u.branches.contains(b.id)) b];
+  }
+
+  /// «انتخاب شعبه» (null = «بدون شعبه»).
+  void selectBranch(String? id) {
+    currentBranchId = id == null || branch(id) == null ? null : id;
+    notifyListeners();
+  }
+
+  /// Warehouses the signed-in user may work with: «دسترسی انبار» and the
+  /// warehouses of the selected branch. Never empty while any exists.
+  List<Warehouse> get myWarehouses {
+    final u = currentUser;
+    final br = currentBranch;
+    final out = [
+      for (final w in warehouses)
+        if ((u.admin || u.warehouses.isEmpty || u.warehouses.contains(w.id)) && (br == null || br.warehouseIds.isEmpty || br.warehouseIds.contains(w.id))) w
+    ];
+    return out.isEmpty ? [warehouses.first] : out;
+  }
+
+  /// Dropdown list: [myWarehouses] plus [current] when it is not among them
+  /// (an older document), so the selection stays valid.
+  List<Warehouse> warehousesFor(String? current) {
+    final my = myWarehouses;
+    final c = warehouse(current);
+    return c == null || my.any((w) => w.id == c.id) ? my : [...my, c];
+  }
+
+  bool canUseWarehouse(String? id) => myWarehouses.any((w) => w.id == (id ?? warehouses.first.id));
+
+  /// A warehouse id the user may use: [id] if allowed, otherwise the first allowed one.
+  String? allowedWarehouse(String? id) => canUseWarehouse(id) ? id : myWarehouses.first.id;
+
+  /// Cash / bank accounts the signed-in user may use («دسترسی حسابها»).
+  bool canUseAccount(String? id) {
+    final u = currentUser;
+    return id == null || u.admin || u.accounts.isEmpty || u.accounts.contains(id);
+  }
+
+  int nextBranchCode() => branches.fold<int>(1, (n, b) => b.code >= n ? b.code + 1 : n);
+
+  String? saveBranch(Branch b) {
+    b.name = b.name.trim();
+    if (b.name.isEmpty) return 'نام شعبه را وارد کنید';
+    if (branches.any((x) => x.id != b.id && x.name == b.name)) return 'نام شعبه تکراری است';
+    final i = branches.indexWhere((x) => x.id == b.id);
+    if (i >= 0) {
+      branches[i] = b;
+    } else {
+      branches.add(b);
+    }
+    _log(i >= 0 ? 'ویرایش' : 'ثبت', 'شعبه ${b.name}');
+    _commit();
+    return null;
+  }
+
+  void removeBranch(String id) {
+    branches.removeWhere((b) => b.id == id);
+    for (final u in users) {
+      u.branches.remove(id);
+    }
+    if (currentBranchId == id) currentBranchId = null;
+    _commit();
+  }
+
+  /// «تعیین سطح دسترسی شعب» / «دسترسی انبار» / «دسترسی حسابها» of a user.
+  void setUserAccess(String userId, {Set<String>? branches, Set<String>? warehouses, Set<String>? accounts}) {
+    final u = users.where((x) => x.id == userId).firstOrNull;
+    if (u == null) return;
+    if (branches != null) u.branches = branches;
+    if (warehouses != null) u.warehouses = warehouses;
+    if (accounts != null) u.accounts = accounts;
+    _log('ویرایش', 'سطح دسترسی ${u.name}');
+    _commit();
+  }
+
   int nextUserCode() => allUsers.fold<int>(1, (n, u) => u.code >= n ? u.code + 1 : n);
 
   String? saveUser(AppUser u, {String? password}) {
@@ -2363,6 +2460,7 @@ class AppStore extends ChangeNotifier {
     _log(invoices.any((e) => e.id == inv.id) ? 'ویرایش' : 'ثبت', '${inv.proforma ? 'پیش‌فاکتور' : inv.kind.label} ${inv.number}',
         docDate: inv.date, docNo: inv.number);
     final i = invoices.indexWhere((e) => e.id == inv.id);
+    if (i < 0 && currentBranchId != null) inv.info['branch'] = currentBranchId!; // «شعبه» of the document
     if (i >= 0) {
       invoices[i] = inv;
     } else {

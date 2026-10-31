@@ -567,7 +567,7 @@ class _ProductionEditorState extends State<_ProductionEditor> {
                 value: _wh,
                 isExpanded: true,
                 decoration: const InputDecoration(labelText: 'انبار'),
-                items: [for (final w in s.warehouses) DropdownMenuItem<String?>(value: w.id, child: Text(w.name))],
+                items: [for (final w in s.warehousesFor(_wh)) DropdownMenuItem<String?>(value: w.id, child: Text(w.name))],
                 onChanged: (v) => setState(() => _wh = v),
               ),
             ),

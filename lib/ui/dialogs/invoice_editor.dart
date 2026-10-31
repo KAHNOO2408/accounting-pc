@@ -354,7 +354,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
   // ------------------------------------------------------------------ rows
 
   void _addLine() {
-    final l = _Line()..warehouseId = _opt.defaultWarehouseId;
+    final l = _Line()..warehouseId = StoreScope.read(context).allowedWarehouse(_opt.defaultWarehouseId);
     _listen(l);
     setState(() {
       _rows.add(l);
@@ -677,7 +677,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     if (lines == null || lines.isEmpty || !mounted) return;
     setState(() {
       for (final l in lines) {
-        l.warehouseId ??= _opt.defaultWarehouseId;
+        l.warehouseId = StoreScope.read(context).allowedWarehouse(l.warehouseId ?? _opt.defaultWarehouseId);
         final n = _Line.from(l);
         _listen(n);
         _lines.insert(_lines.isEmpty ? 0 : _lines.length - (_lines.last.isEmpty ? 1 : 0), n);
@@ -792,6 +792,11 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
     if (err == null && !o.allowDuplicate) {
       final ids = [for (final l in lines) if (l.productId != null) l.productId];
       if (ids.toSet().length != ids.length) err = 'ثبت کالای تکراری در فاکتور مجاز نیست (تنظیمات فاکتور)';
+    }
+    if (err == null) {
+      final old = {for (final l in (_saved ?? widget.edit)?.lines ?? const <InvoiceLine>[]) store.whId(l.warehouseId)};
+      final bad = lines.where((l) => l.productId != null && !old.contains(store.whId(l.warehouseId)) && !store.canUseWarehouse(l.warehouseId)).firstOrNull;
+      if (bad != null) err = 'شما به «${store.warehouse(bad.warehouseId)?.name}» دسترسی ندارید (دسترسی انبار)';
     }
     if (err == null && !_proforma) {
       final multi = store.warehouses.length > 1;
@@ -1674,7 +1679,7 @@ class _InvoiceEditorState extends State<InvoiceEditor> {
                       isExpanded: true,
                       isDense: true,
                       decoration: dense,
-                      items: [for (final w in store.warehouses) DropdownMenuItem(value: w.id, child: Text(w.name, overflow: TextOverflow.ellipsis))],
+                      items: [for (final w in store.warehousesFor(l.warehouseId)) DropdownMenuItem(value: w.id, child: Text(w.name, overflow: TextOverflow.ellipsis))],
                       onChanged: (v) => setState(() => l.warehouseId = v),
                     )
                   : Text(store.warehouse(l.warehouseId)?.name ?? '', textAlign: TextAlign.center),
