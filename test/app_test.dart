@@ -2725,4 +2725,46 @@ void main() {
     expect(chq.fields['جمع مبلغ'], '900');
     expect(docAsVoucher(s, 'v:${v.id}', number: 0, fixed: 0, date: DateTime(2026), desc: '').id, v.id);
   });
+
+  test('TTMS sheets and Sadr scale files and sales import', () {
+    final s = _tempStore();
+    final full = Person(id: newId(), name: 'Full Co', info: {'kind': 'legal', 'nationalId': '10101010101', 'postalCode': '1234567890', 'province': 'فارس', 'city': 'شیراز', 'address': 'x'});
+    final half = Person(id: newId(), name: 'Half');
+    final small = Person(id: newId(), name: 'Small', info: {'nationalId': '1', 'postalCode': '2', 'province': 'a', 'city': 'b', 'address': 'c'});
+    for (final p in [full, half, small]) {
+      s.upsertPerson(p);
+    }
+    final pr = Product(id: newId(), name: 'Cheese', code: '9', sellPrice: 400, info: {'scale': '1', 'plu': '12', 'shelfDays': '5'});
+    s.upsertProduct(pr);
+    final d = DateTime(2026, 10, 5); // پاییز 1405
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 1, date: d, personId: full.id, lines: [InvoiceLine(productId: pr.id, qty: 10, unitPrice: 1000)]));
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 2, date: d, personId: half.id, lines: [InvoiceLine(productId: pr.id, qty: 1, unitPrice: 1000)]));
+    s.saveInvoice(Invoice(id: newId(), kind: InvoiceKind.sale, number: 3, date: d, personId: small.id, lines: [InvoiceLine(productId: pr.id, qty: 1, unitPrice: 100)]));
+    final o = TtmsOptions(year: 1405, season: 3, threshold: 500);
+    final ops = ttmsOps(s, o);
+    expect(ops.where((x) => x.excluded).single.inv.personId, half.id);
+    final sheets = {for (final (n, r) in ttmsSheets(s, o)) n: r};
+    expect(sheets['فروش']!.length, 2);
+    expect(sheets['فروش']!.first[2], '10101010101');
+    expect(sheets['فروش']!.last[5], 'معاملات کمتر از حد نصاب');
+    s.invoices.firstWhere((i) => i.number == 1).info['taxFile'] = '0';
+    expect({for (final (n, r) in ttmsSheets(s, o)) n: r}['فروش']!.length, 1);
+
+    s.scale.keys['1'] = pr.id;
+    expect(s.lsgFile(), startsWith('12\t9\tCheese\t400\t0\t5\t0'));
+    expect(s.keysFile(), '1\t12\r\n');
+    final rows = parseScaleSales([
+      ['ترازو', 'فاکتور', 'تاریخ', 'کد', 'وزن', 'فی', 'جمع'],
+      ['1', '501', '1405/08/09 10:15', '12', '1.5', '400', '600'],
+      ['1', '501', '1405/08/09 10:15', '9', '1', '400', '400'],
+      ['1', '502', '2026-10-31', '777', '1', '10', '10'],
+    ]);
+    expect(rows.length, 3);
+    expect(rows.first.date, DateTime(2026, 10, 31, 10, 15));
+    final (n, unknown) = s.importScaleSales(rows, accountId: s.activeAccounts.first.id);
+    expect(n, 1);
+    expect(unknown, {'777'});
+    expect(s.invoices.firstWhere((i) => i.info['scaleRef'] == '1:501').total, 1000);
+    expect(s.importScaleSales(rows).$1, 0); // not imported twice
+  });
 }

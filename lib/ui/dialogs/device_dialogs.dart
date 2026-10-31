@@ -43,12 +43,16 @@ class _ScaleState extends State<_Scale> {
   }
 
   void _save() {
+    final old = _s.scale;
     _s.scale = ScaleConfig(
       prefixes: _pre.text.split(RegExp('[,،\\s]+')).map((x) => normalizeDigits(x.trim())).where((x) => x.isNotEmpty).toList(),
       codeDigits: _code,
       valueDigits: _val,
       valueIsPrice: _price,
-    );
+    )
+      ..keys = old.keys
+      ..keyCount = old.keyCount
+      ..memory = old.memory;
     _s.updateSettings((_) {});
   }
 
@@ -283,124 +287,273 @@ Future<void> showCallLog(BuildContext context) {
 
 // ================================================================ اطلاعات مالیاتی
 
+/// «اطلاعات مورد نیاز حساب برای ساخت فایل TTMS».
 Future<void> showPersonTaxInfo(BuildContext context, Person p) {
   final s = StoreScope.read(context);
-  final c = {for (final k in ['nationalId', 'economicCode', 'postalCode', 'address']) k: TextEditingController(text: p.info[k] ?? '')};
+  const keys = ['lastName', 'firstName', 'economicCode', 'nationalId', 'postalCode', 'cityCode', 'province', 'city', 'address'];
+  final c = {for (final k in keys) k: TextEditingController(text: p.info[k] ?? (k == 'lastName' ? p.name : ''))};
+  final phone = TextEditingController(text: p.phone);
   var legal = p.info['kind'] == 'legal';
+  var finalConsumer = p.info['finalConsumer'] == '1';
+  var refused = p.info['refused'] == '1';
+  Widget f(String k, String label, {bool red = false, bool ltr = false}) => Expanded(
+        child: TextField(
+          controller: c[k],
+          textDirection: ltr ? TextDirection.ltr : null,
+          decoration: InputDecoration(labelText: label, isDense: true, labelStyle: red ? const TextStyle(color: Colors.red) : null),
+        ),
+      );
   return showDialog<void>(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, set) => FormDialog(
-        title: 'اطلاعات مالیاتی — ${p.name}',
-        width: 480,
+        title: 'اطلاعات مورد نیاز حساب برای ساخت فایل TTMS — ${p.name}',
+        width: 640,
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('انصراف')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('انصراف F10')),
           FilledButton(
             onPressed: () {
               p.info['kind'] = legal ? 'legal' : 'real';
               for (final e in c.entries) {
-                p.info[e.key] = normalizeDigits(e.value.text.trim());
+                p.info[e.key] = e.key == 'address' || e.key == 'province' || e.key == 'city' || e.key.endsWith('Name') ? e.value.text.trim() : normalizeDigits(e.value.text.trim());
               }
+              if (p.info['lastName'] == p.name) p.info.remove('lastName');
+              p.info['finalConsumer'] = finalConsumer ? '1' : '';
+              p.info['refused'] = refused ? '1' : '';
               p.info.removeWhere((_, v) => v.isEmpty);
+              p.phone = phone.text.trim();
               s.upsertPerson(p);
               Navigator.pop(ctx);
             },
-            child: const Text('تایید'),
+            child: const Text('تایید F9'),
           ),
         ],
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          SegmentedButton<bool>(
-            segments: const [ButtonSegment(value: false, label: Text('حقیقی')), ButtonSegment(value: true, label: Text('حقوقی'))],
-            selected: {legal},
-            onSelectionChanged: (v) => set(() => legal = v.first),
-          ),
+          const Text('در صورت استفاده از کیت «امور مالیاتی» اطلاعات مشخص شده به رنگ قرمز را به درستی وارد نمایید.', style: TextStyle(fontSize: 12, color: Colors.red)),
           const SizedBox(height: 8),
-          TextField(controller: c['nationalId'], textDirection: TextDirection.ltr, decoration: InputDecoration(labelText: legal ? 'شناسه ملی' : 'کد ملی')),
+          Row(children: [
+            const Text('نوع شخص: '),
+            SegmentedButton<bool>(
+              segments: const [ButtonSegment(value: false, label: Text('حقیقی')), ButtonSegment(value: true, label: Text('حقوقی'))],
+              selected: {legal},
+              onSelectionChanged: (v) => set(() => legal = v.first),
+            ),
+          ]),
           const SizedBox(height: 8),
-          TextField(controller: c['economicCode'], textDirection: TextDirection.ltr, decoration: const InputDecoration(labelText: 'کد اقتصادی')),
+          Row(children: [f('lastName', legal ? 'نام شرکت' : 'نام خانوادگی فروشنده', red: true), const SizedBox(width: 8), if (!legal) f('firstName', 'نام')]),
           const SizedBox(height: 8),
-          TextField(controller: c['postalCode'], textDirection: TextDirection.ltr, decoration: const InputDecoration(labelText: 'کد پستی')),
+          Row(children: [f('nationalId', legal ? 'شناسه ملی' : 'کد ملی', red: true, ltr: true), const SizedBox(width: 8), f('economicCode', 'شماره اقتصادی', ltr: true)]),
           const SizedBox(height: 8),
-          TextField(controller: c['address'], decoration: const InputDecoration(labelText: 'نشانی')),
+          Row(children: [f('postalCode', 'کد پستی', red: true, ltr: true), const SizedBox(width: 8), f('cityCode', 'پیش کد شهر', ltr: true), const SizedBox(width: 8),
+            Expanded(child: TextField(controller: phone, textDirection: TextDirection.ltr, decoration: const InputDecoration(labelText: 'تلفن', isDense: true)))]),
+          const SizedBox(height: 8),
+          Row(children: [f('province', 'استان', red: true), const SizedBox(width: 8), f('city', 'شهر', red: true)]),
+          const SizedBox(height: 8),
+          Row(children: [f('address', 'آدرس', red: true)]),
+          const SizedBox(height: 8),
+          CheckboxListTile(dense: true, contentPadding: EdgeInsets.zero, value: finalConsumer, onChanged: (v) => set(() => finalConsumer = v ?? false), title: const Text('مصرف کننده نهایی (عرضه به مصرف کننده نهایی)')),
+          CheckboxListTile(dense: true, contentPadding: EdgeInsets.zero, value: refused, onChanged: (v) => set(() => refused = v ?? false), title: const Text('امتناع از ارائه اطلاعات')),
         ]),
       ),
     ),
   ).whenComplete(() {
-    for (final t in c.values) {
+    for (final t in [...c.values, phone]) {
       t.dispose();
     }
   });
 }
 
-/// «ساخت فایل اطلاعات مالیاتی» — seasonal purchases/sales list as Excel.
-Future<void> showTaxFile(BuildContext context) {
-  final s = StoreScope.read(context);
-  final now = Jalali.fromDateTime(DateTime.now());
-  var year = now.year, season = (now.month - 1) ~/ 3 + 1;
-  return showDialog<void>(
-    context: context,
-    builder: (ctx) => StatefulBuilder(builder: (ctx, set) {
-      final buys = seasonRows(s, year, season, sales: false), sells = seasonRows(s, year, season, sales: true);
-      final missing = {...missingTaxInfo(buys), ...missingTaxInfo(sells)};
-      return FormDialog(
-        title: 'ساخت فایل اطلاعات مالیاتی (گزارش فصلی)',
-        width: 640,
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('بستن')),
-          OutlinedButton(
-            onPressed: () => printTable(
-              store: s,
-              title: 'گزارش فصلی فروش — فصل $season سال $year',
-              headers: seasonHeaders,
-              rows: seasonTable(sells),
-              numeric: const {9, 10, 11},
-              fileName: 'fasli-forosh',
-            ),
-            child: const Text('چاپ فروش'),
-          ),
-          FilledButton.icon(
-            onPressed: () async {
-              final loc = await fs.getSaveLocation(suggestedName: 'fasli-$year-$season.xlsx', acceptedTypeGroups: const [fs.XTypeGroup(label: 'Excel', extensions: ['xlsx'])]);
-              if (loc == null) return;
-              final (from, to) = seasonRange(year, season);
-              final title = ['فصل $season سال $year (${jFormat(from)} تا ${jFormat(to)})'];
-              File(loc.path).writeAsBytesSync(
-                buildXlsx([
-                  XlsxSheet('خرید', seasonHeaders, seasonTable(buys), titleLines: title),
-                  XlsxSheet('فروش', seasonHeaders, seasonTable(sells), titleLines: title),
-                ]),
-                flush: true,
-              );
-              openFile(loc.path);
-            },
-            icon: const Icon(Icons.table_view_outlined),
-            label: const Text('ساخت فایل اکسل'),
-          ),
-        ],
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Row(children: [
-            DropdownButton<int>(value: year, items: [for (var y = now.year - 3; y <= now.year; y++) DropdownMenuItem(value: y, child: Text('$y'))], onChanged: (v) => set(() => year = v ?? year)),
-            const SizedBox(width: 12),
-            SegmentedButton<int>(
-              segments: const [ButtonSegment(value: 1, label: Text('بهار')), ButtonSegment(value: 2, label: Text('تابستان')), ButtonSegment(value: 3, label: Text('پاییز')), ButtonSegment(value: 4, label: Text('زمستان'))],
-              selected: {season},
-              onSelectionChanged: (v) => set(() => season = v.first),
-            ),
-          ]),
-          const SizedBox(height: 10),
-          Text('خرید: ${buys.length} طرف حساب — ${groupDigits(buys.fold(0, (a, r) => a + r.amount))}'),
-          Text('فروش: ${sells.length} طرف حساب — ${groupDigits(sells.fold(0, (a, r) => a + r.amount))}'),
-          if (missing.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text('${missing.length} طرف حساب کد/شناسه ملی ندارند (در تعریف شخص ← «اطلاعات مالیاتی»):', style: const TextStyle(color: Colors.red)),
-            Wrap(spacing: 4, children: [for (final p in missing.take(30)) ActionChip(label: Text(p.name), onPressed: () => showPersonTaxInfo(ctx, p).then((_) => set(() {})))]),
-          ],
-          const SizedBox(height: 8),
-          const Text('ستون‌ها مطابق فهرست معاملات فصلی است؛ پیش از بارگذاری در سامانه با قالب فعلی سازمان امور مالیاتی تطبیق دهید.', style: TextStyle(fontSize: 12)),
-        ]),
+/// «ایجاد فایل مالیاتی ویژه نرم افزار TTMS»: 1 file, 2 year/season, 3 data.
+Future<void> showTaxFile(BuildContext context) => showDialog<void>(context: context, builder: (_) => const _Ttms());
+
+class _Ttms extends StatefulWidget {
+  const _Ttms();
+
+  @override
+  State<_Ttms> createState() => _TtmsState();
+}
+
+class _TtmsState extends State<_Ttms> {
+  int _step = 1;
+  String? _path;
+  late final TtmsOptions _o = () {
+    final now = Jalali.fromDateTime(DateTime.now());
+    return TtmsOptions(year: now.year, season: (now.month - 1) ~/ 3 + 1);
+  }();
+  final _threshold = TextEditingController();
+  String? _msg;
+
+  @override
+  void dispose() {
+    _threshold.dispose();
+    super.dispose();
+  }
+
+  Future<void> _write(AppStore s, {bool emtena = false}) async {
+    _o.threshold = parseMoney(_threshold.text);
+    final all = ttmsSheets(s, _o);
+    final sheets = emtena ? all.where((x) => x.$1 == 'امتناع' || x.$1 == 'عرضه به مصرف کننده نهایی') : all.where((x) => x.$1 == 'خرید' || x.$1 == 'فروش');
+    var path = _path;
+    if (path == null) {
+      final loc = await fs.getSaveLocation(suggestedName: 'TTMS-${_o.year}-${_o.season}${emtena ? '-emtena' : ''}.xlsx', acceptedTypeGroups: const [fs.XTypeGroup(label: 'Excel', extensions: ['xlsx'])]);
+      if (loc == null) return;
+      path = loc.path;
+    }
+    final (from, to) = seasonRange(_o.year, _o.season);
+    final title = ['فصل ${_o.season} سال ${_o.year}${_o.month > 0 ? ' ماه ${_o.month}' : ''} (${jFormat(from)} تا ${jFormat(to)})'];
+    File(path).writeAsBytesSync(buildXlsx([for (final (name, rows) in sheets) XlsxSheet(name, ttmsHeaders, rows, titleLines: title)]), flush: true);
+    setState(() => _msg = 'فایل ذخیره شد: $path');
+    openFile(path);
+  }
+
+  Future<void> _ops(AppStore s) => showDialog<void>(
+        context: context,
+        builder: (ctx) => StatefulBuilder(builder: (ctx, set) {
+          final ops = ttmsOps(s, _o);
+          return FormDialog(
+            title: 'مشاهده لیست عملیات',
+            width: 980,
+            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('بستن'))],
+            child: Column(children: [
+              for (final x in ops)
+                ListTile(
+                  dense: true,
+                  leading: Checkbox(
+                    value: usedInTaxFile(x.inv),
+                    onChanged: (v) => set(() {
+                      if (v == true) {
+                        x.inv.info.remove('taxFile');
+                      } else {
+                        x.inv.info['taxFile'] = '0';
+                      }
+                      s.updateSettings((_) {});
+                    }),
+                  ),
+                  title: Text('${x.inv.kind.label} ${x.inv.number} — ${s.person(x.inv.personId)?.name ?? 'متفرقه'} — ${groupDigits(x.inv.total)}'),
+                  subtitle: Text('${jFormat(x.inv.date)}${x.excluded ? ' — ارسال نمی‌شود: ${x.reason}' : ''}${x.incomplete ? ' — ناقص: ${ttmsMissing(s.person(x.inv.personId)!).join('، ')}' : ''}',
+                      style: TextStyle(color: x.excluded ? Colors.red : null)),
+                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                    DropdownButton<String>(
+                      value: x.inv.info['taxGoodsType'] ?? 'goods',
+                      items: const [DropdownMenuItem(value: 'goods', child: Text('کالا')), DropdownMenuItem(value: 'services', child: Text('خدمات'))],
+                      onChanged: (v) => set(() {
+                        x.inv.info['taxGoodsType'] = v ?? 'goods';
+                        s.updateSettings((_) {});
+                      }),
+                    ),
+                    if (x.inv.personId != null)
+                      IconButton(
+                        tooltip: 'اطلاعات مالیاتی طرف حساب',
+                        onPressed: () => showPersonTaxInfo(ctx, s.person(x.inv.personId)!).then((_) => set(() {})),
+                        icon: const Icon(Icons.badge_outlined),
+                      ),
+                  ]),
+                ),
+              if (ops.isEmpty) const Padding(padding: EdgeInsets.all(16), child: Text('عملیاتی در این دوره نیست')),
+            ]),
+          );
+        }),
       );
-    }),
-  );
+
+  @override
+  Widget build(BuildContext context) {
+    final s = StoreScope.of(context);
+    final now = Jalali.fromDateTime(DateTime.now());
+    Widget chapter(int n, String title, Widget body) => Card(
+          color: _step == n ? null : const Color(0xFFF2F2F2),
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+              if (_step == n) ...[const SizedBox(height: 8), body],
+            ]),
+          ),
+        );
+    final ops = _step == 3 ? ttmsOps(s, _o) : const <TtmsOp>[];
+    return FormDialog(
+      title: 'ایجاد فایل مالیاتی ویژه نرم افزار TTMS',
+      width: 720,
+      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('بازگشت F10'))],
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        chapter(
+          1,
+          'مرحله اول : انتخاب فایل مالیات',
+          Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Wrap(spacing: 8, children: [
+              FilledButton.tonal(
+                onPressed: () async {
+                  final loc = await fs.getSaveLocation(suggestedName: 'TTMS-${_o.year}-${_o.season}.xlsx', acceptedTypeGroups: const [fs.XTypeGroup(label: 'Excel', extensions: ['xlsx'])]);
+                  if (loc != null) setState(() => _path = loc.path);
+                },
+                child: const Text('فایل جدید'),
+              ),
+              FilledButton.tonal(
+                onPressed: () async {
+                  final f = await fs.openFile(acceptedTypeGroups: const [fs.XTypeGroup(label: 'Excel', extensions: ['xlsx'])]);
+                  if (f != null) setState(() => _path = f.path);
+                },
+                child: const Text('فراخوانی فایل'),
+              ),
+            ]),
+            if (_path != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text('مسیر فایل تولید شده: $_path', textDirection: TextDirection.ltr)),
+            Align(alignment: AlignmentDirectional.centerEnd, child: FilledButton(onPressed: () => setState(() => _step = 2), child: const Text('مرحله بعد'))),
+          ]),
+        ),
+        chapter(
+          2,
+          'مرحله دوم : تعیین سال و فصل',
+          Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Row(children: [
+              const Text('سال: '),
+              DropdownButton<int>(value: _o.year, items: [for (var y = now.year - 3; y <= now.year; y++) DropdownMenuItem(value: y, child: Text('$y'))], onChanged: (v) => setState(() => _o.year = v ?? _o.year)),
+              const SizedBox(width: 12),
+              const Text('فصل: '),
+              DropdownButton<int>(
+                value: _o.season,
+                items: const [DropdownMenuItem(value: 1, child: Text('بهار')), DropdownMenuItem(value: 2, child: Text('تابستان')), DropdownMenuItem(value: 3, child: Text('پاییز')), DropdownMenuItem(value: 4, child: Text('زمستان'))],
+                onChanged: (v) => setState(() {
+                  _o.season = v ?? _o.season;
+                  _o.month = 0;
+                }),
+              ),
+              const SizedBox(width: 12),
+              const Text('ماه: '),
+              DropdownButton<int>(
+                value: _o.month,
+                items: [const DropdownMenuItem(value: 0, child: Text('کل فصل')), for (var m = (_o.season - 1) * 3 + 1; m <= _o.season * 3; m++) DropdownMenuItem(value: m, child: Text(jalaliMonthNames[m - 1]))],
+                onChanged: (v) => setState(() => _o.month = v ?? 0),
+              ),
+            ]),
+            const SizedBox(height: 8),
+            TextField(controller: _threshold, textDirection: TextDirection.ltr, inputFormatters: [MoneyInputFormatter()], decoration: const InputDecoration(labelText: 'تعیین مبلغ تشخیص معاملات کمتر از حد نصاب در قانون 169', isDense: true)),
+            CheckboxListTile(dense: true, contentPadding: EdgeInsets.zero, value: _o.skipIncomplete, onChanged: (v) => setState(() => _o.skipIncomplete = v ?? true), title: const Text('عملیاتی که تیک ارسال دارند ناقص هستند ارسال نگردد')),
+            CheckboxListTile(dense: true, contentPadding: EdgeInsets.zero, value: _o.skipNoDuty, onChanged: (v) => setState(() => _o.skipNoDuty = v ?? false), title: const Text('عملیاتی که تیک ارسال دارند ولی سر فصل عوارض ندارند ارسال نگردد')),
+            CheckboxListTile(dense: true, contentPadding: EdgeInsets.zero, value: _o.skipZeroDuty, onChanged: (v) => setState(() => _o.skipZeroDuty = v ?? false), title: const Text('عملیاتی که تیک ارسال دارند اما مبلغ عوارض آنها صفر است ارسال نگردد')),
+            Row(children: [
+              TextButton(onPressed: () => setState(() => _step = 1), child: const Text('مرحله قبل')),
+              const Spacer(),
+              FilledButton(onPressed: () => setState(() => _step = 3), child: const Text('مرحله بعد')),
+            ]),
+          ]),
+        ),
+        chapter(
+          3,
+          'مرحله سوم : ثبت اطلاعات',
+          Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Text('${ops.length} عملیات — ارسال: ${ops.where((x) => !x.excluded).length} — ناقص: ${ops.where((x) => x.incomplete).length}'),
+            const SizedBox(height: 6),
+            Wrap(spacing: 8, runSpacing: 6, children: [
+              OutlinedButton(onPressed: () => _ops(s).then((_) => setState(() {})), child: const Text('مشاهده لیست عملیات')),
+              FilledButton(onPressed: () => _write(s), child: const Text('ثبت اطلاعات')),
+              FilledButton.tonal(onPressed: () => _write(s, emtena: true), child: const Text('ثبت اطلاعات امتناع / عرضه به مصرف کننده نهایی')),
+              TextButton(onPressed: () => setState(() => _step = 2), child: const Text('مرحله قبل')),
+            ]),
+            if (_msg != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(_msg!, style: const TextStyle(fontWeight: FontWeight.w700))),
+          ]),
+        ),
+      ]),
+    );
+  }
 }
 
 // ================================================================ اتصال به سرور (شبکه)

@@ -27,6 +27,7 @@ import 'dialogs/composite_dialogs.dart';
 import 'dialogs/invoice_editor.dart';
 import 'dialogs/misc_dialogs.dart';
 import 'dialogs/opening_dialog.dart';
+import 'dialogs/scale_dialogs.dart';
 import 'dialogs/settle_dialogs.dart';
 import 'dialogs/tools_dialogs.dart';
 import 'dialogs/device_dialogs.dart';
@@ -492,7 +493,8 @@ final List<_Tab> _tabs = [
       _Item('دفترچه تلفن', Icons.contact_phone_outlined, _blue, run: (c, _) => showPhoneBook(c)),
       _Item('تماس جدید', Icons.phone_callback_rounded, _blue, run: (c, _) => showNewCall(c)),
       _Item('ترازو و بارکد وزنی', Icons.scale_outlined, _amber, run: (c, _) => showScaleSettings(c)),
-      _Item('ساخت فایل اطلاعات مالیاتی', Icons.receipt_long_outlined, _red, run: (c, _) => showTaxFile(c)),
+      _Item('ایجاد فایل مالیاتی ویژه نرم افزار TTMS', Icons.receipt_long_outlined, _red, run: (c, _) => showTaxFile(c)),
+      _Item('مدیریت ساخت فایل ترازوی توزین صدر', Icons.scale_rounded, _amber, run: (c, _) => showSadrScale(c)),
       _Item('تسویه فاکتور به فاکتور', Icons.compare_arrows_rounded, _amber, run: (c, _) => showInvoiceSettle(c)),
       _Item('لیست سندهای تسویه', Icons.list_alt_rounded, _amber, run: (c, _) => showSettleDocs(c)),
       _Item('حذف دفاتر بدون تراکنش', Icons.cleaning_services_outlined, _red, run: (c, _) => showCleanup(c)),
