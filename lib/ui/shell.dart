@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart' show PointerScrollEvent;
 import 'package:flutter/services.dart';
 
 import '../core/jalali.dart';
@@ -974,7 +975,7 @@ class _TabChipState extends State<_TabChip> {
 
 // ===================================================================== ribbon
 
-class _Ribbon extends StatelessWidget {
+class _Ribbon extends StatefulWidget {
   final _Tab tab;
   final ValueChanged<_Item> onItem;
   final VoidCallback onCollapse;
@@ -982,8 +983,47 @@ class _Ribbon extends StatelessWidget {
   const _Ribbon({required this.tab, required this.onItem, required this.onCollapse});
 
   @override
+  State<_Ribbon> createState() => _RibbonState();
+}
+
+class _RibbonState extends State<_Ribbon> {
+  final _scroll = ScrollController();
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  /// Natural width of the tab's buttons (see [_RibbonButton] / [_RibbonGroup]).
+  double _naturalWidth(AppStore s) {
+    var w = 0.0;
+    var groups = 0;
+    for (final g in widget.tab.groups) {
+      final items = g.items.where((i) => s.canUse(i.label));
+      if (items.isEmpty) continue;
+      groups++;
+      w += 10 + items.fold<double>(0, (a, i) => a + (i.label.length > 17 ? 100 : 84));
+    }
+    return w + (groups > 1 ? (groups - 1) * 8 : 0);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final brand = Brand.of(context);
+    final store = StoreScope.of(context);
+    final tab = widget.tab;
+    final content = IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var g = 0; g < tab.groups.length; g++) ...[
+            if (g > 0) const SizedBox(width: 8),
+            _RibbonGroup(group: tab.groups[g], onItem: widget.onItem),
+          ],
+        ],
+      ),
+    );
     return Container(
       decoration: BoxDecoration(
         gradient: brand.ribbon,
@@ -996,27 +1036,37 @@ class _Ribbon extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            // every button stays visible: a long tab is scaled down to fit
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: AlignmentDirectional.centerStart,
-              child: IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (var g = 0; g < tab.groups.length; g++) ...[
-                      if (g > 0) const SizedBox(width: 8),
-                      _RibbonGroup(group: tab.groups[g], onItem: onItem),
-                    ],
-                  ],
+            child: LayoutBuilder(builder: (context, box) {
+              // a slightly long tab is scaled down a little; a much longer one
+              // keeps its normal size and scrolls (wheel or the scrollbar)
+              final need = _naturalWidth(store);
+              if (need <= box.maxWidth / 0.85) {
+                return FittedBox(fit: BoxFit.scaleDown, alignment: AlignmentDirectional.centerStart, child: content);
+              }
+              return Listener(
+                onPointerSignal: (e) {
+                  if (e is PointerScrollEvent && _scroll.hasClients) {
+                    final d = e.scrollDelta.dy != 0 ? e.scrollDelta.dy : e.scrollDelta.dx;
+                    _scroll.jumpTo((_scroll.offset + d).clamp(0.0, _scroll.position.maxScrollExtent));
+                  }
+                },
+                child: Scrollbar(
+                  controller: _scroll,
+                  thumbVisibility: true,
+                  child: SingleChildScrollView(
+                    controller: _scroll,
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: content,
+                  ),
                 ),
-              ),
-            ),
+              );
+            }),
           ),
           IconButton(
             tooltip: 'جمع کردن نوار (یا دوباره روی تب بزنید)',
             visualDensity: VisualDensity.compact,
-            onPressed: onCollapse,
+            onPressed: widget.onCollapse,
             icon: Icon(Icons.keyboard_arrow_up_rounded, color: brand.accent),
           ),
         ],
