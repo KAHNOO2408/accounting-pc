@@ -487,7 +487,7 @@ class _LongTermState extends State<_LongTerm> {
                   sakanCell(
                     TextFormField(
                       key: ValueKey('lt-${p.id}'),
-                      initialValue: v == 0 ? '' : fmtQty(v),
+                      initialValue: v == 0 ? '' : (v == v.roundToDouble() ? '${v.round()}' : '$v'),
                       textAlign: TextAlign.center,
                       decoration: const InputDecoration(isDense: true, border: InputBorder.none, hintText: '0'),
                       onChanged: (t) => setState(() => pct[p.id] = (double.tryParse(normalizeDigits(t)) ?? 0).clamp(0, 100).toDouble()),
